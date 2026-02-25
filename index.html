@@ -21,7 +21,6 @@
   html{scroll-behavior:smooth}
   body{background:var(--navy);color:var(--white);font-family:'Inter',sans-serif;overflow-x:hidden}
 
-  /* ── STARS BG ── */
   body::before{
     content:'';position:fixed;inset:0;
     background:
@@ -32,7 +31,7 @@
 
   section{position:relative;z-index:1}
 
-  /* ── NAV ── */
+  /* NAV */
   nav{
     display:flex;align-items:center;justify-content:space-between;
     padding:18px 40px;
@@ -56,13 +55,13 @@
   }
   .nav-cta:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(30,144,255,.7)}
 
-  /* ── HERO ── */
+  /* HERO */
   .hero{
     min-height:100vh;display:flex;flex-direction:column;
     align-items:center;justify-content:center;
     text-align:center;padding:80px 20px 60px;
     position:relative;overflow:hidden;
-    background:url('https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771977515/Untitled_design_6_owkrx8.png') center/cover no-repeat;
+    background:url('https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979112/Untitled_design_8_u7pw3f.png') center/cover no-repeat;
   }
   .hero::after{
     content:'';position:absolute;inset:0;
@@ -70,14 +69,9 @@
     pointer-events:none;z-index:0;
   }
   .hero>*{position:relative;z-index:1}
-  .hero-glow{
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:700px;height:700px;border-radius:50%;
-    background:radial-gradient(circle,rgba(30,144,255,.12) 0%,transparent 70%);
-    pointer-events:none;
-  }
+
   .hero-logo{
-    width:180px;height:180px;object-fit:cover;border-radius:20px;
+    width:180px;height:180px;object-fit:contain;border-radius:20px;
     margin-bottom:32px;
     filter:drop-shadow(0 0 30px rgba(30,144,255,.6));
     animation:float 4s ease-in-out infinite;
@@ -137,7 +131,7 @@
   }
   .btn-outline:hover{border-color:var(--blue);color:var(--blue);transform:translateY(-3px)}
 
-  /* ── SECTION COMMON ── */
+  /* SECTION COMMON */
   .section-label{
     font-family:'Bebas Neue',sans-serif;
     font-size:13px;letter-spacing:5px;color:var(--blue);
@@ -150,7 +144,7 @@
   }
   .section-sub{text-align:center;color:var(--silver);font-size:16px;margin-bottom:56px;max-width:560px;margin-left:auto;margin-right:auto}
 
-  /* ── WHATNOT CTA ── */
+  /* WHATNOT CTA */
   .whatnot{padding:80px 20px;text-align:center}
   .whatnot-cards{
     display:flex;flex-wrap:wrap;gap:24px;justify-content:center;max-width:800px;margin:0 auto;
@@ -176,7 +170,7 @@
     margin-bottom:20px;letter-spacing:.5px;
   }
 
-  /* ── SHOWS ── */
+  /* SHOWS */
   .shows{padding:80px 20px}
   .shows-grid{
     display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
@@ -206,7 +200,7 @@
   .badge-live{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
   .badge-soon{background:rgba(212,160,23,.12);color:var(--gold2);border:1px solid rgba(212,160,23,.25)}
 
-  /* ── HOST ── */
+  /* HOST */
   .host{padding:80px 20px;text-align:center}
   .host-card{
     max-width:480px;margin:0 auto;
@@ -221,7 +215,9 @@
     display:flex;align-items:center;justify-content:center;
     font-size:42px;margin:0 auto 20px;
     box-shadow:0 0 30px rgba(30,144,255,.4);
+    overflow:hidden;
   }
+  .host-avatar img{width:100%;height:100%;object-fit:cover}
   .host-card h3{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:6px}
   .host-handle{color:var(--blue);font-weight:600;font-size:15px;margin-bottom:16px}
   .host-card p{color:var(--silver);font-size:15px;line-height:1.7;margin-bottom:24px}
@@ -231,7 +227,7 @@
     color:var(--gold2);padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;
   }
 
-  /* ── SOCIALS ── */
+  /* SOCIALS */
   .socials{padding:80px 20px}
   .socials-grid{
     display:flex;flex-wrap:wrap;gap:16px;justify-content:center;max-width:900px;margin:0 auto;
@@ -255,7 +251,7 @@
   .social-icon{font-size:26px}
   .social-info span{display:block;font-size:12px;color:var(--silver);font-weight:400}
 
-  /* ── EBAY ── */
+  /* EBAY */
   .ebay-strip{
     margin:0 20px 80px;max-width:900px;margin-left:auto;margin-right:auto;
     background:linear-gradient(135deg,rgba(14,118,168,.15),rgba(10,14,26,.5));
@@ -274,7 +270,7 @@
   }
   .btn-ebay:hover{transform:translateY(-3px);box-shadow:0 0 36px rgba(14,118,168,.7)}
 
-  /* ── FOOTER ── */
+  /* FOOTER */
   footer{
     border-top:1px solid rgba(255,255,255,.07);
     padding:32px 40px;display:flex;align-items:center;justify-content:space-between;
@@ -283,13 +279,11 @@
   footer p{color:rgba(192,200,216,.5);font-size:13px}
   .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--silver)}
 
-  /* ── DIVIDER ── */
   .divider{
     height:1px;max-width:900px;margin:0 auto;
     background:linear-gradient(90deg,transparent,rgba(30,144,255,.3),transparent);
   }
 
-  /* ── RESPONSIVE ── */
   @media(max-width:640px){
     nav{padding:14px 20px}
     .nav-links{display:none}
@@ -303,7 +297,8 @@
 <!-- NAV -->
 <nav>
   <div class="nav-logo">
-    <span>⚡ SAFE NETWORK</span>
+    <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
+    <span>SAFE NETWORK</span>
   </div>
   <ul class="nav-links">
     <li><a href="#shows">Shows</a></li>
@@ -311,29 +306,25 @@
     <li><a href="#follow">Follow</a></li>
     <li><a href="#socials">Links</a></li>
   </ul>
-  <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="nav-cta">▶ Watch Live</a>
+  <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="nav-cta">Watch Live</a>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-glow"></div>
-  <img class="hero-logo" src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771977468/Untitled_design_7_dyky1j.png" alt="Safe Network Logo"/>
-
+  <img class="hero-logo" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network Logo"/>
   <div class="section-label">LIVE ON WHATNOT</div>
   <h1>SAFE NETWORK</h1>
   <div class="hero-sub">COLLECT · TRADE · WIN</div>
-  <p class="hero-desc">The premier live shopping network for collectors and enthusiasts. Giveaways, auctions, and fun games — streamed live on Whatnot.</p>
-
+  <p class="hero-desc">The premier live shopping network for collectors and enthusiasts. Giveaways, auctions, and fun games streamed live on Whatnot.</p>
   <div class="hero-pills">
     <span class="pill">🪙 Coins &amp; Bullion</span>
-    <span class="pill gold">⚡ Coming Soon: Pokémon</span>
+    <span class="pill gold">⚡ Coming Soon: Pokemon</span>
     <span class="pill gold">🏀 Sports Cards</span>
     <span class="pill gold">👟 Shoes</span>
   </div>
-
   <div class="hero-btns">
     <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="btn-primary">🔔 Follow @SafeNetwork on Whatnot</a>
-    <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="btn-gold">🪙 Follow @djsmoltz — Coins &amp; Bullion</a>
+    <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="btn-gold">🪙 Follow @djsmoltz on Whatnot</a>
   </div>
 </section>
 
@@ -343,27 +334,25 @@
 <section class="whatnot" id="follow">
   <div class="section-label">FOLLOW TO GET NOTIFIED</div>
   <h2 class="section-title">Never Miss a <span style="color:var(--blue)">Drop</span></h2>
-  <p class="section-sub">Hit Follow on our Whatnot pages — you'll get notified the moment we go live so you never miss a deal.</p>
-
+  <p class="section-sub">Hit Follow on our Whatnot pages and get notified the moment we go live so you never miss a deal.</p>
   <div class="whatnot-cards">
     <div class="whatnot-card">
       <div class="wn-icon">🔮</div>
       <div class="wn-handle">@SafeNetwork</div>
       <h3>The Network Page</h3>
       <p>Your hub for all Safe Network shows. Follow to get notified when any of our hosts go live across all verticals.</p>
-      <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="btn-primary" style="display:inline-block;padding:12px 28px;font-size:14px">Follow on Whatnot →</a>
+      <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="btn-primary" style="display:inline-block;padding:12px 28px;font-size:14px">Follow on Whatnot</a>
     </div>
     <div class="whatnot-card">
       <div class="wn-icon">🪙</div>
       <div class="wn-handle">@djsmoltz</div>
       <h3>Coins &amp; Bullion</h3>
-      <p>Follow DJ Smoltz directly for his Coins &amp; Bullion shows — surprise drops, auctions, giveaways and more.</p>
-      <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="btn-gold" style="display:inline-block;padding:12px 28px;font-size:14px">Follow @djsmoltz →</a>
+      <p>Follow DJ Smoltz directly for his Coins and Bullion shows. Surprise drops, auctions, giveaways and more every stream.</p>
+      <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="btn-gold" style="display:inline-block;padding:12px 28px;font-size:14px">Follow @djsmoltz</a>
     </div>
   </div>
-
   <p style="margin-top:32px;color:var(--silver);font-size:13px;opacity:.6">
-    💡 Pro tip: After following, tap the bell icon on Whatnot to get push notifications when we go live.
+    Pro tip: After following, tap the bell icon on Whatnot to get push notifications when we go live.
   </p>
 </section>
 
@@ -374,31 +363,30 @@
   <div class="section-label">OUR LINEUP</div>
   <h2 class="section-title">The <span style="color:var(--gold)">Shows</span></h2>
   <p class="section-sub">One network. Multiple verticals. Something for every collector.</p>
-
   <div class="shows-grid">
     <div class="show-card">
       <span class="show-emoji">🪙</span>
       <h3>Coins &amp; Bullion</h3>
-      <p>Rare coins, silver bars, gold bullion and surprise mystery lots — hosted live by @djsmoltz. Auctions, giveaways, and unboxings every show.</p>
+      <p>Rare coins, silver bars, gold bullion and surprise mystery lots hosted live by @djsmoltz. Auctions, giveaways, and unboxings every show.</p>
       <div class="show-badge badge-live">🟢 LIVE NOW</div>
     </div>
     <div class="show-card coming-soon">
       <span class="show-emoji">⚡</span>
-      <h3>Pokémon</h3>
-      <p>Pack openings, graded card auctions, and Pokémon lots for collectors of all levels. From vintage Base Set to modern hits.</p>
-      <div class="show-badge badge-soon">⏳ COMING SOON</div>
+      <h3>Pokemon</h3>
+      <p>Pack openings, graded card auctions, and Pokemon lots for collectors of all levels. From vintage Base Set to modern hits.</p>
+      <div class="show-badge badge-soon">COMING SOON</div>
     </div>
     <div class="show-card coming-soon">
       <span class="show-emoji">🏀</span>
       <h3>Sports Cards</h3>
-      <p>Rookie cards, autographs, graded slabs and mystery boxes across all major sports — football, basketball, baseball and more.</p>
-      <div class="show-badge badge-soon">⏳ COMING SOON</div>
+      <p>Rookie cards, autographs, graded slabs and mystery boxes across football, basketball, baseball and more.</p>
+      <div class="show-badge badge-soon">COMING SOON</div>
     </div>
     <div class="show-card coming-soon">
       <span class="show-emoji">👟</span>
       <h3>Shoes</h3>
-      <p>Authenticated sneakers, heat releases, and grail pickups. Live shopping for the sneakerhead community.</p>
-      <div class="show-badge badge-soon">⏳ COMING SOON</div>
+      <p>Authenticated sneakers, heat releases, and grail pickups. Live shopping built for the sneakerhead community.</p>
+      <div class="show-badge badge-soon">COMING SOON</div>
     </div>
   </div>
 </section>
@@ -410,12 +398,11 @@
   <div class="section-label">THE TEAM</div>
   <h2 class="section-title">Meet the <span style="color:var(--blue)">Hosts</span></h2>
   <p class="section-sub">Real collectors. Real knowledge. Real deals.</p>
-
   <div class="host-card">
-    <div class="host-avatar">🎧</div>
+    <div class="host-avatar"><img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg" alt="DJ Smoltz"/></div>
     <h3>DJ Smoltz</h3>
     <div class="host-handle">@djsmoltz on Whatnot</div>
-    <p>The face of Safe Network's Coins &amp; Bullion show. DJ Smoltz brings energy, expertise, and incredible deals to every live stream — from Morgan dollars to gold bars. Known for surprise mystery lots and giving back to the community.</p>
+    <p>The face of Safe Network's Coins and Bullion show. DJ Smoltz brings energy, expertise, and incredible deals to every live stream. From Morgan dollars to gold bars, he keeps every show packed with surprise mystery lots and community giveaways.</p>
     <div class="host-shows">
       <span class="host-tag">🪙 Coins &amp; Bullion</span>
       <span class="host-tag">🎁 Giveaways</span>
@@ -430,17 +417,16 @@
 <div class="ebay-strip" id="ebay">
   <div>
     <h3>🛒 Shop Our eBay Store</h3>
-    <p>Can't catch us live? Browse our eBay listings for coins, bullion and collectibles — available 24/7 with the same trusted Safe Network quality.</p>
+    <p>Can't catch us live? Browse our eBay listings for coins, bullion and collectibles available 24/7 with the same trusted Safe Network quality.</p>
   </div>
-  <a href="https://www.ebay.com/usr/safenetwork.shop" target="_blank" class="btn-ebay">Visit eBay Store →</a>
+  <a href="https://www.ebay.com/usr/safenetwork.shop" target="_blank" class="btn-ebay">Visit eBay Store</a>
 </div>
 
 <!-- SOCIALS -->
 <section class="socials" id="socials">
   <div class="section-label">FIND US EVERYWHERE</div>
   <h2 class="section-title">Stay <span style="color:var(--blue)">Connected</span></h2>
-  <p class="section-sub">Follow @SafeNetwork.Shop across all platforms for show alerts, behind-the-scenes, and exclusive deals.</p>
-
+  <p class="section-sub">Follow @SafeNetwork.Shop across all platforms for show alerts, behind the scenes content, and exclusive deals.</p>
   <div class="socials-grid">
     <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="social-btn whatnot-btn">
       <span class="social-icon">💜</span>
@@ -467,8 +453,8 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-logo">⚡ SAFE NETWORK</div>
-  <p>© 2025 Safe Network · safenetwork.shop</p>
+  <div class="footer-logo">SAFE NETWORK</div>
+  <p>2025 Safe Network · safenetwork.shop</p>
   <p style="color:rgba(192,200,216,.4);font-size:12px">Your trusted live shopping network on Whatnot</p>
 </footer>
 

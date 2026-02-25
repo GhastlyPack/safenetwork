@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Blog | Safe Network</title>
+<link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
+<meta name="description" content="Collector tips, market insights, and guides from the Safe Network team. Coins, bullion, Pokemon, sports cards and sneakers."/>
+<meta property="og:title" content="Blog | Safe Network"/>
+<meta property="og:description" content="Collector tips, market insights, and guides from the Safe Network team."/>
+<meta property="og:image" content="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979965/ChatGPT_Image_Feb_24_2026_04_39_12_PM_bvf4rt.png"/>
+<meta property="og:url" content="https://safenetwork.shop/blog"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --navy:#0a0e1a;--blue:#1e90ff;--blue2:#0d5fbd;
+    --gold:#d4a017;--gold2:#f0c040;--silver:#c0c8d8;--white:#fff;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--navy);color:var(--white);font-family:'Inter',sans-serif;overflow-x:hidden}
+  body::before{
+    content:'';position:fixed;inset:0;
+    background:radial-gradient(ellipse at 20% 20%,rgba(30,144,255,.1) 0%,transparent 50%),
+               radial-gradient(ellipse at 80% 80%,rgba(212,160,23,.06) 0%,transparent 50%);
+    pointer-events:none;z-index:0;
+  }
+
+  /* NAV */
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 40px;background:rgba(10,14,26,.9);
+    backdrop-filter:blur(12px);border-bottom:1px solid rgba(30,144,255,.2);
+    position:sticky;top:0;z-index:100;
+  }
+  .nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+  .nav-logo img{height:40px;width:40px;object-fit:contain;border-radius:6px}
+  .nav-logo span{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--white)}
+  .nav-links{display:flex;gap:28px;list-style:none}
+  .nav-links a{color:var(--silver);text-decoration:none;font-size:14px;font-weight:600;transition:color .2s}
+  .nav-links a:hover,.nav-links a.active{color:var(--blue)}
+  .nav-cta{
+    background:linear-gradient(135deg,var(--blue),var(--blue2));
+    color:#fff;padding:10px 22px;border-radius:8px;font-weight:700;
+    font-size:13px;text-decoration:none;letter-spacing:.5px;
+    box-shadow:0 0 16px rgba(30,144,255,.4);transition:transform .2s,box-shadow .2s;
+  }
+  .nav-cta:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(30,144,255,.7)}
+
+  /* HERO */
+  .blog-hero{
+    padding:80px 20px 60px;text-align:center;
+    position:relative;z-index:1;
+  }
+  .section-label{
+    font-family:'Bebas Neue',sans-serif;font-size:13px;
+    letter-spacing:5px;color:var(--blue);margin-bottom:12px;
+  }
+  .blog-hero h1{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(42px,7vw,80px);letter-spacing:3px;margin-bottom:16px;
+  }
+  .blog-hero p{color:var(--silver);font-size:17px;max-width:520px;margin:0 auto;line-height:1.7}
+
+  /* FILTERS */
+  .filters{
+    display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+    padding:0 20px 48px;position:relative;z-index:1;
+  }
+  .filter-btn{
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);
+    color:var(--silver);padding:8px 20px;border-radius:999px;
+    font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;
+  }
+  .filter-btn:hover,.filter-btn.active{
+    background:rgba(30,144,255,.15);border-color:var(--blue);color:var(--blue);
+  }
+  .filter-btn.gold:hover,.filter-btn.gold.active{
+    background:rgba(212,160,23,.12);border-color:var(--gold);color:var(--gold2);
+  }
+
+  /* GRID */
+  .blog-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:28px;max-width:1100px;margin:0 auto;padding:0 20px 80px;
+    position:relative;z-index:1;
+  }
+  .post-card{
+    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+    border-radius:20px;overflow:hidden;text-decoration:none;color:var(--white);
+    transition:transform .3s,border-color .3s,box-shadow .3s;display:flex;flex-direction:column;
+  }
+  .post-card:hover{transform:translateY(-6px);border-color:rgba(30,144,255,.4);box-shadow:0 8px 40px rgba(30,144,255,.15)}
+  .post-thumb{
+    width:100%;height:180px;object-fit:cover;
+    background:linear-gradient(135deg,#0d1428,#1a2540);
+    display:flex;align-items:center;justify-content:center;font-size:52px;
+  }
+  .post-thumb img{width:100%;height:100%;object-fit:cover}
+  .post-body{padding:24px;flex:1;display:flex;flex-direction:column}
+  .post-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .post-tag{
+    font-size:11px;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:999px;
+  }
+  .tag-coins{background:rgba(212,160,23,.15);color:var(--gold2);border:1px solid rgba(212,160,23,.25)}
+  .tag-pokemon{background:rgba(255,200,0,.1);color:#ffd700;border:1px solid rgba(255,200,0,.2)}
+  .tag-sports{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+  .tag-shoes{background:rgba(168,85,247,.1);color:#c084fc;border:1px solid rgba(168,85,247,.2)}
+  .tag-news{background:rgba(30,144,255,.12);color:var(--blue);border:1px solid rgba(30,144,255,.25)}
+  .post-date{color:var(--silver);font-size:12px;opacity:.6}
+  .post-body h2{font-size:18px;font-weight:700;margin-bottom:10px;line-height:1.4}
+  .post-body p{color:var(--silver);font-size:14px;line-height:1.7;flex:1}
+  .post-footer{margin-top:20px;display:flex;align-items:center;justify-content:space-between}
+  .post-author{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--silver)}
+  .author-img{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(30,144,255,.3)}
+  .read-more{color:var(--blue);font-size:13px;font-weight:600}
+
+  /* EMPTY STATE */
+  .empty{text-align:center;padding:60px 20px;color:var(--silver);position:relative;z-index:1}
+  .empty h3{font-family:'Bebas Neue',sans-serif;font-size:28px;margin-bottom:8px;color:var(--white)}
+
+  /* FOOTER */
+  footer{
+    border-top:1px solid rgba(255,255,255,.07);
+    padding:32px 40px;display:flex;align-items:center;
+    justify-content:space-between;flex-wrap:wrap;gap:16px;
+    position:relative;z-index:1;
+  }
+  footer p{color:rgba(192,200,216,.5);font-size:13px}
+  .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--silver)}
+  footer a{color:var(--blue);text-decoration:none;font-size:13px}
+
+  @media(max-width:640px){
+    nav{padding:14px 20px}.nav-links{display:none}
+    footer{flex-direction:column;text-align:center}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
+    <span>SAFE NETWORK</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/blog" class="active">Blog</a></li>
+    <li><a href="/#shows">Shows</a></li>
+    <li><a href="/#socials">Links</a></li>
+  </ul>
+  <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="nav-cta">Watch Live</a>
+</nav>
+
+<section class="blog-hero">
+  <div class="section-label">COLLECTOR KNOWLEDGE</div>
+  <h1>The Safe Network Blog</h1>
+  <p>Tips, guides, and market insights for collectors. From coins and bullion to Pokemon, sports cards, and sneakers.</p>
+</section>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filter('all')">All Posts</button>
+  <button class="filter-btn gold" onclick="filter('coins')">🪙 Coins &amp; Bullion</button>
+  <button class="filter-btn" onclick="filter('pokemon')">⚡ Pokemon</button>
+  <button class="filter-btn" onclick="filter('sports')">🏀 Sports Cards</button>
+  <button class="filter-btn" onclick="filter('shoes')">👟 Shoes</button>
+  <button class="filter-btn" onclick="filter('news')">📢 News</button>
+</div>
+
+<div class="blog-grid" id="grid">
+
+  <!-- SAMPLE POST 1 -->
+  <a class="post-card" href="/blog/posts/how-to-buy-silver-on-whatnot.html" data-tag="coins">
+    <div class="post-thumb">🪙</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-coins">COINS &amp; BULLION</span>
+        <span class="post-date">Feb 24, 2025</span>
+      </div>
+      <h2>How to Buy Silver on Whatnot Without Getting Burned</h2>
+      <p>Live auctions move fast. Here is what every new buyer needs to know before bidding on silver rounds, bars, and bullion on Whatnot.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg" alt="DJ Smoltz"/>
+          DJ Smoltz
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- SAMPLE POST 2 -->
+  <a class="post-card" href="/blog/posts/morgan-dollar-guide.html" data-tag="coins">
+    <div class="post-thumb">🏛️</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-coins">COINS &amp; BULLION</span>
+        <span class="post-date">Feb 20, 2025</span>
+      </div>
+      <h2>Morgan Dollars: A Beginner's Guide to America's Most Iconic Coin</h2>
+      <p>Everything you need to know about Morgan dollars — history, grading, key dates, and what to look for when buying live on Whatnot.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg" alt="DJ Smoltz"/>
+          DJ Smoltz
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- SAMPLE POST 3 -->
+  <a class="post-card" href="/blog/posts/safe-network-launch.html" data-tag="news">
+    <div class="post-thumb">🚀</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-news">NEWS</span>
+        <span class="post-date">Feb 15, 2025</span>
+      </div>
+      <h2>Safe Network is Live: What We're Building and Why</h2>
+      <p>We launched Safe Network to give collectors a trusted place to buy live on Whatnot. Here is the story behind the network and what is coming next.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
+          Safe Network
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+</div>
+
+<footer>
+  <div class="footer-logo">SAFE NETWORK</div>
+  <a href="/">Back to Home</a>
+  <p>2025 Safe Network · safenetwork.shop</p>
+</footer>
+
+<script>
+  function filter(tag) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    document.querySelectorAll('.post-card').forEach(card => {
+      card.style.display = (tag === 'all' || card.dataset.tag === tag) ? 'flex' : 'none';
+    });
+  }
+</script>
+</body>
+</html>

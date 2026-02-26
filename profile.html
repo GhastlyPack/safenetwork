@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/css/auth.css">
 <link rel="stylesheet" href="/css/profile.css">
 <link rel="stylesheet" href="/css/collection.css">
+<link rel="stylesheet" href="/css/feed.css">
 <link rel="stylesheet" href="/css/cookies.css">
 <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -27,6 +28,7 @@
   </a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
+    <li><a href="/feed.html">Feed</a></li>
     <li><a href="/#shows">Shows</a></li>
     <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
     <li><a href="/#socials">Links</a></li>
@@ -51,6 +53,7 @@
 
 <ul class="mobile-menu" id="mobileMenu">
   <li><a href="/">Home</a></li>
+  <li><a href="/feed.html" onclick="toggleMenu()">Feed</a></li>
   <li><a href="/#shows">Shows</a></li>
   <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
   <li><a href="/#socials">Links</a></li>
@@ -92,6 +95,10 @@
       <h2 id="profileDisplayName">Loading...</h2>
       <div class="profile-username" id="profileUsernameDisplay">@...</div>
       <div class="profile-badges" id="profileBadges"></div>
+      <div class="follow-counts" id="profileFollowCounts" style="display:none;justify-content:flex-start;margin:6px 0 0">
+        <span><strong id="profileFollowerCount">0</strong> Followers</span>
+        <span><strong id="profileFollowingCount">0</strong> Following</span>
+      </div>
     </div>
   </div>
 
@@ -322,6 +329,14 @@
     document.getElementById('loyaltyHint').textContent = next
       ? (t.max - points) + ' more points to reach ' + next + ' tier'
       : 'You\'ve reached the highest tier!';
+
+    // Follower/following counts
+    var followCountsEl = document.getElementById('profileFollowCounts');
+    if(followCountsEl){
+      document.getElementById('profileFollowerCount').textContent = p.follower_count || 0;
+      document.getElementById('profileFollowingCount').textContent = p.following_count || 0;
+      followCountsEl.style.display = '';
+    }
 
     // View public profile link
     var pubLink = document.getElementById('viewPublicProfile');

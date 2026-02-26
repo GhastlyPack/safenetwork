@@ -124,6 +124,12 @@
           collectionLink.textContent = 'My Collection';
           logoutBtn.before(collectionLink);
 
+          var feedLink = document.createElement('a');
+          feedLink.href = '/feed.html';
+          feedLink.className = 'auth-dropdown-link';
+          feedLink.textContent = 'Community Feed';
+          logoutBtn.before(feedLink);
+
           // Add admin link if admin
           if(profile.role === 'admin'){
             var adminLink = document.createElement('a');
@@ -172,6 +178,14 @@
         mobileCollLink.style.marginBottom = '8px';
         mobileCollLink.textContent = 'My Collection';
         mobileWishLink.after(mobileCollLink);
+
+        var mobileFeedLink = document.createElement('a');
+        mobileFeedLink.href = '/feed.html';
+        mobileFeedLink.className = 'auth-mobile-profile-link';
+        mobileFeedLink.style.display = 'block';
+        mobileFeedLink.style.marginBottom = '8px';
+        mobileFeedLink.textContent = 'Community Feed';
+        mobileCollLink.after(mobileFeedLink);
 
         // Add admin link if admin
         if(profile.role === 'admin'){

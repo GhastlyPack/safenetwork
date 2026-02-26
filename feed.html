@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Community Feed - Safe Network</title>
+<link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
+
+<!-- Open Graph -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://safenetwork.shop/feed.html"/>
+<meta property="og:title" content="Community Feed - Safe Network"/>
+<meta property="og:description" content="See what the Safe Network community is hunting, collecting, and selling. Coins, Pokemon, Sports Cards and Shoes."/>
+<meta property="og:image" content="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979965/ChatGPT_Image_Feb_24_2026_04_39_12_PM_bvf4rt.png"/>
+
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/feed.css">
+<link rel="stylesheet" href="/css/cookies.css">
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Customer.io CDP -->
+<script>
+  !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
+</script>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png" alt="Safe Network" style="height:36px;border-radius:8px"/>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/feed.html" class="active">Feed</a></li>
+    <li><a href="/schedule.html">Schedule</a></li>
+    <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+    <li><a href="/blog">Blog</a></li>
+  </ul>
+
+  <div class="nav-actions">
+    <button class="btn-login" id="authLoginBtn" style="display:none" onclick="window.snAuth && snAuth.login()">Log In</button>
+    <div class="auth-profile-wrap" id="authProfileWrap" style="display:none">
+      <button class="auth-avatar-btn" onclick="window.snAuth && snAuth.toggleProfileDropdown()">
+        <img id="authAvatarImg" src="" alt="" style="display:none"/>
+        <div id="authAvatarInitials" class="auth-avatar-initials" style="display:none"></div>
+      </button>
+      <div class="auth-dropdown" id="authDropdown">
+        <div class="auth-dropdown-email" id="authDropdownEmail"></div>
+        <div class="auth-dropdown-divider"></div>
+        <button class="auth-logout-btn" onclick="window.snAuth && snAuth.logout()">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<ul class="mobile-menu" id="mobileMenu">
+  <li><a href="/" onclick="toggleMenu()">Home</a></li>
+  <li><a href="/feed.html" onclick="toggleMenu()">Feed</a></li>
+  <li><a href="/schedule.html" onclick="toggleMenu()">Schedule</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank" onclick="toggleMenu()">Watch Live</a></li>
+  <li><a href="/blog">Blog</a></li>
+  <li id="authMobileLogin" style="display:none"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
+  <li id="authMobileProfile" style="display:none">
+    <span class="auth-mobile-signed-in">Signed in as <strong id="authMobileEmail"></strong></span>
+    <a href="#" class="auth-mobile-logout" onclick="event.preventDefault();window.snAuth && snAuth.logout()">Log Out</a>
+  </li>
+</ul>
+
+<!-- ── Feed Content ── -->
+<div class="feed-wrap">
+  <h1>Community <span style="color:var(--gold)">Feed</span></h1>
+  <p class="feed-intro">See what the Safe Network community is hunting, collecting, and selling.</p>
+
+  <!-- Type Filters -->
+  <div class="feed-filters" id="feedTypeFilters">
+    <button class="feed-filter active" data-filter="">All</button>
+    <button class="feed-filter" data-filter="following">Following</button>
+    <button class="feed-filter" data-filter="wishlist">Wishlists</button>
+    <button class="feed-filter" data-filter="collection">Collections</button>
+    <button class="feed-filter" data-filter="inventory">For Sale</button>
+  </div>
+
+  <!-- Category Filters -->
+  <div class="feed-cat-filters" id="feedCatFilters">
+    <button class="feed-cat-filter active" data-cat="">All Categories</button>
+    <button class="feed-cat-filter" data-cat="coins">Coins</button>
+    <button class="feed-cat-filter" data-cat="pokemon">Pokemon</button>
+    <button class="feed-cat-filter" data-cat="sports_cards">Sports Cards</button>
+    <button class="feed-cat-filter" data-cat="shoes">Shoes</button>
+  </div>
+
+  <!-- Feed Items -->
+  <div id="feedItems"></div>
+
+  <!-- Load More -->
+  <div class="feed-load-more" id="feedLoadMore" style="display:none">
+    <button class="feed-load-more-btn" id="feedLoadMoreBtn" onclick="window._feedLoadMore()">Load More</button>
+  </div>
+
+  <!-- Empty State -->
+  <div class="feed-empty" id="feedEmpty" style="display:none">
+    <div class="feed-empty-icon">&#128240;</div>
+    <p>No activity yet. Be the first to add something!</p>
+  </div>
+
+  <!-- Loading -->
+  <div class="feed-loading" id="feedLoading">
+    <p>Loading feed...</p>
+  </div>
+</div>
+
+<!-- ── Comments Overlay ── -->
+<div class="feed-comments-overlay" id="feedCommentsOverlay">
+  <div class="feed-comments-panel">
+    <div class="feed-comments-header">
+      <h3>Comments</h3>
+      <button class="feed-comments-close" onclick="window._feedCloseComments()">&times;</button>
+    </div>
+    <div class="feed-comments-list" id="feedCommentsList"></div>
+    <div class="feed-comments-input" id="feedCommentsInput" style="display:none">
+      <textarea id="feedCommentBody" placeholder="Add a comment..." maxlength="500" rows="2"></textarea>
+      <button class="feed-comment-submit" id="feedCommentSubmit" onclick="window._feedSubmitComment()">Post</button>
+    </div>
+    <div class="feed-comments-login" id="feedCommentsLogin" style="display:none">
+      <p>Log in to join the conversation</p>
+      <button class="btn-login" onclick="window.snAuth && snAuth.login()">Log In</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Photo Lightbox ── -->
+<div class="feed-lightbox" id="feedLightbox">
+  <button class="feed-lightbox-close" onclick="window._feedCloseLightbox()">&times;</button>
+  <button class="feed-lightbox-nav feed-lightbox-prev" onclick="window._feedLightboxNav(-1)">&#8249;</button>
+  <img id="feedLightboxImg" src="" alt="Photo"/>
+  <button class="feed-lightbox-nav feed-lightbox-next" onclick="window._feedLightboxNav(1)">&#8250;</button>
+  <div class="feed-lightbox-counter" id="feedLightboxCounter"></div>
+</div>
+
+<!-- ── Share Toast ── -->
+<div class="feed-share-toast" id="feedShareToast">Link copied!</div>
+
+<!-- ── Footer ── -->
+<footer>
+  <div><a href="/privacy.html">Privacy Policy</a> &middot; <a href="/terms.html">Terms of Service</a></div>
+  <p>&copy; 2026 Safe Network. All rights reserved.</p>
+</footer>
+
+<script>
+function toggleMenu(){
+  var m=document.getElementById('mobileMenu');
+  if(m)m.classList.toggle('open');
+}
+</script>
+<script src="/js/supabase.js"></script>
+<script src="/js/cookies.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+/* ── Feed Page ── */
+(function(){
+  /* ── State ── */
+  var feedEvents = [];
+  var nextCursor = null;
+  var activeType = '';
+  var activeCat = '';
+  var isLoading = false;
+  var isLoggedIn = false;
+  var currentAuth0Id = null;
+  var currentRole = null;
+  var commentEventId = null;
+  var followingIds = []; // auth0_ids the current user follows
+
+  // Lightbox state
+  var lightboxPhotos = [];
+  var lightboxIdx = 0;
+
+  /* ── Labels ── */
+  var CAT_LABELS = { coins:'Coins & Bullion', pokemon:'Pokemon', sports_cards:'Sports Cards', shoes:'Shoes' };
+  var TYPE_LABELS = { wishlist:'Wishlist', collection:'Collection', inventory:'For Sale' };
+  var EMOJI_MAP = {
+    fire: '\uD83D\uDD25', heart: '\u2764\uFE0F', eyes: '\uD83D\uDC40',
+    raised_hands: '\uD83D\uDE4C', money: '\uD83D\uDCB0', dart: '\uD83C\uDFAF'
+  };
+  var EMOJI_KEYS = ['fire','heart','eyes','raised_hands','money','dart'];
+
+  /* ── XSS Protection ── */
+  function esc(str){
+    if(!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  /* ── Relative Time ── */
+  function timeAgo(dateStr){
+    var d = new Date(dateStr);
+    var now = new Date();
+    var diff = Math.floor((now - d) / 1000);
+    if(diff < 60) return 'just now';
+    if(diff < 3600) return Math.floor(diff/60) + 'm ago';
+    if(diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    if(diff < 604800) return Math.floor(diff/86400) + 'd ago';
+    return d.toLocaleDateString();
+  }
+
+  /* ── Init ── */
+  async function init(){
+    setupFilters();
+    await loadFeed(false);
+    trackCIO('feed_viewed', {});
+
+    // Check auth state
+    if(window.snAuth){
+      try {
+        isLoggedIn = await snAuth.isLoggedIn();
+        if(isLoggedIn){
+          var user = await snAuth.getUser();
+          currentAuth0Id = user ? user.sub : null;
+        }
+      } catch(e){}
+    }
+
+    // Listen for profile ready (gives us role)
+    window.addEventListener('snauth:ready', function(e){
+      isLoggedIn = true;
+      var profile = e.detail && e.detail.profile;
+      if(profile){
+        currentAuth0Id = profile.auth0_id;
+        currentRole = profile.role;
+      }
+    });
+
+    // Deep-link via hash
+    handleDeepLink();
+  }
+
+  /* ── Setup Filter Buttons ── */
+  function setupFilters(){
+    var typeContainer = document.getElementById('feedTypeFilters');
+    if(typeContainer){
+      typeContainer.addEventListener('click', function(e){
+        var btn = e.target.closest('.feed-filter');
+        if(!btn) return;
+        typeContainer.querySelectorAll('.feed-filter').forEach(function(b){ b.classList.remove('active') });
+        btn.classList.add('active');
+        activeType = btn.getAttribute('data-filter') || '';
+        resetAndLoad();
+      });
+    }
+
+    var catContainer = document.getElementById('feedCatFilters');
+    if(catContainer){
+      catContainer.addEventListener('click', function(e){
+        var btn = e.target.closest('.feed-cat-filter');
+        if(!btn) return;
+        catContainer.querySelectorAll('.feed-cat-filter').forEach(function(b){ b.classList.remove('active') });
+        btn.classList.add('active');
+        activeCat = btn.getAttribute('data-cat') || '';
+        resetAndLoad();
+      });
+    }
+  }
+
+  function resetAndLoad(){
+    feedEvents = [];
+    nextCursor = null;
+    document.getElementById('feedItems').innerHTML = '';
+    loadFeed(false);
+  }
+
+  /* ── Load Feed ── */
+  async function loadFeed(append){
+    if(isLoading || !window.snProfile) return;
+    isLoading = true;
+
+    var loadingEl = document.getElementById('feedLoading');
+    var emptyEl = document.getElementById('feedEmpty');
+    var loadMoreEl = document.getElementById('feedLoadMore');
+    var loadMoreBtn = document.getElementById('feedLoadMoreBtn');
+
+    if(!append){
+      loadingEl.style.display = '';
+      emptyEl.style.display = 'none';
+    }
+    if(loadMoreBtn) loadMoreBtn.textContent = 'Loading...';
+    if(loadMoreBtn) loadMoreBtn.disabled = true;
+
+    try {
+      // Build feed params — "following" filter is special
+      var feedType = activeType === 'following' ? '' : activeType;
+      var isFollowingFilter = activeType === 'following';
+
+      // If Following filter but not logged in, show empty with message
+      if(isFollowingFilter && !isLoggedIn){
+        loadingEl.style.display = 'none';
+        emptyEl.style.display = '';
+        var emptyIcon = emptyEl.querySelector('.feed-empty-icon');
+        var emptyP = emptyEl.querySelector('p');
+        if(emptyIcon) emptyIcon.textContent = '\uD83D\uDC65';
+        if(emptyP) emptyP.innerHTML = '<a href="#" onclick="window.snAuth && snAuth.login();return false" style="color:var(--blue)">Log in</a> to see posts from people you follow.';
+        loadMoreEl.style.display = 'none';
+        isLoading = false;
+        if(loadMoreBtn){ loadMoreBtn.textContent = 'Load More'; loadMoreBtn.disabled = false; }
+        return;
+      }
+
+      var result = await snProfile.getFeed(
+        append ? nextCursor : null,
+        activeCat,
+        feedType,
+        isFollowingFilter
+      );
+
+      var events = result.events || [];
+      nextCursor = result.next_cursor || null;
+
+      // Track following_ids from response
+      if(result.following_ids){
+        if(!append){
+          followingIds = result.following_ids;
+        } else {
+          // Merge new following_ids
+          for(var fi = 0; fi < result.following_ids.length; fi++){
+            if(followingIds.indexOf(result.following_ids[fi]) === -1){
+              followingIds.push(result.following_ids[fi]);
+            }
+          }
+        }
+      }
+
+      if(append){
+        feedEvents = feedEvents.concat(events);
+      } else {
+        feedEvents = events;
+      }
+
+      renderFeed(append ? events : feedEvents, append);
+
+      // Show/hide states
+      loadingEl.style.display = 'none';
+      if(feedEvents.length === 0){
+        emptyEl.style.display = '';
+        // Reset empty state text
+        var emptyIcon2 = emptyEl.querySelector('.feed-empty-icon');
+        var emptyP2 = emptyEl.querySelector('p');
+        if(isFollowingFilter){
+          if(emptyIcon2) emptyIcon2.textContent = '\uD83D\uDC65';
+          if(emptyP2) emptyP2.textContent = 'No posts from people you follow yet. Follow some collectors!';
+        } else {
+          if(emptyIcon2) emptyIcon2.textContent = '\uD83D\uDCF0';
+          if(emptyP2) emptyP2.textContent = 'No activity yet. Be the first to add something!';
+        }
+      } else {
+        emptyEl.style.display = 'none';
+      }
+
+      if(nextCursor){
+        loadMoreEl.style.display = '';
+      } else {
+        loadMoreEl.style.display = 'none';
+      }
+    } catch(err){
+      console.warn('Feed load error:', err);
+      loadingEl.style.display = 'none';
+    }
+
+    if(loadMoreBtn){
+      loadMoreBtn.textContent = 'Load More';
+      loadMoreBtn.disabled = false;
+    }
+    isLoading = false;
+  }
+
+  /* ── Render Feed Items ── */
+  function renderFeed(events, append){
+    var container = document.getElementById('feedItems');
+    var html = '';
+
+    for(var i = 0; i < events.length; i++){
+      html += renderCard(events[i]);
+    }
+
+    if(append){
+      container.insertAdjacentHTML('beforeend', html);
+    } else {
+      container.innerHTML = html;
+    }
+  }
+
+  /* ── Render Single Card ── */
+  function renderCard(ev){
+    var h = '<div class="feed-card" id="event-' + esc(ev.id) + '">';
+
+    // Header: avatar + author + time + type badge
+    h += '<div class="feed-card-header">';
+    if(ev.author_avatar_url){
+      h += '<img class="feed-card-avatar" src="' + esc(ev.author_avatar_url) + '" alt="" />';
+    } else {
+      var initial = (ev.author_display_name || ev.author_username || '?').charAt(0).toUpperCase();
+      h += '<div class="feed-card-avatar-initials">' + esc(initial) + '</div>';
+    }
+    h += '<div class="feed-card-author">';
+    h += '<div class="feed-card-name">' + esc(ev.author_display_name || ev.author_username || 'Collector') + '</div>';
+    h += '<div style="display:flex;align-items:center;gap:4px">';
+    if(ev.author_username){
+      h += '<a class="feed-card-username" href="/collector.html?u=' + encodeURIComponent(ev.author_username) + '">@' + esc(ev.author_username) + '</a>';
+    }
+    // Follow button (don't show on own posts)
+    if(ev.auth0_id && ev.auth0_id !== currentAuth0Id){
+      var isFollowed = followingIds.indexOf(ev.auth0_id) !== -1;
+      if(isFollowed){
+        h += '<button class="feed-follow-btn following" data-auth0="' + esc(ev.auth0_id) + '" onclick="window._feedToggleFollow(this,\'' + esc(ev.auth0_id) + '\')" onmouseenter="this.textContent=\'Unfollow\'" onmouseleave="this.textContent=\'Following \u2713\'">';
+        h += 'Following \u2713</button>';
+      } else if(isLoggedIn){
+        h += '<button class="feed-follow-btn" data-auth0="' + esc(ev.auth0_id) + '" onclick="window._feedToggleFollow(this,\'' + esc(ev.auth0_id) + '\')">';
+        h += 'Follow</button>';
+      }
+    }
+    h += '</div>';
+    h += '</div>';
+    h += '<span class="feed-card-time">' + timeAgo(ev.created_at) + '</span>';
+    h += '<span class="feed-type-badge feed-type-' + esc(ev.event_type) + '">' + esc(TYPE_LABELS[ev.event_type] || ev.event_type) + '</span>';
+    h += '</div>';
+
+    // Tags: category + detail tags
+    h += '<div class="feed-card-tags">';
+    h += '<span class="feed-badge-cat feed-badge-' + esc(ev.category) + '">' + esc(CAT_LABELS[ev.category] || ev.category) + '</span>';
+    var details = ev.details || {};
+    for(var key in details){
+      if(details[key] && key !== 'size'){
+        h += '<span class="feed-detail-tag">' + esc(details[key]) + '</span>';
+      }
+    }
+    if(details.size){
+      h += '<span class="feed-detail-tag">Size: ' + esc(details.size) + '</span>';
+    }
+    h += '</div>';
+
+    // Photos (if any)
+    var photos = ev.photo_urls || [];
+    if(photos.length > 0){
+      h += '<div class="feed-card-photos">';
+      for(var p = 0; p < photos.length; p++){
+        h += '<img class="feed-card-thumb" src="' + esc(photos[p]) + '" alt="Photo" onclick="window._feedOpenLightbox(\'' + esc(ev.id) + '\',' + p + ')"/>';
+      }
+      h += '</div>';
+    }
+
+    // Description
+    if(ev.description){
+      h += '<p class="feed-card-desc">' + esc(ev.description) + '</p>';
+    }
+
+    // Inventory: price + quantity
+    if(ev.event_type === 'inventory'){
+      var priceInfo = '';
+      if(ev.details && ev.details.price_range) priceInfo += 'Price: ' + esc(ev.details.price_range);
+      // Also check top-level fields from feed event (inventory may store price_range in details)
+      if(!priceInfo && ev.host_name){
+        priceInfo = 'Listed by ' + esc(ev.host_name);
+      }
+      if(priceInfo){
+        h += '<div class="feed-card-price">' + priceInfo + '</div>';
+      }
+    }
+
+    // Reaction bar
+    h += '<div class="feed-reactions">';
+    var counts = ev.reaction_counts || {};
+    for(var e = 0; e < EMOJI_KEYS.length; e++){
+      var ek = EMOJI_KEYS[e];
+      var cnt = counts[ek] || 0;
+      var isActive = ev.user_reaction === ek ? ' active' : '';
+      h += '<button class="feed-reaction-btn' + isActive + '" onclick="window._feedReact(\'' + esc(ev.id) + '\',\'' + ek + '\')" title="' + ek.replace('_',' ') + '">';
+      h += '<span>' + EMOJI_MAP[ek] + '</span>';
+      if(cnt > 0) h += '<span class="feed-reaction-count">' + cnt + '</span>';
+      h += '</button>';
+    }
+    h += '</div>';
+
+    // Action bar: comments + share
+    h += '<div class="feed-actions">';
+    var cc = ev.comment_count || 0;
+    h += '<button class="feed-action-btn" onclick="window._feedOpenComments(\'' + esc(ev.id) + '\')">';
+    h += '\uD83D\uDCAC ' + cc + ' comment' + (cc !== 1 ? 's' : '');
+    h += '</button>';
+    h += '<button class="feed-action-btn" onclick="window._feedShare(\'' + esc(ev.id) + '\',\'' + esc(ev.event_type) + '\')">';
+    h += '\uD83D\uDCE4 Share';
+    h += '</button>';
+    h += '</div>';
+
+    h += '</div>';
+    return h;
+  }
+
+  /* ── Reaction Handler ── */
+  async function handleReact(eventId, emoji){
+    if(!isLoggedIn){
+      showLoginTooltip(eventId);
+      return;
+    }
+
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) return;
+
+      var result = await snProfile.feedReact(eventId, emoji, token);
+
+      // Update local state
+      for(var i = 0; i < feedEvents.length; i++){
+        if(feedEvents[i].id === eventId){
+          feedEvents[i].reaction_counts = result.reaction_counts;
+          feedEvents[i].user_reaction = result.user_reaction;
+          break;
+        }
+      }
+
+      // Re-render just the reaction bar
+      updateReactionBar(eventId, result.reaction_counts, result.user_reaction);
+      trackCIO('feed_reaction', { event_id: eventId, emoji: emoji });
+    } catch(err){
+      console.warn('Reaction error:', err);
+    }
+  }
+
+  function updateReactionBar(eventId, counts, userReaction){
+    var card = document.getElementById('event-' + eventId);
+    if(!card) return;
+    var bar = card.querySelector('.feed-reactions');
+    if(!bar) return;
+
+    var h = '';
+    for(var e = 0; e < EMOJI_KEYS.length; e++){
+      var ek = EMOJI_KEYS[e];
+      var cnt = (counts && counts[ek]) || 0;
+      var isActive = userReaction === ek ? ' active' : '';
+      h += '<button class="feed-reaction-btn' + isActive + '" onclick="window._feedReact(\'' + esc(eventId) + '\',\'' + ek + '\')" title="' + ek.replace('_',' ') + '">';
+      h += '<span>' + EMOJI_MAP[ek] + '</span>';
+      if(cnt > 0) h += '<span class="feed-reaction-count">' + cnt + '</span>';
+      h += '</button>';
+    }
+    bar.innerHTML = h;
+  }
+
+  function showLoginTooltip(eventId){
+    var card = document.getElementById('event-' + eventId);
+    if(!card) return;
+    var bar = card.querySelector('.feed-reactions');
+    if(!bar) return;
+
+    // Remove any existing tooltip
+    var existing = bar.querySelector('.feed-login-tooltip');
+    if(existing) existing.remove();
+
+    bar.style.position = 'relative';
+    var tip = document.createElement('div');
+    tip.className = 'feed-login-tooltip';
+    tip.innerHTML = '<a onclick="window.snAuth && snAuth.login()">Log in</a> to react';
+    bar.appendChild(tip);
+
+    setTimeout(function(){ tip.remove() }, 3000);
+  }
+
+  /* ── Comments ── */
+  async function openComments(eventId){
+    commentEventId = eventId;
+
+    var overlay = document.getElementById('feedCommentsOverlay');
+    var list = document.getElementById('feedCommentsList');
+    var inputArea = document.getElementById('feedCommentsInput');
+    var loginArea = document.getElementById('feedCommentsLogin');
+
+    overlay.classList.add('open');
+    list.innerHTML = '<div class="feed-comments-empty">Loading comments...</div>';
+
+    // Show/hide input vs login
+    if(isLoggedIn){
+      inputArea.style.display = '';
+      loginArea.style.display = 'none';
+    } else {
+      inputArea.style.display = 'none';
+      loginArea.style.display = '';
+    }
+
+    // Fetch event detail with comments
+    try {
+      var result = await snProfile.getFeedEventDetail(eventId);
+      var comments = result.comments || [];
+      renderComments(comments);
+    } catch(err){
+      list.innerHTML = '<div class="feed-comments-empty">Failed to load comments</div>';
+    }
+  }
+
+  function renderComments(comments){
+    var list = document.getElementById('feedCommentsList');
+    if(comments.length === 0){
+      list.innerHTML = '<div class="feed-comments-empty">No comments yet. Be the first!</div>';
+      return;
+    }
+
+    var h = '';
+    for(var i = 0; i < comments.length; i++){
+      var c = comments[i];
+      h += '<div class="feed-comment">';
+
+      // Avatar
+      if(c.author_avatar_url){
+        h += '<img class="feed-comment-avatar" src="' + esc(c.author_avatar_url) + '" alt="" />';
+      } else {
+        var ci = (c.author_display_name || c.author_username || '?').charAt(0).toUpperCase();
+        h += '<div class="feed-comment-avatar-initials">' + esc(ci) + '</div>';
+      }
+
+      h += '<div class="feed-comment-body">';
+      h += '<div class="feed-comment-meta">';
+      h += '<span class="feed-comment-author">@' + esc(c.author_username || 'user') + '</span>';
+      h += '<span class="feed-comment-time">' + timeAgo(c.created_at) + '</span>';
+
+      // Delete button (own comment or admin)
+      if(isLoggedIn && (c.auth0_id === currentAuth0Id || currentRole === 'admin')){
+        h += '<button class="feed-comment-delete" onclick="window._feedDeleteComment(\'' + esc(c.id) + '\')">delete</button>';
+      }
+
+      h += '</div>';
+      h += '<div class="feed-comment-text">' + esc(c.body) + '</div>';
+      h += '</div>';
+      h += '</div>';
+    }
+
+    list.innerHTML = h;
+  }
+
+  function closeComments(){
+    var overlay = document.getElementById('feedCommentsOverlay');
+    overlay.classList.remove('open');
+    commentEventId = null;
+    document.getElementById('feedCommentBody').value = '';
+  }
+
+  async function submitComment(){
+    if(!isLoggedIn || !commentEventId) return;
+
+    var body = document.getElementById('feedCommentBody').value.trim();
+    if(!body) return;
+
+    var btn = document.getElementById('feedCommentSubmit');
+    btn.disabled = true;
+    btn.textContent = 'Posting...';
+
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) return;
+
+      await snProfile.feedCommentAdd(commentEventId, body, token);
+
+      // Clear input
+      document.getElementById('feedCommentBody').value = '';
+
+      // Update comment count in local state
+      for(var i = 0; i < feedEvents.length; i++){
+        if(feedEvents[i].id === commentEventId){
+          feedEvents[i].comment_count = (feedEvents[i].comment_count || 0) + 1;
+          // Update the comment count button in the card
+          var card = document.getElementById('event-' + commentEventId);
+          if(card){
+            var actionBtns = card.querySelectorAll('.feed-action-btn');
+            if(actionBtns[0]){
+              var cc = feedEvents[i].comment_count;
+              actionBtns[0].innerHTML = '\uD83D\uDCAC ' + cc + ' comment' + (cc !== 1 ? 's' : '');
+            }
+          }
+          break;
+        }
+      }
+
+      // Reload comments
+      var result = await snProfile.getFeedEventDetail(commentEventId);
+      renderComments(result.comments || []);
+      trackCIO('feed_comment', { event_id: commentEventId });
+    } catch(err){
+      console.warn('Comment submit error:', err);
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Post';
+  }
+
+  async function deleteComment(commentId){
+    if(!isLoggedIn) return;
+
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) return;
+
+      await snProfile.feedCommentDelete(commentId, token);
+
+      // Update comment count
+      if(commentEventId){
+        for(var i = 0; i < feedEvents.length; i++){
+          if(feedEvents[i].id === commentEventId){
+            feedEvents[i].comment_count = Math.max(0, (feedEvents[i].comment_count || 0) - 1);
+            var card = document.getElementById('event-' + commentEventId);
+            if(card){
+              var actionBtns = card.querySelectorAll('.feed-action-btn');
+              if(actionBtns[0]){
+                var cc = feedEvents[i].comment_count;
+                actionBtns[0].innerHTML = '\uD83D\uDCAC ' + cc + ' comment' + (cc !== 1 ? 's' : '');
+              }
+            }
+            break;
+          }
+        }
+
+        // Reload comments
+        var result = await snProfile.getFeedEventDetail(commentEventId);
+        renderComments(result.comments || []);
+      }
+    } catch(err){
+      console.warn('Comment delete error:', err);
+    }
+  }
+
+  /* ── Share ── */
+  function shareFeedItem(eventId, eventType){
+    var typeName = TYPE_LABELS[eventType] || 'item';
+    var shareUrl = window.location.origin + '/feed.html#event-' + eventId;
+    var shareText = 'Check out this ' + typeName.toLowerCase() + ' on Safe Network! ' + shareUrl;
+
+    if(navigator.share){
+      navigator.share({
+        title: 'Safe Network - ' + typeName,
+        text: 'Check out this ' + typeName.toLowerCase() + ' on Safe Network!',
+        url: shareUrl
+      }).catch(function(){});
+    } else {
+      // Clipboard fallback
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(shareText).then(function(){
+          showShareToast();
+        }).catch(function(){
+          fallbackCopy(shareText);
+        });
+      } else {
+        fallbackCopy(shareText);
+      }
+    }
+
+    trackCIO('feed_shared', { event_id: eventId, event_type: eventType });
+  }
+
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showShareToast(); } catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  function showShareToast(){
+    var toast = document.getElementById('feedShareToast');
+    toast.classList.add('visible');
+    setTimeout(function(){ toast.classList.remove('visible') }, 2500);
+  }
+
+  /* ── Lightbox ── */
+  function openLightbox(eventId, photoIndex){
+    // Find event to get photos
+    for(var i = 0; i < feedEvents.length; i++){
+      if(feedEvents[i].id === eventId){
+        lightboxPhotos = feedEvents[i].photo_urls || [];
+        break;
+      }
+    }
+    if(lightboxPhotos.length === 0) return;
+
+    lightboxIdx = photoIndex || 0;
+    showLightboxPhoto();
+    document.getElementById('feedLightbox').classList.add('open');
+  }
+
+  function closeLightbox(){
+    document.getElementById('feedLightbox').classList.remove('open');
+    lightboxPhotos = [];
+    lightboxIdx = 0;
+  }
+
+  function lightboxNav(dir){
+    lightboxIdx += dir;
+    if(lightboxIdx < 0) lightboxIdx = lightboxPhotos.length - 1;
+    if(lightboxIdx >= lightboxPhotos.length) lightboxIdx = 0;
+    showLightboxPhoto();
+  }
+
+  function showLightboxPhoto(){
+    document.getElementById('feedLightboxImg').src = lightboxPhotos[lightboxIdx];
+    document.getElementById('feedLightboxCounter').textContent = (lightboxIdx + 1) + ' / ' + lightboxPhotos.length;
+    // Hide nav if single photo
+    var prevBtn = document.querySelector('.feed-lightbox-prev');
+    var nextBtn = document.querySelector('.feed-lightbox-next');
+    if(lightboxPhotos.length <= 1){
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+    } else {
+      prevBtn.style.display = '';
+      nextBtn.style.display = '';
+    }
+  }
+
+  // Keyboard controls
+  document.addEventListener('keydown', function(e){
+    var lb = document.getElementById('feedLightbox');
+    if(lb && lb.classList.contains('open')){
+      if(e.key === 'Escape') closeLightbox();
+      if(e.key === 'ArrowLeft') lightboxNav(-1);
+      if(e.key === 'ArrowRight') lightboxNav(1);
+      return;
+    }
+    var co = document.getElementById('feedCommentsOverlay');
+    if(co && co.classList.contains('open')){
+      if(e.key === 'Escape') closeComments();
+    }
+  });
+
+  // Close comments on backdrop click
+  document.getElementById('feedCommentsOverlay').addEventListener('click', function(e){
+    if(e.target === this) closeComments();
+  });
+
+  // Close lightbox on backdrop click
+  document.getElementById('feedLightbox').addEventListener('click', function(e){
+    if(e.target === this) closeLightbox();
+  });
+
+  /* ── Deep Link ── */
+  function handleDeepLink(){
+    var hash = window.location.hash;
+    if(hash && hash.startsWith('#event-')){
+      setTimeout(function(){
+        var el = document.getElementById(hash.slice(1));
+        if(el){
+          el.scrollIntoView({ behavior:'smooth', block:'center' });
+          el.classList.add('highlight');
+        }
+      }, 800);
+    }
+  }
+
+  /* ── CIO Tracking ── */
+  function trackCIO(event, data){
+    try {
+      if(window.cioanalytics) cioanalytics.track(event, data);
+    } catch(e){}
+  }
+
+  /* ── Follow/Unfollow on Feed Cards ── */
+  async function toggleFollow(btn, targetAuth0Id){
+    if(!isLoggedIn){
+      showLoginTooltip(''); // generic
+      return;
+    }
+    btn.disabled = true;
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) return;
+
+      var wasFollowing = followingIds.indexOf(targetAuth0Id) !== -1;
+
+      if(wasFollowing){
+        await snProfile.unfollow(targetAuth0Id, token);
+        // Remove from local tracking
+        followingIds = followingIds.filter(function(id){ return id !== targetAuth0Id });
+        btn.className = 'feed-follow-btn';
+        btn.textContent = 'Follow';
+        btn.onmouseenter = null;
+        btn.onmouseleave = null;
+        trackCIO('feed_unfollow', { target: targetAuth0Id });
+      } else {
+        await snProfile.follow(targetAuth0Id, token);
+        // Add to local tracking
+        followingIds.push(targetAuth0Id);
+        btn.className = 'feed-follow-btn following';
+        btn.textContent = 'Following \u2713';
+        btn.onmouseenter = function(){ btn.textContent = 'Unfollow' };
+        btn.onmouseleave = function(){ btn.textContent = 'Following \u2713' };
+        trackCIO('feed_follow', { target: targetAuth0Id });
+      }
+
+      // Update all cards from same author
+      var allBtns = document.querySelectorAll('.feed-follow-btn[data-auth0="' + targetAuth0Id + '"]');
+      for(var i = 0; i < allBtns.length; i++){
+        if(allBtns[i] === btn) continue;
+        if(wasFollowing){
+          allBtns[i].className = 'feed-follow-btn';
+          allBtns[i].textContent = 'Follow';
+          allBtns[i].onmouseenter = null;
+          allBtns[i].onmouseleave = null;
+        } else {
+          allBtns[i].className = 'feed-follow-btn following';
+          allBtns[i].textContent = 'Following \u2713';
+          allBtns[i].onmouseenter = function(){ this.textContent = 'Unfollow' };
+          allBtns[i].onmouseleave = function(){ this.textContent = 'Following \u2713' };
+        }
+      }
+    } catch(err){
+      console.warn('Follow toggle error:', err);
+    }
+    btn.disabled = false;
+  }
+
+  /* ── Public API (for onclick handlers) ── */
+  window._feedLoadMore = function(){ loadFeed(true) };
+  window._feedReact = handleReact;
+  window._feedOpenComments = openComments;
+  window._feedCloseComments = closeComments;
+  window._feedSubmitComment = submitComment;
+  window._feedDeleteComment = deleteComment;
+  window._feedShare = shareFeedItem;
+  window._feedOpenLightbox = openLightbox;
+  window._feedCloseLightbox = closeLightbox;
+  window._feedLightboxNav = lightboxNav;
+  window._feedToggleFollow = toggleFollow;
+
+  /* ── Boot ── */
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

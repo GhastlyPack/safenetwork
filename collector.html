@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="/css/profile.css">
 <link rel="stylesheet" href="/css/collector.css">
 <link rel="stylesheet" href="/css/collection.css">
+<link rel="stylesheet" href="/css/feed.css">
 <link rel="stylesheet" href="/css/cookies.css">
 <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -28,6 +29,7 @@
   </a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
+    <li><a href="/feed.html">Feed</a></li>
     <li><a href="/#shows">Shows</a></li>
     <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
     <li><a href="/#socials">Links</a></li>
@@ -52,6 +54,7 @@
 
 <ul class="mobile-menu" id="mobileMenu">
   <li><a href="/">Home</a></li>
+  <li><a href="/feed.html" onclick="toggleMenu()">Feed</a></li>
   <li><a href="/#shows">Shows</a></li>
   <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
   <li><a href="/#socials">Links</a></li>
@@ -88,6 +91,13 @@
     </div>
     <div class="collector-name" id="collectorName">-</div>
     <div class="collector-username" id="collectorUsername">@-</div>
+
+    <div class="follow-counts" id="collectorFollowCounts" style="display:none">
+      <span><strong id="collectorFollowerCount">0</strong> Followers</span>
+      <span><strong id="collectorFollowingCount">0</strong> Following</span>
+    </div>
+
+    <div id="collectorFollowBtnWrap" style="display:none;text-align:center;margin:8px 0"></div>
 
     <div class="collector-badges" id="collectorBadges"></div>
 
@@ -207,9 +217,10 @@
     renderProfile(profile);
     showSection('collectorProfile');
 
-    // Fetch public wishlist + collection
+    // Fetch public wishlist + collection + follow data
     loadPublicWishlist(username);
     loadPublicCollection(username);
+    loadFollowData(profile);
   }
 
   /* ── Render Profile ── */
@@ -402,6 +413,105 @@
     } catch(err){
       console.warn('Public collection load error:', err);
     }
+  }
+
+  /* ── Follow Data ── */
+  var collectorAuth0Id = null;
+  var collectorIsFollowing = false;
+
+  async function loadFollowData(profile){
+    try {
+      // Get followers — this returns auth0_id of the profile owner + follower list
+      var followersResult = await snProfile.getFollowers(profile.username);
+      collectorAuth0Id = followersResult.auth0_id || null;
+
+      // Show follower/following counts from profile data
+      var countsEl = document.getElementById('collectorFollowCounts');
+      document.getElementById('collectorFollowerCount').textContent = followersResult.count || 0;
+      document.getElementById('collectorFollowingCount').textContent = profile.following_count || 0;
+      countsEl.style.display = '';
+
+      // Check if logged in and not own profile
+      if(!window.snAuth || !collectorAuth0Id) return;
+      var loggedIn = false;
+      try { loggedIn = await snAuth.isLoggedIn(); } catch(e){}
+      if(!loggedIn) return;
+
+      var cached = window.snProfile ? snProfile.getCachedProfile() : null;
+      if(!cached) return;
+
+      // Don't show follow button on own profile
+      if(cached.username === profile.username) return;
+
+      // Check if already following
+      try {
+        var token = await snAuth.getAccessToken();
+        if(token){
+          collectorIsFollowing = await snProfile.isFollowing(collectorAuth0Id, token);
+        }
+      } catch(e){}
+
+      // Show follow button
+      renderFollowButton(profile.username);
+    } catch(e){
+      console.warn('Follow data error:', e);
+      // Still show counts from profile if available
+      var countsEl2 = document.getElementById('collectorFollowCounts');
+      document.getElementById('collectorFollowerCount').textContent = profile.follower_count || 0;
+      document.getElementById('collectorFollowingCount').textContent = profile.following_count || 0;
+      countsEl2.style.display = '';
+    }
+  }
+
+  function renderFollowButton(username){
+    var wrap = document.getElementById('collectorFollowBtnWrap');
+    if(!collectorAuth0Id){
+      // We couldn't get the auth0_id, hide button
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = '';
+    var btn = document.createElement('button');
+    btn.className = 'collector-follow-btn' + (collectorIsFollowing ? ' following' : '');
+    btn.textContent = collectorIsFollowing ? 'Following \u2713' : 'Follow';
+
+    if(collectorIsFollowing){
+      btn.onmouseenter = function(){ btn.textContent = 'Unfollow'; };
+      btn.onmouseleave = function(){ btn.textContent = 'Following \u2713'; };
+    }
+
+    btn.addEventListener('click', async function(){
+      btn.disabled = true;
+      try {
+        var token = await snAuth.getAccessToken();
+        if(!token) return;
+        if(collectorIsFollowing){
+          await snProfile.unfollow(collectorAuth0Id, token);
+          collectorIsFollowing = false;
+          btn.className = 'collector-follow-btn';
+          btn.textContent = 'Follow';
+          btn.onmouseenter = null;
+          btn.onmouseleave = null;
+          var fc = document.getElementById('collectorFollowerCount');
+          fc.textContent = Math.max(0, parseInt(fc.textContent) - 1);
+        } else {
+          await snProfile.follow(collectorAuth0Id, token);
+          collectorIsFollowing = true;
+          btn.className = 'collector-follow-btn following';
+          btn.textContent = 'Following \u2713';
+          btn.onmouseenter = function(){ btn.textContent = 'Unfollow'; };
+          btn.onmouseleave = function(){ btn.textContent = 'Following \u2713'; };
+          var fc2 = document.getElementById('collectorFollowerCount');
+          fc2.textContent = parseInt(fc2.textContent) + 1;
+        }
+      } catch(err){
+        console.warn('Follow toggle error:', err);
+      }
+      btn.disabled = false;
+    });
+
+    wrap.innerHTML = '';
+    wrap.appendChild(btn);
   }
 
   /* ── Public Collection Lightbox ── */

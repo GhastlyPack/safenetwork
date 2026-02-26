@@ -382,6 +382,240 @@
     }
   }
 
+  /* ── Feed: Get Public Feed (optional auth for user_reaction) ── */
+  async function getFeed(cursor, category, eventType, followingOnly){
+    try {
+      var headers = { 'Content-Type': 'application/json' };
+      if(window.snAuth){
+        try {
+          var token = await snAuth.getAccessToken();
+          if(token) headers['Authorization'] = 'Bearer ' + token;
+        } catch(e){}
+      }
+      var feedData = { cursor: cursor || null, category: category || '', event_type: eventType || '' };
+      if(followingOnly) feedData.following_only = true;
+      var res = await fetch(EDGE_FN_URL, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ action: 'feed-get', data: feedData })
+      });
+      var json = await res.json();
+      if(!res.ok || json.error) return { events: [], next_cursor: null, following_ids: [] };
+      return json;
+    } catch(err){
+      console.warn('Feed get error:', err);
+      return { events: [], next_cursor: null, following_ids: [] };
+    }
+  }
+
+  /* ── Feed: Get Event Detail with Comments ── */
+  async function getFeedEventDetail(feedEventId){
+    try {
+      var headers = { 'Content-Type': 'application/json' };
+      if(window.snAuth){
+        try {
+          var token = await snAuth.getAccessToken();
+          if(token) headers['Authorization'] = 'Bearer ' + token;
+        } catch(e){}
+      }
+      var res = await fetch(EDGE_FN_URL, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ action: 'feed-event-detail', data: { feed_event_id: feedEventId } })
+      });
+      var json = await res.json();
+      if(!res.ok || json.error) return { event: null, comments: [] };
+      return json;
+    } catch(err){
+      console.warn('Feed event detail error:', err);
+      return { event: null, comments: [] };
+    }
+  }
+
+  /* ── Feed: React ── */
+  async function feedReact(feedEventId, emoji, accessToken){
+    try {
+      var result = await callEdge('feed-react', { feed_event_id: feedEventId, emoji: emoji }, accessToken);
+      return result;
+    } catch(err){
+      console.warn('Feed react error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Feed: Add Comment ── */
+  async function feedCommentAdd(feedEventId, body, accessToken){
+    try {
+      var result = await callEdge('feed-comment-add', { feed_event_id: feedEventId, body: body }, accessToken);
+      return result.comment;
+    } catch(err){
+      console.warn('Feed comment add error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Feed: Delete Comment ── */
+  async function feedCommentDelete(commentId, accessToken){
+    try {
+      var result = await callEdge('feed-comment-delete', { comment_id: commentId }, accessToken);
+      return result.success;
+    } catch(err){
+      console.warn('Feed comment delete error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Inventory: Get Host's Items ── */
+  async function getInventory(accessToken){
+    try {
+      var result = await callEdge('inventory-get', {}, accessToken);
+      return result.items || [];
+    } catch(err){
+      console.warn('Inventory get error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Inventory: Add Item ── */
+  async function addInventoryItem(data, accessToken){
+    try {
+      var result = await callEdge('inventory-add', data, accessToken);
+      return result.item;
+    } catch(err){
+      console.warn('Inventory add error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Inventory: Update Item ── */
+  async function updateInventoryItem(data, accessToken){
+    try {
+      var result = await callEdge('inventory-update', data, accessToken);
+      return result.item;
+    } catch(err){
+      console.warn('Inventory update error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Inventory: Remove Item ── */
+  async function removeInventoryItem(id, accessToken){
+    try {
+      var result = await callEdge('inventory-remove', { id: id }, accessToken);
+      return result.success;
+    } catch(err){
+      console.warn('Inventory remove error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Inventory: Upload Photo ── */
+  async function uploadInventoryPhoto(itemId, base64, contentType, accessToken){
+    try {
+      var result = await callEdge('upload-inventory-photo', {
+        item_id: itemId,
+        base64: base64,
+        content_type: contentType
+      }, accessToken);
+      return result.url;
+    } catch(err){
+      console.warn('Inventory photo upload error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Inventory: Delete Photo ── */
+  async function deleteInventoryPhoto(itemId, photoUrl, accessToken){
+    try {
+      var result = await callEdge('delete-inventory-photo', {
+        item_id: itemId,
+        photo_url: photoUrl
+      }, accessToken);
+      return result.success;
+    } catch(err){
+      console.warn('Inventory photo delete error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Admin: Delete Feed Event ── */
+  async function adminDeleteFeedEvent(feedEventId, accessToken){
+    try {
+      var result = await callEdge('admin-feed-delete', { feed_event_id: feedEventId }, accessToken);
+      return result.success;
+    } catch(err){
+      console.warn('Admin feed delete error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Follow: Follow a User ── */
+  async function follow(targetAuth0Id, accessToken){
+    try {
+      var result = await callEdge('follow', { target_auth0_id: targetAuth0Id }, accessToken);
+      return result;
+    } catch(err){
+      console.warn('Follow error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Follow: Unfollow a User ── */
+  async function unfollow(targetAuth0Id, accessToken){
+    try {
+      var result = await callEdge('unfollow', { target_auth0_id: targetAuth0Id }, accessToken);
+      return result;
+    } catch(err){
+      console.warn('Unfollow error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Follow: Check if Following ── */
+  async function isFollowing(targetAuth0Id, accessToken){
+    try {
+      var result = await callEdge('is-following', { target_auth0_id: targetAuth0Id }, accessToken);
+      return result.following;
+    } catch(err){
+      console.warn('Is-following error:', err);
+      return false;
+    }
+  }
+
+  /* ── Follow: Get Followers (public) ── */
+  async function getFollowers(username){
+    try {
+      var res = await fetch(EDGE_FN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get-followers', data: { username: username } })
+      });
+      var json = await res.json();
+      if(!res.ok || json.error) return { followers: [], count: 0 };
+      return json;
+    } catch(err){
+      console.warn('Get followers error:', err);
+      return { followers: [], count: 0 };
+    }
+  }
+
+  /* ── Follow: Get Following (public) ── */
+  async function getFollowing(username){
+    try {
+      var res = await fetch(EDGE_FN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get-following', data: { username: username } })
+      });
+      var json = await res.json();
+      if(!res.ok || json.error) return { following: [], count: 0 };
+      return json;
+    } catch(err){
+      console.warn('Get following error:', err);
+      return { following: [], count: 0 };
+    }
+  }
+
   /* ── Cache Helpers ── */
   function cacheProfile(){
     try {
@@ -428,7 +662,24 @@
     uploadCollectionPhoto: uploadCollectionPhoto,
     deleteCollectionPhoto: deleteCollectionPhoto,
     getPublicCollection: getPublicCollection,
-    adminListCollections: adminListCollections
+    adminListCollections: adminListCollections,
+    getFeed: getFeed,
+    getFeedEventDetail: getFeedEventDetail,
+    feedReact: feedReact,
+    feedCommentAdd: feedCommentAdd,
+    feedCommentDelete: feedCommentDelete,
+    getInventory: getInventory,
+    addInventoryItem: addInventoryItem,
+    updateInventoryItem: updateInventoryItem,
+    removeInventoryItem: removeInventoryItem,
+    uploadInventoryPhoto: uploadInventoryPhoto,
+    deleteInventoryPhoto: deleteInventoryPhoto,
+    adminDeleteFeedEvent: adminDeleteFeedEvent,
+    follow: follow,
+    unfollow: unfollow,
+    isFollowing: isFollowing,
+    getFollowers: getFollowers,
+    getFollowing: getFollowing
   };
 
   init();

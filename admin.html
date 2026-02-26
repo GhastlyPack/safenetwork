@@ -26,6 +26,7 @@
   </a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
+    <li><a href="/feed.html">Feed</a></li>
     <li><a href="/#shows">Shows</a></li>
     <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
     <li><a href="/#socials">Links</a></li>
@@ -50,6 +51,7 @@
 
 <ul class="mobile-menu" id="mobileMenu">
   <li><a href="/">Home</a></li>
+  <li><a href="/feed.html" onclick="toggleMenu()">Feed</a></li>
   <li><a href="/#shows">Shows</a></li>
   <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
   <li><a href="/#socials">Links</a></li>
@@ -88,6 +90,7 @@
     <button class="admin-tab" id="tabWishes" onclick="switchAdminTab('wishes')">Wishes</button>
     <button class="admin-tab" id="tabSchedule" onclick="switchAdminTab('schedule')">Schedule</button>
     <button class="admin-tab" id="tabCollections" onclick="switchAdminTab('collections')">Collections</button>
+    <button class="admin-tab" id="tabFeed" onclick="switchAdminTab('feed')">Feed</button>
   </div>
 
   <!-- ═══ Users Tab ═══ -->
@@ -323,6 +326,69 @@
     </div>
 
   </div><!-- /adminTabCollections -->
+
+  <!-- ═══ Feed Tab ═══ -->
+  <div id="adminTabFeed" style="display:none">
+
+    <!-- Feed Stats -->
+    <div class="admin-stats">
+      <div class="stat-card blue">
+        <div class="stat-number" id="feedStatTotal">-</div>
+        <div class="stat-label">Total Events</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-number" id="feedStatWishlist">-</div>
+        <div class="stat-label">Wishlists</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-number" id="feedStatCollection">-</div>
+        <div class="stat-label">Collections</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-number" id="feedStatInventory">-</div>
+        <div class="stat-label">Inventory</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="admin-search">
+      <select class="admin-filter" id="feedTypeFilter" onchange="loadAdminFeed()">
+        <option value="">All Types</option>
+        <option value="wishlist">Wishlists</option>
+        <option value="collection">Collections</option>
+        <option value="inventory">Inventory</option>
+      </select>
+      <select class="admin-filter" id="feedCatFilter" onchange="loadAdminFeed()">
+        <option value="">All Categories</option>
+        <option value="coins">Coins &amp; Bullion</option>
+        <option value="pokemon">Pokemon</option>
+        <option value="sports_cards">Sports Cards</option>
+        <option value="shoes">Shoes</option>
+      </select>
+    </div>
+
+    <!-- Feed Table -->
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Author</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th style="text-align:center">Reactions</th>
+            <th style="text-align:center">Comments</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="feedTableBody">
+          <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--silver)">Loading feed events...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /adminTabFeed -->
 
 </div>
 
@@ -618,13 +684,16 @@
     document.getElementById('adminTabWishes').style.display = tab === 'wishes' ? '' : 'none';
     document.getElementById('adminTabSchedule').style.display = tab === 'schedule' ? '' : 'none';
     document.getElementById('adminTabCollections').style.display = tab === 'collections' ? '' : 'none';
+    document.getElementById('adminTabFeed').style.display = tab === 'feed' ? '' : 'none';
     document.getElementById('tabUsers').classList.toggle('active', tab === 'users');
     document.getElementById('tabWishes').classList.toggle('active', tab === 'wishes');
     document.getElementById('tabSchedule').classList.toggle('active', tab === 'schedule');
     document.getElementById('tabCollections').classList.toggle('active', tab === 'collections');
+    document.getElementById('tabFeed').classList.toggle('active', tab === 'feed');
     if(tab === 'wishes' && !wishesLoaded) loadWishes();
     if(tab === 'schedule' && !scheduledShowsLoaded) loadScheduledShows();
     if(tab === 'collections' && !collectionsLoaded) loadAdminCollections();
+    if(tab === 'feed' && !feedEventsLoaded) loadAdminFeed();
   };
 
   window.loadWishes = async function(){
@@ -937,6 +1006,110 @@
   window.debounceCollSearch = function(){
     clearTimeout(collSearchTimer);
     collSearchTimer = setTimeout(loadAdminCollections, 400);
+  };
+
+  /* ══════════════════════════════════════════
+     FEED TAB
+     ══════════════════════════════════════════ */
+
+  var allFeedEvents = [];
+  var feedEventsLoaded = false;
+
+  var FEED_TYPE_LABELS = { wishlist: 'Wishlist', collection: 'Collection', inventory: 'Inventory' };
+  var FEED_CAT_LABELS = { coins: 'Coins & Bullion', pokemon: 'Pokemon', sports_cards: 'Sports Cards', shoes: 'Shoes' };
+
+  window.loadAdminFeed = async function(){
+    var typeFilter = document.getElementById('feedTypeFilter').value;
+    var catFilter = document.getElementById('feedCatFilter').value;
+    try {
+      var token = await snAuth.getAccessToken();
+      // Use the public feed-get endpoint with optional filters
+      // We fetch up to 200 events for admin view
+      var cursor = null;
+      var events = [];
+      for(var page = 0; page < 10; page++){
+        var headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+        var res = await fetch('https://qsoaransrvpabqpwnjdg.supabase.co/functions/v1/profile-sync', {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({ action: 'feed-get', data: { cursor: cursor, category: catFilter || '', event_type: typeFilter || '' } })
+        });
+        var json = await res.json();
+        var batch = json.events || [];
+        events = events.concat(batch);
+        cursor = json.next_cursor;
+        if(!cursor || events.length >= 200) break;
+      }
+      allFeedEvents = events;
+      feedEventsLoaded = true;
+      renderAdminFeed();
+      updateFeedStats();
+    } catch(err){
+      console.warn('Load feed error:', err);
+      document.getElementById('feedTableBody').innerHTML =
+        '<tr><td colspan="8" style="text-align:center;padding:40px;color:#ff6b6b">Error loading feed.</td></tr>';
+    }
+  };
+
+  function renderAdminFeed(){
+    var tbody = document.getElementById('feedTableBody');
+    if(!allFeedEvents.length){
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--silver)">No feed events found.</td></tr>';
+      return;
+    }
+
+    var html = '';
+    allFeedEvents.forEach(function(ev){
+      var date = ev.created_at ? new Date(ev.created_at).toLocaleDateString() : '-';
+      var cat = ev.category || '';
+      var typeLabel = FEED_TYPE_LABELS[ev.event_type] || ev.event_type;
+      var catLabel = FEED_CAT_LABELS[cat] || cat;
+
+      // Type badge color
+      var typeColor = ev.event_type === 'wishlist' ? 'var(--blue)' : ev.event_type === 'collection' ? '#4ade80' : 'var(--gold2)';
+
+      // Reaction total
+      var counts = ev.reaction_counts || {};
+      var totalReactions = 0;
+      for(var k in counts) totalReactions += (counts[k] || 0);
+
+      html += '<tr>' +
+        '<td><span style="color:' + typeColor + ';font-weight:700;font-size:11px;text-transform:uppercase">' + escapeHtml(typeLabel) + '</span></td>' +
+        '<td style="color:var(--blue);font-weight:600;font-size:12px">@' + escapeHtml(ev.author_username || '-') + '</td>' +
+        '<td><span class="profile-badge badge-' + escapeHtml(cat) + '" style="font-size:10px">' + escapeHtml(catLabel) + '</span></td>' +
+        '<td style="max-width:200px;font-size:12px">' + escapeHtml((ev.description || '').slice(0, 80)) + '</td>' +
+        '<td style="text-align:center;font-size:12px">' + totalReactions + '</td>' +
+        '<td style="text-align:center;font-size:12px">' + (ev.comment_count || 0) + '</td>' +
+        '<td style="font-size:12px">' + date + '</td>' +
+        '<td><button onclick="deleteAdminFeedEvent(\'' + escapeHtml(ev.id) + '\')" style="background:rgba(255,100,100,.1);border:1px solid rgba(255,100,100,.2);color:#ff6b6b;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">Delete</button></td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  function updateFeedStats(){
+    var total = allFeedEvents.length;
+    var wishlist = 0, collection = 0, inventory = 0;
+    allFeedEvents.forEach(function(ev){
+      if(ev.event_type === 'wishlist') wishlist++;
+      else if(ev.event_type === 'collection') collection++;
+      else if(ev.event_type === 'inventory') inventory++;
+    });
+    document.getElementById('feedStatTotal').textContent = total;
+    document.getElementById('feedStatWishlist').textContent = wishlist;
+    document.getElementById('feedStatCollection').textContent = collection;
+    document.getElementById('feedStatInventory').textContent = inventory;
+  }
+
+  window.deleteAdminFeedEvent = async function(eventId){
+    if(!confirm('Delete this feed event? This will also delete its reactions and comments.')) return;
+    try {
+      var token = await snAuth.getAccessToken();
+      await snProfile.adminDeleteFeedEvent(eventId, token);
+      loadAdminFeed();
+    } catch(err){
+      alert('Error deleting feed event: ' + (err.message || 'Try again'));
+    }
   };
 
   /* ── Helpers ── */

@@ -307,6 +307,16 @@ async function handleWishlistAdd(auth0User: { sub: string; email: string }, data
     .single()
 
   if (error) throw error
+
+  // Create feed event (non-blocking, don't fail the wishlist add)
+  try {
+    await createFeedEvent(
+      auth0User.sub, 'wishlist', item.id, data.category,
+      data.description.trim(), data.description.trim(),
+      data.details || {}, []
+    )
+  } catch (e) { console.warn('Feed event for wishlist error:', e) }
+
   return { item }
 }
 
@@ -670,6 +680,16 @@ async function handleCollectionAdd(auth0User: { sub: string; email: string }, da
     .single()
 
   if (error) throw error
+
+  // Create feed event (photos empty at creation — uploaded separately)
+  try {
+    await createFeedEvent(
+      auth0User.sub, 'collection', item.id, data.category,
+      data.description ? data.description.trim() : '', data.description ? data.description.trim() : '',
+      data.details || {}, []
+    )
+  } catch (e) { console.warn('Feed event for collection error:', e) }
+
   return { item }
 }
 
@@ -913,12 +933,844 @@ async function handleAdminCollections(auth0User: { sub: string; email: string },
 }
 
 /* ── Helper: Extract Storage Path from Public URL ── */
-function extractStoragePath(publicUrl: string): string | null {
-  // Public URLs look like: {SUPABASE_URL}/storage/v1/object/public/collection-photos/{path}
-  const marker = '/collection-photos/'
+function extractStoragePath(publicUrl: string, bucket: string = 'collection-photos'): string | null {
+  const marker = `/${bucket}/`
   const idx = publicUrl.indexOf(marker)
   if (idx === -1) return null
   return publicUrl.slice(idx + marker.length)
+}
+
+/* ══════════════════════════════════════════════
+   FEED EVENT CREATION HELPER
+   ══════════════════════════════════════════════ */
+
+async function createFeedEvent(
+  auth0Id: string,
+  eventType: string,
+  sourceId: string,
+  category: string,
+  title: string,
+  description: string,
+  details: any,
+  photoUrls: string[],
+  hostSlug?: string,
+  hostName?: string
+) {
+  // Fetch profile for denormalized author info
+  const profile = await getProfileByAuth0Id(auth0Id)
+  if (!profile) return null
+  // Skip feed event if user profile is private
+  if (profile.profile_public === false) return null
+
+  const eventData: any = {
+    event_type: eventType,
+    source_id: sourceId,
+    auth0_id: auth0Id,
+    category: category,
+    title: (title || '').slice(0, 80),
+    description: (description || '').slice(0, 500),
+    details: details || {},
+    photo_urls: photoUrls || [],
+    author_username: profile.username || '',
+    author_display_name: profile.display_name || '',
+    author_avatar_url: profile.avatar_url || '',
+    author_role: profile.role || 'shopper',
+  }
+
+  if (hostSlug) eventData.host_slug = hostSlug
+  if (hostName) eventData.host_name = hostName
+
+  const { data: feedEvent, error } = await supabase
+    .from('feed_events')
+    .insert(eventData)
+    .select()
+    .single()
+
+  if (error) {
+    console.warn('Feed event creation error:', error)
+    return null
+  }
+  return feedEvent
+}
+
+/* ══════════════════════════════════════════════
+   INVENTORY HANDLERS
+   ══════════════════════════════════════════════ */
+
+/* ── Action: Get Host Inventory ── */
+async function handleInventoryGet(auth0User: { sub: string; email: string }) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Profile not found')
+
+  const isAdmin = callerProfile.role === 'admin'
+  const isHost = callerProfile.role === 'host' && callerProfile.host_slug
+
+  if (!isAdmin && !isHost) {
+    throw new Error('Unauthorized: only hosts and admins can view inventory')
+  }
+
+  let query = supabase
+    .from('host_inventory')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  // Hosts see only their own, admins see all
+  if (!isAdmin) {
+    query = query.eq('host_slug', callerProfile.host_slug)
+  }
+
+  const { data: items, error } = await query
+  if (error) throw error
+  return { items: items || [] }
+}
+
+/* ── Action: Add Inventory Item ── */
+async function handleInventoryAdd(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Profile not found')
+
+  const isAdmin = callerProfile.role === 'admin'
+  const isHost = callerProfile.role === 'host' && callerProfile.host_slug
+
+  if (!isAdmin && !isHost) {
+    throw new Error('Unauthorized: only hosts and admins can add inventory')
+  }
+
+  if (!data.title || !data.title.trim()) {
+    throw new Error('Title is required')
+  }
+
+  const validCategories = ['coins', 'pokemon', 'sports_cards', 'shoes']
+  if (!data.category || !validCategories.includes(data.category)) {
+    throw new Error('Invalid category')
+  }
+
+  // Determine host_slug
+  let hostSlug = data.host_slug
+  if (!isAdmin) {
+    hostSlug = callerProfile.host_slug
+  }
+  if (!hostSlug) throw new Error('host_slug is required')
+
+  // Get host name for feed event
+  const { data: hostRecord } = await supabase
+    .from('hosts')
+    .select('name')
+    .eq('slug', hostSlug)
+    .maybeSingle()
+
+  const { data: item, error } = await supabase
+    .from('host_inventory')
+    .insert({
+      host_slug: hostSlug,
+      auth0_id: auth0User.sub,
+      category: data.category,
+      title: data.title.trim().slice(0, 200),
+      description: data.description ? data.description.trim().slice(0, 500) : '',
+      details: data.details || {},
+      photo_urls: [],
+      price_range: data.price_range || '',
+      quantity: data.quantity || 1,
+      status: 'available',
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  // Create feed event
+  await createFeedEvent(
+    auth0User.sub,
+    'inventory',
+    item.id,
+    data.category,
+    data.title.trim(),
+    data.description ? data.description.trim() : '',
+    data.details || {},
+    [],
+    hostSlug,
+    hostRecord?.name || hostSlug
+  )
+
+  return { item }
+}
+
+/* ── Action: Update Inventory Item ── */
+async function handleInventoryUpdate(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.id) throw new Error('Item ID is required')
+
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Profile not found')
+
+  const isAdmin = callerProfile.role === 'admin'
+
+  // Get existing item
+  const { data: existing, error: fetchError } = await supabase
+    .from('host_inventory')
+    .select('*')
+    .eq('id', data.id)
+    .single()
+
+  if (fetchError || !existing) throw new Error('Item not found')
+
+  // Ownership check: host can only update own inventory
+  if (!isAdmin && existing.auth0_id !== auth0User.sub) {
+    throw new Error('Unauthorized')
+  }
+
+  const allowedFields = ['title', 'description', 'details', 'category', 'price_range', 'quantity', 'status']
+  const updates: Record<string, any> = {}
+  for (const key of allowedFields) {
+    if (data[key] !== undefined) {
+      updates[key] = data[key]
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    throw new Error('No valid fields to update')
+  }
+
+  // Validate
+  if (updates.category) {
+    const valid = ['coins', 'pokemon', 'sports_cards', 'shoes']
+    if (!valid.includes(updates.category)) throw new Error('Invalid category')
+  }
+  if (updates.status) {
+    const validStatuses = ['available', 'sold', 'reserved']
+    if (!validStatuses.includes(updates.status)) throw new Error('Invalid status')
+  }
+  if (updates.title !== undefined) {
+    if (!updates.title.trim()) throw new Error('Title cannot be empty')
+    updates.title = updates.title.trim().slice(0, 200)
+  }
+  if (updates.description !== undefined) {
+    updates.description = updates.description.trim().slice(0, 500)
+  }
+
+  const { data: item, error } = await supabase
+    .from('host_inventory')
+    .update(updates)
+    .eq('id', data.id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return { item }
+}
+
+/* ── Action: Remove Inventory Item + Cleanup Photos ── */
+async function handleInventoryRemove(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.id) throw new Error('Item ID is required')
+
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Profile not found')
+
+  const isAdmin = callerProfile.role === 'admin'
+
+  const { data: existing, error: fetchError } = await supabase
+    .from('host_inventory')
+    .select('auth0_id, photo_urls')
+    .eq('id', data.id)
+    .single()
+
+  if (fetchError || !existing) throw new Error('Item not found')
+  if (!isAdmin && existing.auth0_id !== auth0User.sub) throw new Error('Unauthorized')
+
+  // Delete photos from Storage
+  const photos: string[] = existing.photo_urls || []
+  for (const url of photos) {
+    try {
+      const path = extractStoragePath(url, 'inventory-photos')
+      if (path) {
+        await supabase.storage.from('inventory-photos').remove([path])
+      }
+    } catch (e) {
+      console.warn('Inventory photo cleanup error:', e)
+    }
+  }
+
+  const { error } = await supabase
+    .from('host_inventory')
+    .delete()
+    .eq('id', data.id)
+
+  if (error) throw error
+  return { success: true }
+}
+
+/* ── Action: Upload Inventory Photo ── */
+async function handleUploadInventoryPhoto(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.item_id) throw new Error('item_id is required')
+  if (!data.base64) throw new Error('base64 image data is required')
+  if (!data.content_type) throw new Error('content_type is required')
+
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Profile not found')
+
+  const isAdmin = callerProfile.role === 'admin'
+
+  const { data: item, error: fetchError } = await supabase
+    .from('host_inventory')
+    .select('auth0_id, photo_urls')
+    .eq('id', data.item_id)
+    .single()
+
+  if (fetchError || !item) throw new Error('Item not found')
+  if (!isAdmin && item.auth0_id !== auth0User.sub) throw new Error('Unauthorized')
+
+  const currentPhotos: string[] = item.photo_urls || []
+  if (currentPhotos.length >= 5) {
+    throw new Error('Maximum 5 photos per inventory item')
+  }
+
+  const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0))
+  if (bytes.length > 5 * 1024 * 1024) {
+    throw new Error('Photo exceeds 5MB limit')
+  }
+
+  const timestamp = Date.now()
+  const ext = data.content_type === 'image/png' ? 'png' : 'jpg'
+  const storagePath = `${auth0User.sub}/${data.item_id}/${timestamp}.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('inventory-photos')
+    .upload(storagePath, bytes, {
+      contentType: data.content_type,
+      upsert: false,
+    })
+
+  if (uploadError) throw new Error('Upload failed: ' + uploadError.message)
+
+  const { data: urlData } = supabase.storage
+    .from('inventory-photos')
+    .getPublicUrl(storagePath)
+
+  const publicUrl = urlData.publicUrl
+
+  currentPhotos.push(publicUrl)
+  const { error: updateError } = await supabase
+    .from('host_inventory')
+    .update({ photo_urls: currentPhotos })
+    .eq('id', data.item_id)
+
+  if (updateError) throw updateError
+  return { url: publicUrl }
+}
+
+/* ── Action: Delete Inventory Photo ── */
+async function handleDeleteInventoryPhoto(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.item_id) throw new Error('item_id is required')
+  if (!data.photo_url) throw new Error('photo_url is required')
+
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Profile not found')
+
+  const isAdmin = callerProfile.role === 'admin'
+
+  const { data: item, error: fetchError } = await supabase
+    .from('host_inventory')
+    .select('auth0_id, photo_urls')
+    .eq('id', data.item_id)
+    .single()
+
+  if (fetchError || !item) throw new Error('Item not found')
+  if (!isAdmin && item.auth0_id !== auth0User.sub) throw new Error('Unauthorized')
+
+  const currentPhotos: string[] = item.photo_urls || []
+  const filtered = currentPhotos.filter((u: string) => u !== data.photo_url)
+
+  const { error: updateError } = await supabase
+    .from('host_inventory')
+    .update({ photo_urls: filtered })
+    .eq('id', data.item_id)
+
+  if (updateError) throw updateError
+
+  try {
+    const path = extractStoragePath(data.photo_url, 'inventory-photos')
+    if (path) {
+      await supabase.storage.from('inventory-photos').remove([path])
+    }
+  } catch (e) {
+    console.warn('Inventory storage cleanup error:', e)
+  }
+
+  return { success: true }
+}
+
+/* ══════════════════════════════════════════════
+   FEED HANDLERS
+   ══════════════════════════════════════════════ */
+
+/* ── Action: Get Feed (public, optional auth) ── */
+async function handleFeedGet(data: any, auth0User: any) {
+  const PAGE_SIZE = 20
+
+  // If following_only, get the list of auth0_ids the user follows
+  let followingAuth0Ids: string[] = []
+  if (data.following_only && auth0User) {
+    const { data: follows } = await supabase
+      .from('follows')
+      .select('following_auth0_id')
+      .eq('follower_auth0_id', auth0User.sub)
+
+    followingAuth0Ids = (follows || []).map((f: any) => f.following_auth0_id)
+
+    // If user follows nobody, return empty
+    if (followingAuth0Ids.length === 0) {
+      return { events: [], next_cursor: null, following_ids: [] }
+    }
+  }
+
+  let query = supabase
+    .from('feed_events')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(PAGE_SIZE + 1)
+
+  if (data.cursor) {
+    query = query.lt('created_at', data.cursor)
+  }
+  if (data.category) {
+    query = query.eq('category', data.category)
+  }
+  if (data.event_type) {
+    query = query.eq('event_type', data.event_type)
+  }
+
+  // Filter to only followed users' posts
+  if (data.following_only && followingAuth0Ids.length > 0) {
+    query = query.in('auth0_id', followingAuth0Ids)
+  }
+
+  const { data: events, error } = await query
+  if (error) throw error
+
+  const items = (events || []).slice(0, PAGE_SIZE)
+  const hasMore = (events || []).length > PAGE_SIZE
+  const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].created_at : null
+
+  // If authenticated, fetch user's reactions for these events
+  let userReactions: Record<string, string> = {}
+  if (auth0User && items.length > 0) {
+    const eventIds = items.map((e: any) => e.id)
+    const { data: reactions } = await supabase
+      .from('feed_reactions')
+      .select('feed_event_id, emoji')
+      .eq('auth0_id', auth0User.sub)
+      .in('feed_event_id', eventIds)
+
+    for (const r of (reactions || [])) {
+      userReactions[r.feed_event_id] = r.emoji
+    }
+  }
+
+  // Also return the set of auth0_ids the current user follows (among feed result authors)
+  // so the client can render Follow/Following buttons without extra API calls
+  let followingIds: string[] = []
+  if (auth0User && items.length > 0) {
+    // If we already fetched following list for filter, reuse it
+    if (followingAuth0Ids.length > 0) {
+      followingIds = followingAuth0Ids
+    } else {
+      const authorIds = [...new Set(items.map((e: any) => e.auth0_id).filter(Boolean))]
+      if (authorIds.length > 0) {
+        const { data: followRows } = await supabase
+          .from('follows')
+          .select('following_auth0_id')
+          .eq('follower_auth0_id', auth0User.sub)
+          .in('following_auth0_id', authorIds)
+
+        followingIds = (followRows || []).map((f: any) => f.following_auth0_id)
+      }
+    }
+  }
+
+  const formatted = items.map((e: any) => ({
+    ...e,
+    user_reaction: userReactions[e.id] || null,
+  }))
+
+  return { events: formatted, next_cursor: nextCursor, following_ids: followingIds }
+}
+
+/* ── Action: Feed Event Detail (public, optional auth) ── */
+async function handleFeedEventDetail(data: any, auth0User: any) {
+  if (!data.feed_event_id) throw new Error('feed_event_id is required')
+
+  const { data: event, error: eventError } = await supabase
+    .from('feed_events')
+    .select('*')
+    .eq('id', data.feed_event_id)
+    .single()
+
+  if (eventError || !event) throw new Error('Feed event not found')
+
+  // Get comments
+  const { data: comments, error: commentsError } = await supabase
+    .from('feed_comments')
+    .select('*')
+    .eq('feed_event_id', data.feed_event_id)
+    .order('created_at', { ascending: true })
+    .limit(100)
+
+  if (commentsError) throw commentsError
+
+  // User's reaction
+  let userReaction = null
+  if (auth0User) {
+    const { data: reaction } = await supabase
+      .from('feed_reactions')
+      .select('emoji')
+      .eq('feed_event_id', data.feed_event_id)
+      .eq('auth0_id', auth0User.sub)
+      .maybeSingle()
+
+    if (reaction) userReaction = reaction.emoji
+  }
+
+  return {
+    event: { ...event, user_reaction: userReaction },
+    comments: comments || [],
+  }
+}
+
+/* ── Action: React to Feed Event ── */
+async function handleFeedReact(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.feed_event_id || !data.emoji) throw new Error('feed_event_id and emoji required')
+
+  const validEmojis = ['fire', 'heart', 'eyes', 'raised_hands', 'money', 'dart']
+  if (!validEmojis.includes(data.emoji)) throw new Error('Invalid emoji')
+
+  // Verify event exists
+  const { data: event, error: eventErr } = await supabase
+    .from('feed_events')
+    .select('id, reaction_counts')
+    .eq('id', data.feed_event_id)
+    .single()
+
+  if (eventErr || !event) throw new Error('Feed event not found')
+
+  // Check if user already has a reaction
+  const { data: existing } = await supabase
+    .from('feed_reactions')
+    .select('id, emoji')
+    .eq('feed_event_id', data.feed_event_id)
+    .eq('auth0_id', auth0User.sub)
+    .maybeSingle()
+
+  const counts = event.reaction_counts || { fire: 0, heart: 0, eyes: 0, raised_hands: 0, money: 0, dart: 0 }
+
+  if (existing) {
+    if (existing.emoji === data.emoji) {
+      // Toggle off: remove reaction
+      await supabase.from('feed_reactions').delete().eq('id', existing.id)
+      counts[existing.emoji] = Math.max(0, (counts[existing.emoji] || 0) - 1)
+      await supabase.from('feed_events').update({ reaction_counts: counts }).eq('id', data.feed_event_id)
+      return { reaction_counts: counts, user_reaction: null }
+    } else {
+      // Switch emoji
+      await supabase.from('feed_reactions').update({ emoji: data.emoji }).eq('id', existing.id)
+      counts[existing.emoji] = Math.max(0, (counts[existing.emoji] || 0) - 1)
+      counts[data.emoji] = (counts[data.emoji] || 0) + 1
+      await supabase.from('feed_events').update({ reaction_counts: counts }).eq('id', data.feed_event_id)
+      return { reaction_counts: counts, user_reaction: data.emoji }
+    }
+  } else {
+    // New reaction
+    await supabase.from('feed_reactions').insert({
+      feed_event_id: data.feed_event_id,
+      auth0_id: auth0User.sub,
+      emoji: data.emoji,
+    })
+    counts[data.emoji] = (counts[data.emoji] || 0) + 1
+    await supabase.from('feed_events').update({ reaction_counts: counts }).eq('id', data.feed_event_id)
+    return { reaction_counts: counts, user_reaction: data.emoji }
+  }
+}
+
+/* ── Action: Add Comment to Feed Event ── */
+async function handleFeedCommentAdd(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.feed_event_id) throw new Error('feed_event_id is required')
+  if (!data.body || !data.body.trim()) throw new Error('Comment body is required')
+
+  // Verify event exists
+  const { data: event, error: eventErr } = await supabase
+    .from('feed_events')
+    .select('id, comment_count')
+    .eq('id', data.feed_event_id)
+    .single()
+
+  if (eventErr || !event) throw new Error('Feed event not found')
+
+  // Limit comments per event
+  if ((event.comment_count || 0) >= 100) {
+    throw new Error('Comment limit reached (100 per item)')
+  }
+
+  // Get commenter profile for denormalized info
+  const profile = await getProfileByAuth0Id(auth0User.sub)
+
+  const { data: comment, error } = await supabase
+    .from('feed_comments')
+    .insert({
+      feed_event_id: data.feed_event_id,
+      auth0_id: auth0User.sub,
+      body: data.body.trim().slice(0, 500),
+      author_username: profile?.username || '',
+      author_display_name: profile?.display_name || '',
+      author_avatar_url: profile?.avatar_url || '',
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  // Increment comment count
+  await supabase
+    .from('feed_events')
+    .update({ comment_count: (event.comment_count || 0) + 1 })
+    .eq('id', data.feed_event_id)
+
+  return { comment }
+}
+
+/* ── Action: Delete Comment ── */
+async function handleFeedCommentDelete(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.comment_id) throw new Error('comment_id is required')
+
+  // Get comment
+  const { data: comment, error: fetchError } = await supabase
+    .from('feed_comments')
+    .select('id, feed_event_id, auth0_id')
+    .eq('id', data.comment_id)
+    .single()
+
+  if (fetchError || !comment) throw new Error('Comment not found')
+
+  // Check permission: own comment or admin
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  const isAdmin = callerProfile?.role === 'admin'
+
+  if (comment.auth0_id !== auth0User.sub && !isAdmin) {
+    throw new Error('Unauthorized: you can only delete your own comments')
+  }
+
+  // Delete comment
+  const { error } = await supabase
+    .from('feed_comments')
+    .delete()
+    .eq('id', data.comment_id)
+
+  if (error) throw error
+
+  // Decrement comment count
+  const { data: event } = await supabase
+    .from('feed_events')
+    .select('comment_count')
+    .eq('id', comment.feed_event_id)
+    .single()
+
+  if (event) {
+    await supabase
+      .from('feed_events')
+      .update({ comment_count: Math.max(0, (event.comment_count || 0) - 1) })
+      .eq('id', comment.feed_event_id)
+  }
+
+  return { success: true }
+}
+
+/* ── Action: Admin Delete Feed Event ── */
+async function handleAdminFeedDelete(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.feed_event_id) throw new Error('feed_event_id is required')
+
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile || callerProfile.role !== 'admin') {
+    throw new Error('Unauthorized: admin access required')
+  }
+
+  // CASCADE will auto-delete reactions and comments
+  const { error } = await supabase
+    .from('feed_events')
+    .delete()
+    .eq('id', data.feed_event_id)
+
+  if (error) throw error
+  return { success: true }
+}
+
+/* ══════════════════════════════════════════════
+   FOLLOW / UNFOLLOW HANDLERS
+   ══════════════════════════════════════════════ */
+
+/* ── Action: Follow a User ── */
+async function handleFollow(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.target_auth0_id) throw new Error('target_auth0_id is required')
+  if (data.target_auth0_id === auth0User.sub) throw new Error('You cannot follow yourself')
+
+  // Check target exists
+  const target = await getProfileByAuth0Id(data.target_auth0_id)
+  if (!target) throw new Error('Target user not found')
+
+  // Insert follow (ignore conflict = already following)
+  const { error } = await supabase
+    .from('follows')
+    .upsert({
+      follower_auth0_id: auth0User.sub,
+      following_auth0_id: data.target_auth0_id,
+    }, { onConflict: 'follower_auth0_id,following_auth0_id' })
+
+  if (error) throw error
+
+  // Increment counts (use RPC-style atomic update)
+  await supabase
+    .from('profiles')
+    .update({ following_count: (await getProfileByAuth0Id(auth0User.sub))?.following_count + 1 || 1 })
+    .eq('auth0_id', auth0User.sub)
+
+  await supabase
+    .from('profiles')
+    .update({ follower_count: (target.follower_count || 0) + 1 })
+    .eq('auth0_id', data.target_auth0_id)
+
+  return { success: true }
+}
+
+/* ── Action: Unfollow a User ── */
+async function handleUnfollow(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.target_auth0_id) throw new Error('target_auth0_id is required')
+
+  // Check the follow exists
+  const { data: existing } = await supabase
+    .from('follows')
+    .select('id')
+    .eq('follower_auth0_id', auth0User.sub)
+    .eq('following_auth0_id', data.target_auth0_id)
+    .maybeSingle()
+
+  if (!existing) return { success: true } // not following, no-op
+
+  // Delete follow
+  const { error } = await supabase
+    .from('follows')
+    .delete()
+    .eq('follower_auth0_id', auth0User.sub)
+    .eq('following_auth0_id', data.target_auth0_id)
+
+  if (error) throw error
+
+  // Decrement counts
+  const caller = await getProfileByAuth0Id(auth0User.sub)
+  const target = await getProfileByAuth0Id(data.target_auth0_id)
+
+  if (caller) {
+    await supabase
+      .from('profiles')
+      .update({ following_count: Math.max(0, (caller.following_count || 0) - 1) })
+      .eq('auth0_id', auth0User.sub)
+  }
+
+  if (target) {
+    await supabase
+      .from('profiles')
+      .update({ follower_count: Math.max(0, (target.follower_count || 0) - 1) })
+      .eq('auth0_id', data.target_auth0_id)
+  }
+
+  return { success: true }
+}
+
+/* ── Action: Check if Following ── */
+async function handleIsFollowing(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.target_auth0_id) throw new Error('target_auth0_id is required')
+
+  const { data: existing } = await supabase
+    .from('follows')
+    .select('id')
+    .eq('follower_auth0_id', auth0User.sub)
+    .eq('following_auth0_id', data.target_auth0_id)
+    .maybeSingle()
+
+  return { following: !!existing }
+}
+
+/* ── Action: Get Followers (public) ── */
+async function handleGetFollowers(data: any) {
+  if (!data.username) throw new Error('username is required')
+
+  // Look up auth0_id by username
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('auth0_id, follower_count')
+    .eq('username', data.username)
+    .maybeSingle()
+
+  if (!profile) throw new Error('User not found')
+
+  const { data: follows, error } = await supabase
+    .from('follows')
+    .select('follower_auth0_id, created_at')
+    .eq('following_auth0_id', profile.auth0_id)
+    .order('created_at', { ascending: false })
+    .limit(200)
+
+  if (error) throw error
+
+  // Get follower profiles
+  const followerIds = (follows || []).map((f: any) => f.follower_auth0_id)
+  let followers: any[] = []
+
+  if (followerIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('auth0_id, username, display_name, avatar_url, role')
+      .in('auth0_id', followerIds)
+      .eq('profile_public', true)
+
+    followers = profiles || []
+  }
+
+  return { followers, count: profile.follower_count || 0, auth0_id: profile.auth0_id }
+}
+
+/* ── Action: Get Following (public) ── */
+async function handleGetFollowing(data: any) {
+  if (!data.username) throw new Error('username is required')
+
+  // Look up auth0_id by username
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('auth0_id, following_count')
+    .eq('username', data.username)
+    .maybeSingle()
+
+  if (!profile) throw new Error('User not found')
+
+  const { data: follows, error } = await supabase
+    .from('follows')
+    .select('following_auth0_id, created_at')
+    .eq('follower_auth0_id', profile.auth0_id)
+    .order('created_at', { ascending: false })
+    .limit(200)
+
+  if (error) throw error
+
+  // Get following profiles
+  const followingIds = (follows || []).map((f: any) => f.following_auth0_id)
+  let following: any[] = []
+
+  if (followingIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('auth0_id, username, display_name, avatar_url, role')
+      .in('auth0_id', followingIds)
+      .eq('profile_public', true)
+
+    following = profiles || []
+  }
+
+  return { following, count: profile.following_count || 0, auth0_id: profile.auth0_id }
 }
 
 /* ── Helper: Random Suffix ── */
@@ -972,6 +1824,40 @@ serve(async (req: Request) => {
 
     if (action === 'public-collection') {
       result = await handlePublicCollection(data || {})
+      return new Response(
+        JSON.stringify(result),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (action === 'get-followers') {
+      result = await handleGetFollowers(data || {})
+      return new Response(
+        JSON.stringify(result),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (action === 'get-following') {
+      result = await handleGetFollowing(data || {})
+      return new Response(
+        JSON.stringify(result),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // ── Feed: public with optional auth ──
+    if (action === 'feed-get' || action === 'feed-event-detail') {
+      let auth0User = null
+      const feedAuthHeader = req.headers.get('Authorization') || ''
+      if (feedAuthHeader.startsWith('Bearer ')) {
+        auth0User = await validateToken(feedAuthHeader)
+      }
+      if (action === 'feed-get') {
+        result = await handleFeedGet(data || {}, auth0User)
+      } else {
+        result = await handleFeedEventDetail(data || {}, auth0User)
+      }
       return new Response(
         JSON.stringify(result),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -1045,6 +1931,45 @@ serve(async (req: Request) => {
         break
       case 'admin-collections':
         result = await handleAdminCollections(auth0User, data || {})
+        break
+      case 'feed-react':
+        result = await handleFeedReact(auth0User, data || {})
+        break
+      case 'feed-comment-add':
+        result = await handleFeedCommentAdd(auth0User, data || {})
+        break
+      case 'feed-comment-delete':
+        result = await handleFeedCommentDelete(auth0User, data || {})
+        break
+      case 'inventory-get':
+        result = await handleInventoryGet(auth0User)
+        break
+      case 'inventory-add':
+        result = await handleInventoryAdd(auth0User, data || {})
+        break
+      case 'inventory-update':
+        result = await handleInventoryUpdate(auth0User, data || {})
+        break
+      case 'inventory-remove':
+        result = await handleInventoryRemove(auth0User, data || {})
+        break
+      case 'upload-inventory-photo':
+        result = await handleUploadInventoryPhoto(auth0User, data || {})
+        break
+      case 'delete-inventory-photo':
+        result = await handleDeleteInventoryPhoto(auth0User, data || {})
+        break
+      case 'admin-feed-delete':
+        result = await handleAdminFeedDelete(auth0User, data || {})
+        break
+      case 'follow':
+        result = await handleFollow(auth0User, data || {})
+        break
+      case 'unfollow':
+        result = await handleUnfollow(auth0User, data || {})
+        break
+      case 'is-following':
+        result = await handleIsFollowing(auth0User, data || {})
         break
       default:
         throw new Error('Unknown action: ' + action)

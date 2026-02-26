@@ -407,6 +407,199 @@ async function handleListHosts() {
   return { hosts: hosts || [] }
 }
 
+/* ── Action: List Scheduled Shows (no auth required) ── */
+async function handleListScheduledShows(data: any) {
+  let query = supabase
+    .from('scheduled_shows')
+    .select('*, hosts!inner(name, slug, whatnot_handle, avatar_url)')
+    .order('scheduled_at', { ascending: true })
+
+  // Optional filter by show_type
+  if (data.show_type) {
+    query = query.eq('show_type', data.show_type)
+  }
+
+  // Optional filter by host
+  if (data.host_slug) {
+    query = query.eq('host_slug', data.host_slug)
+  }
+
+  // Default: show recent past + all future (last 7 days)
+  if (!data.include_all) {
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    query = query.gte('scheduled_at', weekAgo)
+  }
+
+  const { data: shows, error } = await query.limit(100)
+  if (error) throw error
+
+  // Flatten host info into each show
+  const formatted = (shows || []).map((s: any) => ({
+    id: s.id,
+    host_slug: s.host_slug,
+    host_name: s.hosts?.name || '',
+    host_handle: s.hosts?.whatnot_handle || s.host_slug,
+    host_avatar: s.hosts?.avatar_url || '',
+    show_type: s.show_type,
+    title: s.title,
+    description: s.description,
+    scheduled_at: s.scheduled_at,
+    duration_minutes: s.duration_minutes,
+    status: s.status,
+    whatnot_url: s.whatnot_url,
+    created_at: s.created_at,
+  }))
+
+  return { shows: formatted }
+}
+
+/* ── Action: Create Scheduled Show (host or admin) ── */
+async function handleCreateScheduledShow(auth0User: { sub: string; email: string; email_verified: boolean }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Profile not found')
+
+  const isAdmin = callerProfile.role === 'admin'
+  const isHost = callerProfile.role === 'host' && callerProfile.host_slug
+
+  if (!isAdmin && !isHost) {
+    throw new Error('Unauthorized: only hosts and admins can schedule shows')
+  }
+
+  // Validate required fields
+  if (!data.show_type || !data.title || !data.scheduled_at) {
+    throw new Error('show_type, title, and scheduled_at are required')
+  }
+
+  const validTypes = ['coins', 'pokemon', 'sports', 'shoes']
+  if (!validTypes.includes(data.show_type)) {
+    throw new Error('Invalid show_type')
+  }
+
+  // Determine host_slug: admins can set any, hosts use their own
+  let hostSlug = data.host_slug
+  if (!isAdmin) {
+    hostSlug = callerProfile.host_slug // Hosts can only schedule their own shows
+  }
+  if (!hostSlug) throw new Error('host_slug is required')
+
+  const showData = {
+    host_slug: hostSlug,
+    show_type: data.show_type,
+    title: data.title.trim().slice(0, 200),
+    description: data.description ? data.description.trim().slice(0, 1000) : null,
+    scheduled_at: data.scheduled_at,
+    duration_minutes: data.duration_minutes || 60,
+    status: 'scheduled',
+    whatnot_url: data.whatnot_url || null,
+    created_by: auth0User.sub,
+  }
+
+  const { data: show, error } = await supabase
+    .from('scheduled_shows')
+    .insert(showData)
+    .select()
+    .single()
+
+  if (error) throw error
+  return { show }
+}
+
+/* ── Action: Update Scheduled Show (host or admin) ── */
+async function handleUpdateScheduledShow(auth0User: { sub: string; email: string; email_verified: boolean }, data: any) {
+  if (!data.id) throw new Error('Show ID is required')
+
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Profile not found')
+
+  const isAdmin = callerProfile.role === 'admin'
+  const isHost = callerProfile.role === 'host' && callerProfile.host_slug
+
+  if (!isAdmin && !isHost) {
+    throw new Error('Unauthorized: only hosts and admins can update shows')
+  }
+
+  // Get existing show
+  const { data: existing, error: fetchErr } = await supabase
+    .from('scheduled_shows')
+    .select('*')
+    .eq('id', data.id)
+    .single()
+
+  if (fetchErr || !existing) throw new Error('Show not found')
+
+  // Hosts can only update their own shows
+  if (!isAdmin && existing.host_slug !== callerProfile.host_slug) {
+    throw new Error('Unauthorized: you can only update your own shows')
+  }
+
+  const allowedFields = ['title', 'description', 'scheduled_at', 'duration_minutes', 'status', 'whatnot_url', 'show_type']
+  // Admins can also reassign host
+  if (isAdmin) allowedFields.push('host_slug')
+
+  const updates: Record<string, any> = {}
+  for (const key of allowedFields) {
+    if (data.updates && data.updates[key] !== undefined) {
+      updates[key] = data.updates[key]
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    throw new Error('No valid fields to update')
+  }
+
+  // Validate status
+  if (updates.status) {
+    const validStatuses = ['scheduled', 'live', 'completed', 'cancelled']
+    if (!validStatuses.includes(updates.status)) throw new Error('Invalid status')
+  }
+
+  const { data: show, error } = await supabase
+    .from('scheduled_shows')
+    .update(updates)
+    .eq('id', data.id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return { show }
+}
+
+/* ── Action: Delete Scheduled Show (host or admin) ── */
+async function handleDeleteScheduledShow(auth0User: { sub: string; email: string; email_verified: boolean }, data: any) {
+  if (!data.id) throw new Error('Show ID is required')
+
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Profile not found')
+
+  const isAdmin = callerProfile.role === 'admin'
+  const isHost = callerProfile.role === 'host' && callerProfile.host_slug
+
+  if (!isAdmin && !isHost) {
+    throw new Error('Unauthorized')
+  }
+
+  // Verify ownership for hosts
+  if (!isAdmin) {
+    const { data: existing } = await supabase
+      .from('scheduled_shows')
+      .select('host_slug')
+      .eq('id', data.id)
+      .single()
+
+    if (!existing || existing.host_slug !== callerProfile.host_slug) {
+      throw new Error('Unauthorized: you can only delete your own shows')
+    }
+  }
+
+  const { error } = await supabase
+    .from('scheduled_shows')
+    .delete()
+    .eq('id', data.id)
+
+  if (error) throw error
+  return { success: true }
+}
+
 /* ── Action: Public Wishlist (no auth required) ── */
 async function handlePublicWishlist(data: any) {
   if (!data.username) throw new Error('Username is required')
@@ -475,6 +668,14 @@ serve(async (req: Request) => {
       )
     }
 
+    if (action === 'list-scheduled-shows') {
+      result = await handleListScheduledShows(data || {})
+      return new Response(
+        JSON.stringify(result),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // ── Authenticated actions ──
     const authHeader = req.headers.get('Authorization') || ''
     const auth0User = await validateToken(authHeader)
@@ -512,6 +713,15 @@ serve(async (req: Request) => {
         break
       case 'admin-wishlist':
         result = await handleAdminWishlist(auth0User, data || {})
+        break
+      case 'create-scheduled-show':
+        result = await handleCreateScheduledShow(auth0User, data || {})
+        break
+      case 'update-scheduled-show':
+        result = await handleUpdateScheduledShow(auth0User, data || {})
+        break
+      case 'delete-scheduled-show':
+        result = await handleDeleteScheduledShow(auth0User, data || {})
         break
       default:
         throw new Error('Unknown action: ' + action)

@@ -211,6 +211,56 @@
     }
   }
 
+  /* ── Scheduled Shows: List (no auth needed) ── */
+  async function listScheduledShows(filters){
+    try {
+      var res = await fetch(EDGE_FN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list-scheduled-shows', data: filters || {} })
+      });
+      var json = await res.json();
+      if(!res.ok || json.error) return { shows: [] };
+      return json;
+    } catch(err){
+      console.warn('List scheduled shows error:', err);
+      return { shows: [] };
+    }
+  }
+
+  /* ── Scheduled Shows: Create (host/admin) ── */
+  async function createScheduledShow(data, accessToken){
+    try {
+      var result = await callEdge('create-scheduled-show', data, accessToken);
+      return result.show;
+    } catch(err){
+      console.warn('Create scheduled show error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Scheduled Shows: Update (host/admin) ── */
+  async function updateScheduledShow(id, updates, accessToken){
+    try {
+      var result = await callEdge('update-scheduled-show', { id: id, updates: updates }, accessToken);
+      return result.show;
+    } catch(err){
+      console.warn('Update scheduled show error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Scheduled Shows: Delete (host/admin) ── */
+  async function deleteScheduledShow(id, accessToken){
+    try {
+      var result = await callEdge('delete-scheduled-show', { id: id }, accessToken);
+      return result.success;
+    } catch(err){
+      console.warn('Delete scheduled show error:', err);
+      throw err;
+    }
+  }
+
   /* ── List Hosts (no auth needed) ── */
   async function listHosts(){
     try {
@@ -262,7 +312,11 @@
     removeWishItem: removeWishItem,
     adminListWishes: adminListWishes,
     getPublicWishlist: getPublicWishlist,
-    listHosts: listHosts
+    listHosts: listHosts,
+    listScheduledShows: listScheduledShows,
+    createScheduledShow: createScheduledShow,
+    updateScheduledShow: updateScheduledShow,
+    deleteScheduledShow: deleteScheduledShow
   };
 
   init();

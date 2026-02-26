@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Show Schedule – Safe Network</title>
+<link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
+<meta property="og:title" content="Show Schedule – Safe Network"/>
+<meta property="og:description" content="See upcoming live shows on Safe Network. Coins, Pokemon, Sports Cards and Shoes — streamed live on Whatnot."/>
+<meta property="og:image" content="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979965/ChatGPT_Image_Feb_24_2026_04_39_12_PM_bvf4rt.png"/>
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/schedule.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/cookies.css">
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
+</script>
+<style>
+  body::before{background:radial-gradient(ellipse at 20% 20%,rgba(30,144,255,.12),transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(212,160,23,.06),transparent 50%)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
+    <span>SAFE NETWORK</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/#shows">Shows</a></li>
+    <li><a href="/#host">Hosts</a></li>
+    <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+    <li><a href="/blog">Blog</a></li>
+    <li><a href="/schedule.html" class="active">Schedule</a></li>
+  </ul>
+  <button id="authLoginBtn" class="auth-login-btn" onclick="window.snAuth && snAuth.login()">Log In</button>
+  <div id="authProfileWrap" class="auth-profile-wrap">
+    <div class="auth-avatar" onclick="snAuth.toggleProfileDropdown()">
+      <img id="authAvatarImg" alt="Profile"/>
+      <span id="authAvatarInitials" class="auth-avatar-initials"></span>
+    </div>
+    <div id="authDropdown" class="auth-dropdown">
+      <div class="auth-dropdown-label">Signed in as</div>
+      <div id="authDropdownEmail" class="auth-dropdown-email"></div>
+      <button class="auth-logout-btn" onclick="snAuth.logout()">Log Out</button>
+    </div>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<ul class="mobile-menu" id="mobileMenu">
+  <li><a href="/#shows" onclick="toggleMenu()">Shows</a></li>
+  <li><a href="/#host" onclick="toggleMenu()">Hosts</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank" onclick="toggleMenu()">Watch Live</a></li>
+  <li><a href="/blog">Blog</a></li>
+  <li><a href="/schedule.html" onclick="toggleMenu()">Schedule</a></li>
+  <li id="authMobileLogin" class="auth-mobile-login"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
+  <li id="authMobileProfile" class="auth-mobile-profile">
+    <div class="auth-mobile-signed-in">Signed in as <span id="authMobileEmail" class="auth-mobile-email"></span></div>
+    <button class="auth-mobile-logout" onclick="snAuth.logout()">Log Out</button>
+  </li>
+</ul>
+
+<!-- SCHEDULE PAGE -->
+<div class="schedule-wrap">
+  <h1>Show <span style="color:var(--gold)">Schedule</span></h1>
+  <p class="schedule-sub">See what's coming up next. Follow your favorite hosts on Whatnot so you never miss a show.</p>
+
+  <!-- Filters -->
+  <div class="schedule-filters">
+    <button class="schedule-filter active" data-filter="all" onclick="filterSchedule('all')">All Shows</button>
+    <button class="schedule-filter" data-filter="coins" onclick="filterSchedule('coins')">🪙 Coins</button>
+    <button class="schedule-filter" data-filter="pokemon" onclick="filterSchedule('pokemon')">⚡ Pokemon</button>
+    <button class="schedule-filter" data-filter="sports" onclick="filterSchedule('sports')">🏀 Sports</button>
+    <button class="schedule-filter" data-filter="shoes" onclick="filterSchedule('shoes')">👟 Shoes</button>
+  </div>
+
+  <!-- Next Show Countdown (populated by JS) -->
+  <div class="next-show-banner" id="nextShowBanner" style="display:none">
+    <div class="next-show-label">Next Show</div>
+    <div class="next-show-title" id="nextShowTitle"></div>
+    <div class="next-show-host" id="nextShowHost"></div>
+    <div class="countdown" id="countdown">
+      <div class="countdown-unit"><div class="countdown-num" id="cdDays">00</div><div class="countdown-label">Days</div></div>
+      <div class="countdown-unit"><div class="countdown-num" id="cdHours">00</div><div class="countdown-label">Hours</div></div>
+      <div class="countdown-unit"><div class="countdown-num" id="cdMins">00</div><div class="countdown-label">Mins</div></div>
+      <div class="countdown-unit"><div class="countdown-num" id="cdSecs">00</div><div class="countdown-label">Secs</div></div>
+    </div>
+    <div class="next-show-actions">
+      <a href="#" id="nextShowWatchBtn" target="_blank" class="btn-gold" style="padding:10px 24px;font-size:13px;display:inline-block">Watch on Whatnot</a>
+    </div>
+  </div>
+
+  <!-- Schedule List (populated by JS from Supabase) -->
+  <div class="schedule-list" id="scheduleList">
+    <div class="schedule-empty" id="scheduleLoading">
+      <p>Loading schedule...</p>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="schedule-cta">
+    <h3>Never Miss a <span style="color:var(--blue)">Show</span></h3>
+    <p>Sign up for Safe Network alerts and get notified before every live show.</p>
+    <a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()" class="btn-primary" style="display:inline-block;padding:12px 28px;font-size:14px">🔔 Get Notified</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">SAFE NETWORK</div>
+  <div><a href="/privacy.html">Privacy Policy</a> &middot; <a href="/terms.html">Terms of Service</a></div>
+  <p>2026 Safe Network &middot; safenetwork.shop</p>
+</footer>
+
+<script>
+  function toggleMenu() {
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.querySelector('.hamburger').classList.toggle('open');
+  }
+
+  /* ── Schedule Logic ── */
+  var allShows = [];
+  var activeFilter = 'all';
+
+  // Show type metadata
+  var showTypes = {
+    coins: { emoji: '🪙', label: 'Coins & Bullion', color: '#d4a017' },
+    pokemon: { emoji: '⚡', label: 'Pokemon', color: '#facc15' },
+    sports: { emoji: '🏀', label: 'Sports Cards', color: '#f97316' },
+    shoes: { emoji: '👟', label: 'Shoes', color: '#22c55e' }
+  };
+
+  // Fetch scheduled shows from Supabase
+  async function loadSchedule() {
+    try {
+      if (window.snProfile && typeof snProfile.listScheduledShows === 'function') {
+        var result = await snProfile.listScheduledShows();
+        if (result && result.shows) {
+          allShows = result.shows;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load schedule from DB, using empty state:', e);
+    }
+    renderSchedule();
+  }
+
+  function filterSchedule(type) {
+    activeFilter = type;
+    // Update filter button styles
+    document.querySelectorAll('.schedule-filter').forEach(function(btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-filter') === type);
+    });
+    renderSchedule();
+  }
+
+  function renderSchedule() {
+    var filtered = activeFilter === 'all'
+      ? allShows
+      : allShows.filter(function(s) { return s.show_type === activeFilter; });
+
+    // Sort by scheduled_at ascending
+    filtered.sort(function(a, b) { return new Date(a.scheduled_at) - new Date(b.scheduled_at); });
+
+    // Separate upcoming vs past
+    var now = new Date();
+    var upcoming = filtered.filter(function(s) { return new Date(s.scheduled_at) > now && s.status !== 'cancelled'; });
+    var past = filtered.filter(function(s) { return new Date(s.scheduled_at) <= now || s.status === 'cancelled'; });
+
+    var listEl = document.getElementById('scheduleList');
+
+    if (filtered.length === 0) {
+      listEl.innerHTML =
+        '<div class="schedule-empty">' +
+          '<p>📅 No shows scheduled yet.' + (activeFilter !== 'all' ? ' Try "All Shows" filter.' : '') + '</p>' +
+          '<p><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Follow @SafeNetwork on Whatnot</a> to get notified when shows are announced.</p>' +
+        '</div>';
+      document.getElementById('nextShowBanner').style.display = 'none';
+      return;
+    }
+
+    var html = '';
+
+    // Render upcoming shows
+    if (upcoming.length > 0) {
+      // Update countdown to next show
+      updateNextShowBanner(upcoming[0]);
+
+      upcoming.forEach(function(show) {
+        html += renderShowCard(show, false);
+      });
+    } else {
+      document.getElementById('nextShowBanner').style.display = 'none';
+    }
+
+    // Render past shows (last 5)
+    if (past.length > 0) {
+      html += '<div style="margin-top:32px;margin-bottom:12px;font-family:\'Bebas Neue\',sans-serif;font-size:20px;letter-spacing:2px;color:var(--silver);opacity:.5">Past Shows</div>';
+      past.slice(-5).reverse().forEach(function(show) {
+        html += renderShowCard(show, true);
+      });
+    }
+
+    if (html === '') {
+      html = '<div class="schedule-empty"><p>📅 No shows scheduled yet. Check back soon!</p></div>';
+      document.getElementById('nextShowBanner').style.display = 'none';
+    }
+
+    listEl.innerHTML = html;
+  }
+
+  function renderShowCard(show, isPast) {
+    var d = new Date(show.scheduled_at);
+    var months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var type = showTypes[show.show_type] || { emoji: '🎬', label: show.show_type, color: '#1e90ff' };
+
+    var timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    var tzStr = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+
+    var statusBadge = '';
+    if (show.status === 'live') {
+      statusBadge = ' <span class="schedule-status status-live">🔴 LIVE</span>';
+    } else if (show.status === 'cancelled') {
+      statusBadge = ' <span class="schedule-status status-cancelled">CANCELLED</span>';
+    } else if (isPast) {
+      statusBadge = ' <span class="schedule-status status-completed">COMPLETED</span>';
+    }
+
+    var actionBtn = '';
+    if (show.status === 'live' && show.whatnot_url) {
+      actionBtn = '<a href="' + show.whatnot_url + '" target="_blank" class="schedule-card-btn live-btn">🔴 Watch</a>';
+    } else if (!isPast && show.whatnot_url) {
+      actionBtn = '<a href="' + show.whatnot_url + '" target="_blank" class="schedule-card-btn">Watch</a>';
+    } else if (!isPast) {
+      actionBtn = '<a href="https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork') + '" target="_blank" class="schedule-card-btn">Follow</a>';
+    }
+
+    var opacity = isPast ? 'opacity:.5;' : '';
+
+    return '<div class="schedule-card" style="' + opacity + '">' +
+      '<div class="schedule-card-date">' +
+        '<div class="schedule-card-month">' + months[d.getMonth()] + '</div>' +
+        '<div class="schedule-card-day">' + d.getDate() + '</div>' +
+        '<div class="schedule-card-dow">' + days[d.getDay()] + '</div>' +
+      '</div>' +
+      '<div class="schedule-card-body">' +
+        '<div class="schedule-card-time">' + timeStr + ' ' + tzStr + statusBadge + '</div>' +
+        '<div class="schedule-card-title">' + type.emoji + ' ' + (show.title || type.label) + '</div>' +
+        '<div class="schedule-card-meta">' +
+          '<span class="schedule-card-host">Hosted by <a href="https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork') + '" target="_blank">@' + (show.host_handle || 'SafeNetwork') + '</a></span>' +
+          '<span class="schedule-card-type">' + type.label + '</span>' +
+        '</div>' +
+        (show.description ? '<div class="schedule-card-desc">' + show.description + '</div>' : '') +
+      '</div>' +
+      (actionBtn ? '<div class="schedule-card-actions">' + actionBtn + '</div>' : '') +
+    '</div>';
+  }
+
+  function updateNextShowBanner(show) {
+    var banner = document.getElementById('nextShowBanner');
+    var type = showTypes[show.show_type] || { emoji: '🎬', label: show.show_type };
+    document.getElementById('nextShowTitle').textContent = type.emoji + ' ' + (show.title || type.label);
+    document.getElementById('nextShowHost').innerHTML = 'Hosted by <a href="https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork') + '" target="_blank">@' + (show.host_handle || 'SafeNetwork') + '</a>';
+
+    var watchBtn = document.getElementById('nextShowWatchBtn');
+    if (show.whatnot_url) {
+      watchBtn.href = show.whatnot_url;
+      watchBtn.style.display = '';
+    } else {
+      watchBtn.href = 'https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork');
+    }
+
+    banner.style.display = '';
+    startCountdown(new Date(show.scheduled_at));
+  }
+
+  var countdownInterval = null;
+  function startCountdown(targetDate) {
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    function update() {
+      var now = new Date();
+      var diff = targetDate - now;
+      if (diff <= 0) {
+        document.getElementById('cdDays').textContent = '00';
+        document.getElementById('cdHours').textContent = '00';
+        document.getElementById('cdMins').textContent = '00';
+        document.getElementById('cdSecs').textContent = '00';
+        clearInterval(countdownInterval);
+        return;
+      }
+      var d = Math.floor(diff / 86400000);
+      var h = Math.floor((diff % 86400000) / 3600000);
+      var m = Math.floor((diff % 3600000) / 60000);
+      var s = Math.floor((diff % 60000) / 1000);
+      document.getElementById('cdDays').textContent = d < 10 ? '0' + d : d;
+      document.getElementById('cdHours').textContent = h < 10 ? '0' + h : h;
+      document.getElementById('cdMins').textContent = m < 10 ? '0' + m : m;
+      document.getElementById('cdSecs').textContent = s < 10 ? '0' + s : s;
+    }
+
+    update();
+    countdownInterval = setInterval(update, 1000);
+  }
+
+  // Initialize
+  loadSchedule();
+</script>
+<script src="/js/supabase.js"></script>
+<script src="/js/cookies.js"></script>
+<script src="/js/auth.js"></script>
+</body>
+</html>

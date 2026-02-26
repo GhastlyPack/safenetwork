@@ -86,6 +86,7 @@
   <div class="admin-tabs">
     <button class="admin-tab active" id="tabUsers" onclick="switchAdminTab('users')">Users</button>
     <button class="admin-tab" id="tabWishes" onclick="switchAdminTab('wishes')">Wishes</button>
+    <button class="admin-tab" id="tabSchedule" onclick="switchAdminTab('schedule')">Schedule</button>
   </div>
 
   <!-- ═══ Users Tab ═══ -->
@@ -197,6 +198,74 @@
     </div>
 
   </div><!-- /adminTabWishes -->
+
+  <!-- ═══ Schedule Tab ═══ -->
+  <div id="adminTabSchedule" style="display:none">
+
+    <!-- Create Show Form -->
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(30,144,255,.15);border-radius:16px;padding:24px;margin-bottom:28px">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;margin-bottom:16px">Schedule a Show</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="admin-edit-field" style="margin:0">
+          <label>Host</label>
+          <select id="schedHostSlug"></select>
+        </div>
+        <div class="admin-edit-field" style="margin:0">
+          <label>Show Type</label>
+          <select id="schedShowType">
+            <option value="coins">🪙 Coins &amp; Bullion</option>
+            <option value="pokemon">⚡ Pokemon</option>
+            <option value="sports">🏀 Sports Cards</option>
+            <option value="shoes">👟 Shoes</option>
+          </select>
+        </div>
+      </div>
+      <div class="admin-edit-field" style="margin:0 0 12px">
+        <label>Title</label>
+        <input type="text" id="schedTitle" placeholder="e.g. Coins &amp; Bullion Live Auction" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="admin-edit-field" style="margin:0">
+          <label>Date &amp; Time</label>
+          <input type="datetime-local" id="schedDateTime" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none;color-scheme:dark"/>
+        </div>
+        <div class="admin-edit-field" style="margin:0">
+          <label>Duration (min)</label>
+          <input type="number" id="schedDuration" value="60" min="15" max="480" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none"/>
+        </div>
+        <div class="admin-edit-field" style="margin:0">
+          <label>Whatnot URL (optional)</label>
+          <input type="url" id="schedWhatnotUrl" placeholder="https://www.whatnot.com/..." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none"/>
+        </div>
+      </div>
+      <div class="admin-edit-field" style="margin:0 0 16px">
+        <label>Description (optional)</label>
+        <input type="text" id="schedDesc" placeholder="Brief description of this show..." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none"/>
+      </div>
+      <button class="admin-save-btn" id="schedCreateBtn" onclick="createShow()" style="margin:0">Create Show</button>
+      <span id="schedCreateStatus" style="margin-left:12px;font-size:13px"></span>
+    </div>
+
+    <!-- Scheduled Shows List -->
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Title</th>
+            <th>Host</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="schedTableBody">
+          <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--silver)">Loading shows...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /adminTabSchedule -->
 
 </div>
 
@@ -490,9 +559,12 @@
   window.switchAdminTab = function(tab){
     document.getElementById('adminTabUsers').style.display = tab === 'users' ? '' : 'none';
     document.getElementById('adminTabWishes').style.display = tab === 'wishes' ? '' : 'none';
+    document.getElementById('adminTabSchedule').style.display = tab === 'schedule' ? '' : 'none';
     document.getElementById('tabUsers').classList.toggle('active', tab === 'users');
     document.getElementById('tabWishes').classList.toggle('active', tab === 'wishes');
+    document.getElementById('tabSchedule').classList.toggle('active', tab === 'schedule');
     if(tab === 'wishes' && !wishesLoaded) loadWishes();
+    if(tab === 'schedule' && !scheduledShowsLoaded) loadScheduledShows();
   };
 
   window.loadWishes = async function(){
@@ -556,6 +628,165 @@
   window.debounceWishSearch = function(){
     clearTimeout(wishSearchTimer);
     wishSearchTimer = setTimeout(loadWishes, 400);
+  };
+
+  /* ══════════════════════════════════════════
+     SCHEDULE TAB
+     ══════════════════════════════════════════ */
+
+  var scheduledShows = [];
+  var scheduledShowsLoaded = false;
+
+  var SHOW_TYPE_LABELS = {
+    coins: '🪙 Coins & Bullion',
+    pokemon: '⚡ Pokemon',
+    sports: '🏀 Sports Cards',
+    shoes: '👟 Shoes'
+  };
+
+  var STATUS_LABELS = {
+    scheduled: 'Scheduled',
+    live: '🔴 Live',
+    completed: 'Completed',
+    cancelled: 'Cancelled'
+  };
+
+  /* ── Load Scheduled Shows ── */
+  window.loadScheduledShows = async function(){
+    try {
+      // Populate host picker
+      var hostSelect = document.getElementById('schedHostSlug');
+      if(hostSelect.options.length <= 1){
+        hostSelect.innerHTML = '';
+        hostsList.forEach(function(h){
+          var opt = document.createElement('option');
+          opt.value = h.slug;
+          opt.textContent = h.name;
+          hostSelect.appendChild(opt);
+        });
+      }
+
+      var result = await snProfile.listScheduledShows({ include_all: true });
+      scheduledShows = result.shows || [];
+      scheduledShowsLoaded = true;
+      renderScheduledShows();
+    } catch(err){
+      console.warn('Load scheduled shows error:', err);
+      document.getElementById('schedTableBody').innerHTML =
+        '<tr><td colspan="6" style="text-align:center;padding:40px;color:#ff6b6b">Error loading shows.</td></tr>';
+    }
+  };
+
+  function renderScheduledShows(){
+    var tbody = document.getElementById('schedTableBody');
+    if(!scheduledShows.length){
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--silver)">No shows scheduled. Create one above.</td></tr>';
+      return;
+    }
+
+    // Sort by date descending (newest first)
+    scheduledShows.sort(function(a,b){ return new Date(b.scheduled_at) - new Date(a.scheduled_at); });
+
+    var html = '';
+    scheduledShows.forEach(function(s){
+      var d = new Date(s.scheduled_at);
+      var dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      var timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      var typeLabel = SHOW_TYPE_LABELS[s.show_type] || s.show_type;
+      var statusLabel = STATUS_LABELS[s.status] || s.status;
+      var statusClass = 'badge-' + (s.status === 'live' ? 'live' : s.status === 'cancelled' ? 'soon' : 'shopper');
+
+      var actions = '';
+      if(s.status === 'scheduled'){
+        actions += '<button onclick="updateShowStatus(\'' + s.id + '\',\'live\')" style="background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.3);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;margin-right:4px">Go Live</button>';
+        actions += '<button onclick="updateShowStatus(\'' + s.id + '\',\'cancelled\')" style="background:rgba(239,68,68,.08);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600">Cancel</button>';
+      } else if(s.status === 'live'){
+        actions += '<button onclick="updateShowStatus(\'' + s.id + '\',\'completed\')" style="background:rgba(30,144,255,.12);color:var(--blue);border:1px solid rgba(30,144,255,.25);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600">End Show</button>';
+      } else {
+        actions += '<button onclick="deleteShow(\'' + s.id + '\')" style="background:rgba(255,255,255,.04);color:var(--silver);border:1px solid rgba(255,255,255,.1);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600">Delete</button>';
+      }
+
+      html += '<tr>' +
+        '<td style="white-space:nowrap"><div style="font-weight:600">' + dateStr + '</div><div style="font-size:11px;color:var(--silver)">' + timeStr + '</div></td>' +
+        '<td style="font-weight:600">' + escapeHtml(s.title || '') + '</td>' +
+        '<td style="color:var(--blue);font-weight:600">@' + escapeHtml(s.host_handle || '') + '</td>' +
+        '<td style="font-size:12px">' + typeLabel + '</td>' +
+        '<td><span class="profile-badge ' + statusClass + '" style="font-size:10px">' + statusLabel + '</span></td>' +
+        '<td>' + actions + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  /* ── Create Show ── */
+  window.createShow = async function(){
+    var btn = document.getElementById('schedCreateBtn');
+    var statusEl = document.getElementById('schedCreateStatus');
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+    statusEl.textContent = '';
+
+    var dateVal = document.getElementById('schedDateTime').value;
+    if(!dateVal){
+      statusEl.textContent = 'Please select a date and time';
+      statusEl.style.color = '#ff6b6b';
+      btn.disabled = false;
+      btn.textContent = 'Create Show';
+      return;
+    }
+
+    var data = {
+      host_slug: document.getElementById('schedHostSlug').value,
+      show_type: document.getElementById('schedShowType').value,
+      title: document.getElementById('schedTitle').value.trim() || (SHOW_TYPE_LABELS[document.getElementById('schedShowType').value] || 'Show'),
+      description: document.getElementById('schedDesc').value.trim() || null,
+      scheduled_at: new Date(dateVal).toISOString(),
+      duration_minutes: parseInt(document.getElementById('schedDuration').value) || 60,
+      whatnot_url: document.getElementById('schedWhatnotUrl').value.trim() || null
+    };
+
+    try {
+      var token = await snAuth.getAccessToken();
+      await snProfile.createScheduledShow(data, token);
+      statusEl.textContent = 'Show created!';
+      statusEl.style.color = '#4ade80';
+      // Clear form
+      document.getElementById('schedTitle').value = '';
+      document.getElementById('schedDesc').value = '';
+      document.getElementById('schedDateTime').value = '';
+      document.getElementById('schedWhatnotUrl').value = '';
+      // Reload list
+      loadScheduledShows();
+    } catch(err){
+      statusEl.textContent = 'Error: ' + (err.message || 'Try again');
+      statusEl.style.color = '#ff6b6b';
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Create Show';
+  };
+
+  /* ── Update Show Status ── */
+  window.updateShowStatus = async function(id, newStatus){
+    try {
+      var token = await snAuth.getAccessToken();
+      await snProfile.updateScheduledShow(id, { status: newStatus }, token);
+      loadScheduledShows();
+    } catch(err){
+      alert('Error updating show: ' + (err.message || 'Try again'));
+    }
+  };
+
+  /* ── Delete Show ── */
+  window.deleteShow = async function(id){
+    if(!confirm('Delete this show?')) return;
+    try {
+      var token = await snAuth.getAccessToken();
+      await snProfile.deleteScheduledShow(id, token);
+      loadScheduledShows();
+    } catch(err){
+      alert('Error deleting show: ' + (err.message || 'Try again'));
+    }
   };
 
   /* ── Helpers ── */

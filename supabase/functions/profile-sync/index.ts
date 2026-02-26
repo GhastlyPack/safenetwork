@@ -396,6 +396,33 @@ async function handleAdminWishlist(auth0User: { sub: string; email: string }, da
   return { wishes: wishes || [] }
 }
 
+/* ── Action: Public Wishlist (no auth required) ── */
+async function handlePublicWishlist(data: any) {
+  if (!data.username) throw new Error('Username is required')
+
+  // Look up profile by username, only if public
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('auth0_id, profile_public')
+    .eq('username', data.username)
+    .maybeSingle()
+
+  if (profileError) throw profileError
+  if (!profile) throw new Error('Collector not found')
+  if (!profile.profile_public) throw new Error('This profile is private')
+
+  // Fetch their wishlist
+  const { data: items, error } = await supabase
+    .from('wishlists')
+    .select('id, category, details, description, created_at')
+    .eq('auth0_id', profile.auth0_id)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (error) throw error
+  return { items: items || [] }
+}
+
 /* ── Helper: Random Suffix ── */
 function generateRandomSuffix(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -414,7 +441,22 @@ serve(async (req: Request) => {
   }
 
   try {
-    // Validate Auth0 token
+    // Parse request body
+    const body = await req.json()
+    const { action, data } = body
+
+    let result: any
+
+    // ── Public actions (no auth required) ──
+    if (action === 'public-wishlist') {
+      result = await handlePublicWishlist(data || {})
+      return new Response(
+        JSON.stringify(result),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // ── Authenticated actions ──
     const authHeader = req.headers.get('Authorization') || ''
     const auth0User = await validateToken(authHeader)
     if (!auth0User) {
@@ -423,12 +465,6 @@ serve(async (req: Request) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    // Parse request body
-    const body = await req.json()
-    const { action, data } = body
-
-    let result: any
 
     switch (action) {
       case 'init':

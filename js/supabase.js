@@ -194,6 +194,23 @@
     }
   }
 
+  /* ── Public Wishlist (no auth needed) ── */
+  async function getPublicWishlist(username){
+    try {
+      var res = await fetch(EDGE_FN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'public-wishlist', data: { username: username } })
+      });
+      var json = await res.json();
+      if(!res.ok || json.error) return [];
+      return json.items || [];
+    } catch(err){
+      console.warn('Public wishlist error:', err);
+      return [];
+    }
+  }
+
   /* ── Cache Helpers ── */
   function cacheProfile(){
     try {
@@ -226,7 +243,8 @@
     addWishItem: addWishItem,
     updateWishItem: updateWishItem,
     removeWishItem: removeWishItem,
-    adminListWishes: adminListWishes
+    adminListWishes: adminListWishes,
+    getPublicWishlist: getPublicWishlist
   };
 
   init();

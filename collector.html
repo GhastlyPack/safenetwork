@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Collector Profile | Safe Network</title>
+<link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
+<meta name="description" content="View a collector's profile on Safe Network — see what they collect and what they're looking for."/>
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/profile.css">
+<link rel="stylesheet" href="/css/collector.css">
+<link rel="stylesheet" href="/css/cookies.css">
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Customer.io CDP -->
+<script>
+  !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
+</script>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
+    <span>SAFE NETWORK</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/#shows">Shows</a></li>
+    <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+    <li><a href="/#socials">Links</a></li>
+    <li><a href="/blog">Blog</a></li>
+  </ul>
+  <button id="authLoginBtn" class="auth-login-btn" onclick="window.snAuth && snAuth.login()">Log In</button>
+  <div id="authProfileWrap" class="auth-profile-wrap">
+    <div class="auth-avatar" onclick="snAuth.toggleProfileDropdown()">
+      <img id="authAvatarImg" alt="Profile"/>
+      <span id="authAvatarInitials" class="auth-avatar-initials"></span>
+    </div>
+    <div id="authDropdown" class="auth-dropdown">
+      <div class="auth-dropdown-label">Signed in as</div>
+      <div id="authDropdownEmail" class="auth-dropdown-email"></div>
+      <button class="auth-logout-btn" onclick="snAuth.logout()">Log Out</button>
+    </div>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<ul class="mobile-menu" id="mobileMenu">
+  <li><a href="/">Home</a></li>
+  <li><a href="/#shows">Shows</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+  <li><a href="/#socials">Links</a></li>
+  <li><a href="/blog">Blog</a></li>
+  <li id="authMobileLogin" class="auth-mobile-login"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
+  <li id="authMobileProfile" class="auth-mobile-profile">
+    <div class="auth-mobile-signed-in">Signed in as <span id="authMobileEmail" class="auth-mobile-email"></span></div>
+    <button class="auth-mobile-logout" onclick="snAuth.logout()">Log Out</button>
+  </li>
+</ul>
+
+<!-- Loading -->
+<div class="collector-wrap" id="collectorLoading">
+  <div class="collector-loading"><p>Loading profile...</p></div>
+</div>
+
+<!-- Not Found / Private -->
+<div class="collector-wrap" id="collectorNotFound" style="display:none">
+  <div class="collector-not-found">
+    <h1 id="notFoundTitle">Collector Not Found</h1>
+    <p id="notFoundMessage">This collector doesn't exist or their profile is private.</p>
+    <a href="/" class="btn-primary">Back to Home</a>
+  </div>
+</div>
+
+<!-- Profile View -->
+<div class="collector-wrap" id="collectorProfile" style="display:none">
+
+  <!-- Profile Card -->
+  <div class="collector-card">
+    <div class="collector-avatar" id="collectorAvatar">
+      <img id="collectorAvatarImg" alt="Avatar"/>
+      <span class="collector-avatar-initials" id="collectorInitials"></span>
+    </div>
+    <div class="collector-name" id="collectorName">-</div>
+    <div class="collector-username" id="collectorUsername">@-</div>
+
+    <div class="collector-badges" id="collectorBadges"></div>
+
+    <div class="collector-bio" id="collectorBio" style="display:none"></div>
+
+    <div class="collector-interests" id="collectorInterests"></div>
+
+    <div class="collector-info" id="collectorInfo"></div>
+
+    <div class="collector-actions" id="collectorActions"></div>
+  </div>
+
+  <!-- Wishlist Section -->
+  <div class="collector-wishlist" id="collectorWishlist" style="display:none">
+    <h2>Wishlist <span class="collector-wishlist-count" id="collectorWishCount"></span></h2>
+    <div id="collectorWishItems"></div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-logo">SAFE NETWORK</div>
+  <div><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a></div>
+  <p>2026 Safe Network · safenetwork.shop</p>
+</footer>
+
+<script>
+  function toggleMenu(){
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.querySelector('.hamburger').classList.toggle('open');
+  }
+</script>
+<script src="/js/supabase.js"></script>
+<script src="/js/cookies.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+/* ── Public Collector Profile Logic ── */
+(function(){
+
+  var CATEGORY_LABELS = {
+    coins: 'Coins & Bullion',
+    pokemon: 'Pokemon',
+    sports_cards: 'Sports Cards',
+    shoes: 'Shoes'
+  };
+
+  var INTEREST_LABELS = {
+    coins: 'Coins & Bullion',
+    pokemon: 'Pokemon',
+    sports_cards: 'Sports Cards',
+    shoes: 'Shoes'
+  };
+
+  function showSection(id){
+    document.getElementById('collectorLoading').style.display = 'none';
+    document.getElementById('collectorNotFound').style.display = 'none';
+    document.getElementById('collectorProfile').style.display = 'none';
+    document.getElementById(id).style.display = '';
+  }
+
+  function esc(str){
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  /* ── Load Profile ── */
+  async function loadCollector(){
+    var params = new URLSearchParams(window.location.search);
+    var username = params.get('u');
+
+    if(!username){
+      document.getElementById('notFoundTitle').textContent = 'No Collector Specified';
+      document.getElementById('notFoundMessage').textContent = 'Please provide a username in the URL, e.g. /collector.html?u=username';
+      showSection('collectorNotFound');
+      return;
+    }
+
+    // Wait for supabase to init
+    var maxWait = 30;
+    while(!window.snProfile && maxWait > 0){
+      await new Promise(function(r){ setTimeout(r, 100); });
+      maxWait--;
+    }
+
+    if(!window.snProfile){
+      showSection('collectorNotFound');
+      return;
+    }
+
+    // Fetch public profile
+    var profile = await snProfile.getPublicProfile(username);
+    if(!profile){
+      showSection('collectorNotFound');
+      return;
+    }
+
+    // Update page title
+    document.title = (profile.display_name || '@' + profile.username) + ' | Safe Network';
+
+    // Render profile
+    renderProfile(profile);
+    showSection('collectorProfile');
+
+    // Fetch public wishlist
+    loadPublicWishlist(username);
+  }
+
+  /* ── Render Profile ── */
+  function renderProfile(p){
+    // Avatar
+    var avatarImg = document.getElementById('collectorAvatarImg');
+    var initials = document.getElementById('collectorInitials');
+    if(p.avatar_url){
+      avatarImg.src = p.avatar_url;
+      avatarImg.style.display = 'block';
+      initials.style.display = 'none';
+    } else {
+      avatarImg.style.display = 'none';
+      initials.style.display = 'flex';
+      initials.textContent = (p.display_name || p.username || '?').charAt(0).toUpperCase();
+    }
+
+    // Name & username
+    document.getElementById('collectorName').textContent = p.display_name || p.username || 'Collector';
+    document.getElementById('collectorUsername').textContent = '@' + (p.username || '');
+
+    // Badges
+    var badgesEl = document.getElementById('collectorBadges');
+    badgesEl.innerHTML = '';
+    var role = p.role || 'shopper';
+    var roleBadge = document.createElement('span');
+    roleBadge.className = 'profile-badge badge-' + role;
+    roleBadge.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+    badgesEl.appendChild(roleBadge);
+
+    var tier = p.loyalty_tier || 'bronze';
+    var tierBadge = document.createElement('span');
+    tierBadge.className = 'profile-badge badge-' + tier;
+    tierBadge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
+    badgesEl.appendChild(tierBadge);
+
+    // Bio
+    var bioEl = document.getElementById('collectorBio');
+    if(p.bio && p.bio.trim()){
+      bioEl.textContent = p.bio;
+      bioEl.style.display = '';
+    }
+
+    // Interests
+    var interestsEl = document.getElementById('collectorInterests');
+    interestsEl.innerHTML = '';
+    var interests = p.interests || [];
+    for(var i = 0; i < interests.length; i++){
+      var tag = document.createElement('span');
+      tag.className = 'collector-interest-tag';
+      tag.textContent = INTEREST_LABELS[interests[i]] || interests[i];
+      interestsEl.appendChild(tag);
+    }
+
+    // Info (email + whatnot)
+    var infoEl = document.getElementById('collectorInfo');
+    infoEl.innerHTML = '';
+    if(p.email){
+      var emailItem = document.createElement('div');
+      emailItem.className = 'collector-info-item';
+      emailItem.innerHTML = '<a href="mailto:' + esc(p.email) + '">' + esc(p.email) + '</a>';
+      infoEl.appendChild(emailItem);
+    }
+    if(p.whatnot_username){
+      var whatnotItem = document.createElement('div');
+      whatnotItem.className = 'collector-info-item';
+      whatnotItem.innerHTML = 'Whatnot: <a href="https://www.whatnot.com/user/' + esc(p.whatnot_username) + '" target="_blank">@' + esc(p.whatnot_username) + '</a>';
+      infoEl.appendChild(whatnotItem);
+    }
+
+    // Action buttons
+    var actionsEl = document.getElementById('collectorActions');
+    actionsEl.innerHTML = '';
+    if(p.whatnot_username){
+      var whatnotBtn = document.createElement('a');
+      whatnotBtn.href = 'https://www.whatnot.com/user/' + encodeURIComponent(p.whatnot_username);
+      whatnotBtn.target = '_blank';
+      whatnotBtn.className = 'collector-btn collector-btn-whatnot';
+      whatnotBtn.textContent = 'View on Whatnot';
+      actionsEl.appendChild(whatnotBtn);
+    }
+
+    // If this is the logged-in user's own profile, show edit link
+    var cached = window.snProfile ? snProfile.getCachedProfile() : null;
+    if(cached && cached.username === p.username){
+      var editBtn = document.createElement('a');
+      editBtn.href = '/profile.html';
+      editBtn.className = 'collector-btn collector-btn-edit';
+      editBtn.textContent = 'Edit Profile';
+      actionsEl.appendChild(editBtn);
+    }
+  }
+
+  /* ── Load Public Wishlist ── */
+  async function loadPublicWishlist(username){
+    if(!window.snProfile || !snProfile.getPublicWishlist) return;
+
+    try {
+      var items = await snProfile.getPublicWishlist(username);
+      if(!items || items.length === 0) return;
+
+      var section = document.getElementById('collectorWishlist');
+      section.style.display = '';
+      document.getElementById('collectorWishCount').textContent = '(' + items.length + ')';
+
+      var container = document.getElementById('collectorWishItems');
+      var html = '';
+      for(var i = 0; i < items.length; i++){
+        var w = items[i];
+        var cat = w.category || '';
+        var details = w.details || {};
+
+        html += '<div class="collector-wish-card">';
+        html += '<div class="collector-wish-top">';
+        html += '<span class="collector-badge collector-badge-' + esc(cat) + '">' + esc(CATEGORY_LABELS[cat] || cat) + '</span>';
+
+        var detailKeys = Object.keys(details);
+        for(var j = 0; j < detailKeys.length; j++){
+          var val = details[detailKeys[j]];
+          if(val){
+            var display = String(val).replace(/_/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+            html += '<span class="collector-detail-tag">' + esc(display) + '</span>';
+          }
+        }
+        html += '</div>';
+        html += '<p class="collector-wish-desc">' + esc(w.description || '') + '</p>';
+        html += '</div>';
+      }
+      container.innerHTML = html;
+    } catch(err){
+      console.warn('Public wishlist load error:', err);
+    }
+  }
+
+  // Boot
+  loadCollector();
+})();
+</script>
+</body>
+</html>

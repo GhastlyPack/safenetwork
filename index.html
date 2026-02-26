@@ -23,8 +23,8 @@
 <link rel="stylesheet" href="/css/global.css">
 <link rel="stylesheet" href="/css/signup.css">
 <style>
-  /* Home page overrides */
-  body::before{background:radial-gradient(ellipse at 20% 20%,rgba(30,144,255,.15) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(212,160,23,.08) 0%,transparent 50%)}
+  /* Homepage overrides */
+  body::before{background:radial-gradient(ellipse at 20% 20%, rgba(30,144,255,.15) 0%, transparent 50%),radial-gradient(ellipse at 80% 80%, rgba(212,160,23,.08) 0%, transparent 50%)}
   section{position:relative;z-index:1}
 
   /* HERO */
@@ -173,13 +173,16 @@
 
   /* HOST */
   .host{padding:80px 20px;text-align:center}
-  .host-card{
-    max-width:480px;margin:0 auto;
-    background:rgba(255,255,255,.04);border:1px solid rgba(30,144,255,.2);
-    border-radius:24px;padding:48px 36px;
-    transition:box-shadow .3s;
+  .host-grid{
+    display:flex;flex-wrap:wrap;gap:24px;justify-content:center;max-width:1100px;margin:0 auto;
   }
-  .host-card:hover{box-shadow:0 0 60px rgba(30,144,255,.15)}
+  .host-card{
+    flex:1;min-width:280px;max-width:340px;
+    background:rgba(255,255,255,.04);border:1px solid rgba(30,144,255,.2);
+    border-radius:24px;padding:40px 28px;
+    transition:box-shadow .3s,transform .3s;
+  }
+  .host-card:hover{box-shadow:0 0 60px rgba(30,144,255,.15);transform:translateY(-6px)}
   .host-avatar{
     width:100px;height:100px;border-radius:50%;
     background:linear-gradient(135deg,var(--blue),var(--blue2));
@@ -189,9 +192,14 @@
     overflow:hidden;
   }
   .host-avatar img{width:100%;height:100%;object-fit:cover}
-  .host-card h3{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:6px}
-  .host-handle{color:var(--blue);font-weight:600;font-size:15px;margin-bottom:16px}
-  .host-card p{color:var(--silver);font-size:15px;line-height:1.7;margin-bottom:24px}
+  .host-card h3{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:6px}
+  .host-handle{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+  .host-handle span{color:var(--blue);font-weight:600;font-size:15px}
+  .host-socials{display:flex;gap:8px;align-items:center}
+  .host-socials a{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;transition:transform .2s,opacity .2s;opacity:.8}
+  .host-socials a:hover{transform:scale(1.15);opacity:1}
+  .host-socials img{width:20px;height:20px}
+  .host-card p{color:var(--silver);font-size:14px;line-height:1.7;margin-bottom:24px}
   .host-shows{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
   .host-tag{
     background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.25);
@@ -246,6 +254,31 @@
     background:linear-gradient(90deg,transparent,rgba(30,144,255,.3),transparent);
   }
 
+  /* EMAIL BAR */
+  .email-bar{
+    background:linear-gradient(135deg,var(--gold),#a07010);
+    color:#0a0e1a;text-align:center;padding:10px 20px;
+    font-family:'Inter',sans-serif;font-weight:700;font-size:14px;
+    display:flex;align-items:center;justify-content:center;gap:14px;
+    cursor:pointer;position:relative;z-index:99;letter-spacing:.3px;
+  }
+  .email-bar:hover{filter:brightness(1.08)}
+  .email-bar span{pointer-events:none}
+  .email-bar .bar-short{display:none}
+  .email-bar button{
+    background:#0a0e1a;color:var(--gold2);border:none;padding:6px 18px;
+    border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;
+    font-family:'Inter',sans-serif;letter-spacing:.5px;white-space:nowrap;
+    transition:background .2s;
+  }
+  .email-bar button:hover{background:#161d30}
+
+  @media(max-width:768px){
+    .email-bar{font-size:13px;padding:8px 16px;gap:8px}
+    .email-bar .bar-full{display:none}
+    .email-bar .bar-short{display:inline}
+    .mobile-menu.open~.email-bar{display:none}
+  }
   @media(max-width:640px){
     .ebay-strip{text-align:center;flex-direction:column;align-items:center}
   }
@@ -255,16 +288,14 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">
+  <a href="#" onclick="event.preventDefault();window.scrollTo({top:0,behavior:'smooth'})" class="nav-logo">
     <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
     <span>SAFE NETWORK</span>
-  </div>
+  </a>
   <ul class="nav-links">
     <li><a href="#shows">Shows</a></li>
     <li><a href="#host">Hosts</a></li>
     <li><a href="/blog">Blog</a></li>
-    <li><a href="#follow">Follow</a></li>
-    <li><a href="#socials">Links</a></li>
   </ul>
   <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="nav-cta">Watch Live</a>
   <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
@@ -273,13 +304,21 @@
 </nav>
 
 <ul class="mobile-menu" id="mobileMenu">
-  <li><a href="#shows" onclick="toggleMenu()">Shows</a></li>
-  <li><a href="#host" onclick="toggleMenu()">Hosts</a></li>
+  <li><a href="#shows">Shows</a></li>
+  <li><a href="#host">Hosts</a></li>
   <li><a href="/blog">Blog</a></li>
-  <li><a href="#follow" onclick="toggleMenu()">Follow</a></li>
-  <li><a href="#socials" onclick="toggleMenu()">Links</a></li>
+  <li><a href="#follow">Follow</a></li>
+  <li><a href="#socials">Links</a></li>
+  <li><a href="#" onclick="event.preventDefault();toggleMenu();openSignupModal()">🎁 Join the Collector's List</a></li>
   <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="mobile-cta">Watch Live</a></li>
 </ul>
+
+<!-- EMAIL BAR -->
+<div class="email-bar" onclick="openSignupModal()">
+  <span class="bar-full">🎁 Join the Collector's List — Exclusive Coupons, Deals &amp; Giveaways</span>
+  <span class="bar-short">🎁 Exclusive Coupons &amp; Giveaways</span>
+  <button>Sign Up</button>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -296,7 +335,7 @@
   </div>
   <div class="hero-btns">
     <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="btn-primary">🔔 Follow @SafeNetwork on Whatnot</a>
-    <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="btn-gold">🪙 Follow @djsmoltz on Whatnot</a>
+    <a href="#" onclick="event.preventDefault();openSignupModal()" class="btn-gold">🎁 Get Exclusive Deals &amp; Giveaways</a>
   </div>
 </section>
 
@@ -370,16 +409,61 @@
   <div class="section-label">THE TEAM</div>
   <h2 class="section-title">Meet the <span style="color:var(--blue)">Hosts</span></h2>
   <p class="section-sub">Real collectors. Real knowledge. Real deals.</p>
-  <div class="host-card">
-    <div class="host-avatar"><img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg" alt="DJ Smoltz"/></div>
-    <h3>DJ Smoltz</h3>
-    <div class="host-handle">@djsmoltz on Whatnot</div>
-    <p>The face of Safe Network's Coins and Bullion show. DJ Smoltz brings energy, expertise, and incredible deals to every live stream. From Morgan dollars to gold bars, he keeps every show packed with surprise mystery lots and community giveaways.</p>
-    <div class="host-shows">
-      <span class="host-tag">🪙 Coins &amp; Bullion</span>
-      <span class="host-tag">🎁 Giveaways</span>
-      <span class="host-tag">🔨 Auctions</span>
+  <div class="host-grid">
+
+    <div class="host-card">
+      <div class="host-avatar"><img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg" alt="DJ Smoltz"/></div>
+      <h3>DJ Smoltz</h3>
+      <div class="host-handle">
+        <span>@djsmoltz</span>
+        <div class="host-socials">
+          <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" title="Whatnot"><img src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png" alt="Whatnot"/></a>
+        </div>
+      </div>
+      <p>The face of Safe Network's Coins and Bullion show. Energy, expertise, and incredible deals every stream. Morgan dollars to gold bars, packed with mystery lots and giveaways.</p>
+      <div class="host-shows">
+        <span class="host-tag">🪙 Coins &amp; Bullion</span>
+        <span class="host-tag">🎁 Giveaways</span>
+        <span class="host-tag">🔨 Auctions</span>
+      </div>
     </div>
+
+    <div class="host-card">
+      <div class="host-avatar"><img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg" alt="HoneyBunBean"/></div>
+      <h3>HoneyBunBean</h3>
+      <div class="host-handle">
+        <span>@honeybunbean</span>
+        <div class="host-socials">
+          <a href="https://www.whatnot.com/user/honeybunbean" target="_blank" title="Whatnot"><img src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png" alt="Whatnot"/></a>
+          <a href="https://www.instagram.com/honeybunbean/" target="_blank" title="Instagram"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram"/></a>
+        </div>
+      </div>
+      <p>Safe Network's Pokemon host. Live pack openings, graded card auctions, and Pokemon giveaways. From vintage Base Set to the latest modern hits.</p>
+      <div class="host-shows">
+        <span class="host-tag">⚡ Pokemon</span>
+        <span class="host-tag">🎁 Giveaways</span>
+        <span class="host-tag">🔨 Auctions</span>
+      </div>
+    </div>
+
+    <div class="host-card">
+      <div class="host-avatar"><img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F11960479%2F9e3bacf3-04c3-46c9-8c09-afac5cccbfad.jpeg" alt="MaxoCollects"/></div>
+      <h3>MaxoCollects</h3>
+      <div class="host-handle">
+        <span>@maxocollects</span>
+        <div class="host-socials">
+          <a href="https://www.whatnot.com/user/maxocollects" target="_blank" title="Whatnot"><img src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png" alt="Whatnot"/></a>
+          <a href="https://www.instagram.com/maxo_collects/" target="_blank" title="Instagram"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram"/></a>
+        </div>
+      </div>
+      <p>Safe Network's Sports Cards host. Rookie cards, autographs, graded slabs and mystery boxes across football, basketball, baseball and more.</p>
+      <div class="host-shows">
+        <span class="host-tag">🏀 Sports Cards</span>
+        <span class="host-tag">🎁 Giveaways</span>
+        <span class="host-tag">🔨 Auctions</span>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -423,40 +507,28 @@
   </div>
 </section>
 
-<!-- EMAIL SIGNUP CTA -->
-<div class="divider"></div>
-<section class="email-section" id="email">
-  <div class="section-label">EXCLUSIVE DEALS</div>
-  <h2 class="section-title">Join the <span style="color:var(--gold2)">Collector's List</span></h2>
-  <p class="section-sub">Get an exclusive coupon plus first access to new drops, shows, and deals. Free to join.</p>
-  <button onclick="openSignupModal()">Get Your Coupon</button>
-</section>
-
-<!-- EMAIL SIGNUP MODAL -->
+<!-- SIGNUP MODAL -->
 <div class="signup-overlay" id="signupOverlay">
   <div class="signup-modal">
     <button class="signup-close" onclick="closeSignupModal()">&times;</button>
-    <h3>Join the Collector's List</h3>
-    <p>Get an exclusive coupon plus first access to drops and deals.</p>
-    <div class="signup-error" id="signupError"></div>
-    <form id="signupForm" onsubmit="handleSignup(event)">
-      <input type="text" name="first_name" placeholder="First name" required>
-      <input type="email" name="email" placeholder="Email address" required>
-      <fieldset>
-        <legend>What do you collect?</legend>
-        <div class="interest-grid">
-          <label><input type="checkbox" name="interests" value="coins"> Coins &amp; Bullion</label>
-          <label><input type="checkbox" name="interests" value="pokemon"> Pokemon Cards</label>
-          <label><input type="checkbox" name="interests" value="sports"> Sports Cards</label>
-          <label><input type="checkbox" name="interests" value="shoes"> Shoes</label>
-        </div>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:6px">Join the Collector's List</h2>
+    <p style="color:var(--silver);font-size:14px;margin-bottom:24px">Sign up for exclusive coupons, deals, and giveaways.</p>
+    <form onsubmit="handleSignup(event)">
+      <input type="text" name="first_name" placeholder="First name" required/>
+      <input type="email" name="email" placeholder="Email address" required/>
+      <fieldset class="interest-grid">
+        <legend>I collect…</legend>
+        <label><input type="checkbox" name="interests" value="coins"/> Coins</label>
+        <label><input type="checkbox" name="interests" value="sports_cards"/> Sports Cards</label>
+        <label><input type="checkbox" name="interests" value="pokemon"/> Pokémon</label>
+        <label><input type="checkbox" name="interests" value="other"/> Other</label>
       </fieldset>
-      <button type="submit">Get My Coupon</button>
+      <div class="signup-error" id="signupError"></div>
+      <button type="submit">Sign Up Now</button>
     </form>
-    <div class="signup-success" id="signupSuccess" style="display:none">
-      <div class="success-icon">✉️</div>
-      <h3>Check Your Inbox!</h3>
-      <p>We sent a verification email. Click the link to confirm and unlock your coupon.</p>
+    <div class="signup-success" id="signupSuccess">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:6px">You're In! 🎉</h3>
+      <p style="color:var(--silver);font-size:14px">Check your email to verify and grab your first coupon.</p>
     </div>
   </div>
 </div>
@@ -464,7 +536,7 @@
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">SAFE NETWORK</div>
-  <p>2025 Safe Network · safenetwork.shop</p>
+  <p>2026 Safe Network · safenetwork.shop</p>
   <p style="color:rgba(192,200,216,.4);font-size:12px">Your trusted live shopping network on Whatnot</p>
 </footer>
 

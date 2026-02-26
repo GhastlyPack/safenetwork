@@ -26,14 +26,16 @@
 </script>
 
 <style>
-  /* Blog index overrides */
+  /* Blog page overrides */
   body::before{background:radial-gradient(ellipse at 20% 20%,rgba(30,144,255,.1) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(212,160,23,.06) 0%,transparent 50%)}
 
+  /* HERO */
   .blog-hero{padding:80px 20px 48px;text-align:center;position:relative;z-index:1}
   .section-label{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:5px;color:var(--blue);margin-bottom:12px}
   .blog-hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,7vw,80px);letter-spacing:3px;margin-bottom:16px}
   .blog-hero p{color:var(--silver);font-size:17px;max-width:520px;margin:0 auto;line-height:1.7}
 
+  /* FEATURED POST */
   .featured-wrap{max-width:1100px;margin:0 auto;padding:0 20px 56px;position:relative;z-index:1}
   .featured-label{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:4px;color:var(--gold2);margin-bottom:16px}
   .featured-card{
@@ -51,13 +53,13 @@
   .featured-body .read-btn{display:inline-block;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 0 16px rgba(30,144,255,.3);transition:transform .2s,box-shadow .2s;align-self:flex-start}
   .featured-body .read-btn:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(30,144,255,.6)}
 
+  /* FILTERS */
   .filters{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:0 20px 40px;position:relative;z-index:1}
   .filter-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:var(--silver);padding:8px 20px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
   .filter-btn:hover,.filter-btn.active{background:rgba(30,144,255,.15);border-color:var(--blue);color:var(--blue)}
   .filter-btn.gold:hover,.filter-btn.gold.active{background:rgba(212,160,23,.12);border-color:var(--gold);color:var(--gold2)}
-  .filter-btn.poke:hover,.filter-btn.poke.active{background:rgba(255,200,0,.1);border-color:#ffd700;color:#ffd700}
-  .filter-btn.green:hover,.filter-btn.green.active{background:rgba(34,197,94,.1);border-color:#4ade80;color:#4ade80}
 
+  /* GRID */
   .blog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;max-width:1100px;margin:0 auto;padding:0 20px 80px;position:relative;z-index:1}
   .post-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:20px;overflow:hidden;text-decoration:none;color:var(--white);transition:transform .3s,border-color .3s,box-shadow .3s;display:flex;flex-direction:column}
   .post-card:hover{transform:translateY(-6px);border-color:rgba(30,144,255,.4);box-shadow:0 8px 40px rgba(30,144,255,.15)}
@@ -78,7 +80,11 @@
   .author-img{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(30,144,255,.3)}
   .read-more{color:var(--blue);font-size:13px;font-weight:600}
 
-  .coming-soon-strip{max-width:1100px;margin:0 auto 64px;padding:0 20px;position:relative;z-index:1}
+  /* COMING SOON BANNER */
+  .coming-soon-strip{
+    max-width:1100px;margin:0 auto 64px;padding:0 20px;
+    position:relative;z-index:1;
+  }
   .coming-soon-inner{
     background:linear-gradient(135deg,rgba(212,160,23,.08),rgba(10,14,26,.5));
     border:1px solid rgba(212,160,23,.2);border-radius:20px;
@@ -90,6 +96,7 @@
   .coming-tags{display:flex;flex-wrap:wrap;gap:8px}
   .coming-tag{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--silver);padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600}
 
+  /* DIVIDER */
   .divider{height:1px;max-width:1100px;margin:0 auto 48px;padding:0 20px;position:relative;z-index:1}
   .divider-inner{height:1px;background:linear-gradient(90deg,transparent,rgba(30,144,255,.3),transparent)}
 
@@ -134,30 +141,223 @@
   <p>Tips, guides, and market insights for collectors. From coins and bullion to Pokemon, sports cards, and sneakers.</p>
 </section>
 
-<!-- FEATURED POST (rendered by JS) -->
-<div class="featured-wrap" id="featured-wrap">
+<!-- FEATURED POST -->
+<div class="featured-wrap">
   <div class="featured-label">FEATURED POST</div>
-  <div id="featured"></div>
+  <a class="featured-card" href="/blog/posts/beginner-coin-collecting-guide.html" data-tag="coins">
+    <div class="featured-thumb">🪙</div>
+    <div class="featured-body">
+      <div class="post-meta">
+        <span class="post-tag tag-coins">COINS &amp; BULLION</span>
+        <span class="post-date">February 24, 2026</span>
+        <span class="post-date">· 9 min read</span>
+      </div>
+      <h2>Beginner's Guide to Coin Collecting in 2026</h2>
+      <p>New to coin collecting? Learn how to start, the difference between bullion and numismatic coins, grading basics, how to avoid counterfeits, and where to buy live on Whatnot.</p>
+      <span class="read-btn">Read the Guide</span>
+    </div>
+  </a>
 </div>
 
 <div class="divider"><div class="divider-inner"></div></div>
 
-<!-- FILTERS (rendered by JS) -->
-<div class="filters" id="filters"></div>
+<!-- FILTERS -->
+<div class="filters">
+  <button class="filter-btn active" onclick="filter('all',this)">All Posts</button>
+  <button class="filter-btn gold" onclick="filter('coins',this)">🪙 Coins &amp; Bullion</button>
+  <button class="filter-btn" onclick="filter('pokemon',this)">⚡ Pokemon</button>
+  <button class="filter-btn" onclick="filter('sports',this)">🏀 Sports Cards</button>
+  <button class="filter-btn" onclick="filter('shoes',this)">👟 Shoes</button>
+  <button class="filter-btn" onclick="filter('news',this)">📢 News</button>
+</div>
 
-<!-- GRID (rendered by JS) -->
-<div class="blog-grid" id="grid"></div>
+<!-- GRID -->
+<div class="blog-grid" id="grid">
+
+  <a class="post-card" href="/blog/posts/beginner-coin-collecting-guide.html" data-tag="coins">
+    <div class="post-thumb">🪙</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-coins">COINS &amp; BULLION</span>
+        <span class="post-date">Feb 24, 2026</span>
+      </div>
+      <h2>Beginner's Guide to Coin Collecting in 2026</h2>
+      <p>Where to start, what to buy, how to grade, and how to avoid getting burned. Everything a new collector needs to know.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg" alt="DJ Smoltz"/>
+          DJ Smoltz
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="post-card" href="/blog/posts/bullion-vs-numismatic-coins.html" data-tag="coins">
+    <div class="post-thumb">⚖️</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-coins">COINS &amp; BULLION</span>
+        <span class="post-date">Feb 24, 2026</span>
+      </div>
+      <h2>Bullion vs Numismatic Coins: Which Should You Buy?</h2>
+      <p>The most important concept every new collector needs to understand before spending a dollar. A full breakdown of both categories with a side-by-side comparison.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg" alt="DJ Smoltz"/>
+          DJ Smoltz
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="post-card" href="/blog/posts/how-to-spot-fake-silver-gold-coins.html" data-tag="coins">
+    <div class="post-thumb">🧲</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-coins">COINS &amp; BULLION</span>
+        <span class="post-date">Feb 24, 2026</span>
+      </div>
+      <h2>How to Spot Fake Silver and Gold Coins</h2>
+      <p>The weight test, magnet test, sound test, and visual inspection — four simple methods that protect you from counterfeit coins before you buy.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg" alt="DJ Smoltz"/>
+          DJ Smoltz
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="post-card" href="/blog/posts/trading-card-collecting-guide.html" data-tag="sports">
+    <div class="post-thumb">🏀</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-sports">SPORTS CARDS</span>
+        <span class="post-date">Feb 24, 2026</span>
+      </div>
+      <h2>Trading Card Collecting Guide: How to Start in 2026</h2>
+      <p>A complete guide to building your sports card collection — from understanding card types and sets to grading, market trends, and where to buy.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="MaxoCollects"/>
+          MaxoCollects
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="post-card" href="/blog/posts/how-card-grading-works.html" data-tag="sports">
+    <div class="post-thumb">🏆</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-sports">SPORTS CARDS</span>
+        <span class="post-date">Feb 24, 2026</span>
+      </div>
+      <h2>How Card Grading Works: PSA vs CGC vs SGC</h2>
+      <p>Everything you need to know about professional card grading — the scale, the companies, costs, turnaround times, and when grading is worth it.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="MaxoCollects"/>
+          MaxoCollects
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="post-card" href="/blog/posts/modern-vs-vintage-trading-cards.html" data-tag="sports">
+    <div class="post-thumb">⚔️</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-sports">SPORTS CARDS</span>
+        <span class="post-date">Feb 24, 2026</span>
+      </div>
+      <h2>Modern vs Vintage Trading Cards: Which Are Worth More?</h2>
+      <p>Comparing modern and vintage sports cards across value, risk, and collector strategy to help you decide where to focus your collection.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="MaxoCollects"/>
+          MaxoCollects
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="post-card" href="/blog/posts/pokemon-card-collecting-guide.html" data-tag="pokemon">
+    <div class="post-thumb">⚡</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-pokemon">POKÉMON</span>
+        <span class="post-date">Feb 25, 2026</span>
+      </div>
+      <h2>Pokémon Card Collecting Guide (2026)</h2>
+      <p>From Base Set to Scarlet &amp; Violet — how to start collecting Pokémon cards, understand rarity, spot fakes, and find value in every era.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg" alt="HoneyBunBean"/>
+          HoneyBunBean
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="post-card" href="/blog/posts/modern-vs-vintage-pokemon-cards.html" data-tag="pokemon">
+    <div class="post-thumb">⚔️</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-pokemon">POKÉMON</span>
+        <span class="post-date">Feb 25, 2026</span>
+      </div>
+      <h2>Modern vs Vintage Pokémon Cards: Which Should You Buy?</h2>
+      <p>Compare modern and vintage Pokémon cards to understand value trends, risk levels, and collector strategy in 2026.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg" alt="HoneyBunBean"/>
+          HoneyBunBean
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="post-card" href="/blog/posts/what-makes-a-pokemon-card-valuable.html" data-tag="pokemon">
+    <div class="post-thumb">💎</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-tag tag-pokemon">POKÉMON</span>
+        <span class="post-date">Feb 25, 2026</span>
+      </div>
+      <h2>What Makes a Pokémon Card Valuable?</h2>
+      <p>Discover what drives Pokémon card value including rarity, condition, grading, population reports, and market demand.</p>
+      <div class="post-footer">
+        <div class="post-author">
+          <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg" alt="HoneyBunBean"/>
+          HoneyBunBean
+        </div>
+        <span class="read-more">Read More →</span>
+      </div>
+    </div>
+  </a>
+
+</div>
 
 <!-- COMING SOON -->
 <div class="coming-soon-strip">
   <div class="coming-soon-inner">
     <div>
       <h3>More Verticals Coming Soon</h3>
-      <p>We are expanding into sneakers and more. New guides dropping as each show launches.</p>
+      <p>We are expanding into Pokemon, sports cards, and sneakers. New guides dropping as each show launches.</p>
     </div>
     <div class="coming-tags">
+      <span class="coming-tag">⚡ Pokemon</span>
+      <span class="coming-tag">🏀 Sports Cards</span>
       <span class="coming-tag">👟 Shoes</span>
-      <span class="coming-tag">📢 News</span>
     </div>
   </div>
 </div>
@@ -165,37 +365,34 @@
 <!-- EMAIL SIGNUP BANNER -->
 <div class="coming-soon-strip">
   <div class="email-banner">
-    <h3>Get a Coupon — Join the Collector's List</h3>
-    <p>Exclusive deals, new show alerts, and your first coupon. Sign up free.</p>
-    <button onclick="openSignupModal()">Get Your Coupon</button>
+    <h3>Sign Up for Exclusive Coupons, Deals &amp; Giveaways</h3>
+    <p>Join the Collector's List for first access to drops, show alerts, and exclusive deals.</p>
+    <button onclick="openSignupModal()">Sign Up Now</button>
   </div>
 </div>
 
-<!-- EMAIL SIGNUP MODAL -->
+<!-- SIGNUP MODAL -->
 <div class="signup-overlay" id="signupOverlay">
   <div class="signup-modal">
     <button class="signup-close" onclick="closeSignupModal()">&times;</button>
-    <h3>Join the Collector's List</h3>
-    <p>Get an exclusive coupon plus first access to drops and deals.</p>
-    <div class="signup-error" id="signupError"></div>
-    <form id="signupForm" onsubmit="handleSignup(event)">
-      <input type="text" name="first_name" placeholder="First name" required>
-      <input type="email" name="email" placeholder="Email address" required>
-      <fieldset>
-        <legend>What do you collect?</legend>
-        <div class="interest-grid">
-          <label><input type="checkbox" name="interests" value="coins"> Coins &amp; Bullion</label>
-          <label><input type="checkbox" name="interests" value="pokemon"> Pokemon Cards</label>
-          <label><input type="checkbox" name="interests" value="sports"> Sports Cards</label>
-          <label><input type="checkbox" name="interests" value="shoes"> Shoes</label>
-        </div>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:6px">Join the Collector's List</h2>
+    <p style="color:var(--silver);font-size:14px;margin-bottom:24px">Sign up for exclusive coupons, deals, and giveaways.</p>
+    <form onsubmit="handleSignup(event)">
+      <input type="text" name="first_name" placeholder="First name" required/>
+      <input type="email" name="email" placeholder="Email address" required/>
+      <fieldset class="interest-grid">
+        <legend>I collect…</legend>
+        <label><input type="checkbox" name="interests" value="coins"/> Coins</label>
+        <label><input type="checkbox" name="interests" value="sports_cards"/> Sports Cards</label>
+        <label><input type="checkbox" name="interests" value="pokemon"/> Pokémon</label>
+        <label><input type="checkbox" name="interests" value="other"/> Other</label>
       </fieldset>
-      <button type="submit">Get My Coupon</button>
+      <div class="signup-error" id="signupError"></div>
+      <button type="submit">Sign Up Now</button>
     </form>
-    <div class="signup-success" id="signupSuccess" style="display:none">
-      <div class="success-icon">✉️</div>
-      <h3>Check Your Inbox!</h3>
-      <p>We sent a verification email. Click the link to confirm and unlock your coupon.</p>
+    <div class="signup-success" id="signupSuccess">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:6px">You're In! 🎉</h3>
+      <p style="color:var(--silver);font-size:14px">Check your email to verify and grab your first coupon.</p>
     </div>
   </div>
 </div>
@@ -207,210 +404,18 @@
 </footer>
 
 <script>
-/**
- * ============================================================
- *  BLOG POST REGISTRY
- *  To add a new post, add an object to this array.
- *  The grid, featured card, and filters all render from here.
- *
- *  tag options: coins | pokemon | sports | shoes | news
- *  featured: true  — makes this the hero featured post
- * ============================================================
- */
-const POSTS = [
-  // ── COINS & BULLION ────────────────────────────────────────
-  {
-    title: "Beginner's Guide to Coin Collecting in 2026",
-    url: "/blog/posts/beginner-coin-collecting-guide.html",
-    tag: "coins",
-    emoji: "🪙",
-    date: "Feb 24, 2026",
-    readTime: "9 min read",
-    description: "Where to start, what to buy, how to grade, and how to avoid getting burned. Everything a new collector needs to know.",
-    author: "DJ Smoltz",
-    authorImg: "https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg",
-    featured: true
-  },
-  {
-    title: "Bullion vs Numismatic Coins: Which Should You Buy?",
-    url: "/blog/posts/bullion-vs-numismatic-coins.html",
-    tag: "coins",
-    emoji: "⚖️",
-    date: "Feb 24, 2026",
-    readTime: "7 min read",
-    description: "The most important concept every new collector needs to understand before spending a dollar. A full breakdown of both categories.",
-    author: "DJ Smoltz",
-    authorImg: "https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg"
-  },
-  {
-    title: "How to Spot Fake Silver and Gold Coins",
-    url: "/blog/posts/how-to-spot-fake-silver-gold-coins.html",
-    tag: "coins",
-    emoji: "🧲",
-    date: "Feb 24, 2026",
-    readTime: "7 min read",
-    description: "The weight test, magnet test, sound test, and visual inspection — four simple methods that protect you from counterfeit coins.",
-    author: "DJ Smoltz",
-    authorImg: "https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg"
-  },
-
-  // ── SPORTS CARDS ───────────────────────────────────────────
-  {
-    title: "Trading Card Collecting Guide (2026)",
-    url: "/blog/posts/trading-card-collecting-guide.html",
-    tag: "sports",
-    emoji: "🏀",
-    date: "Feb 24, 2026",
-    readTime: "9 min read",
-    description: "Learn how the card market works, what makes cards valuable, how grading impacts price, and how to start building a real collection.",
-    author: "MaxoCollects",
-    authorImg: "https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F11960479%2F9e3bacf3-04c3-46c9-8c09-afac5cccbfad.jpeg"
-  },
-  {
-    title: "How Card Grading Works: PSA vs CGC vs SGC",
-    url: "/blog/posts/how-card-grading-works.html",
-    tag: "sports",
-    emoji: "💎",
-    date: "Feb 24, 2026",
-    readTime: "7 min read",
-    description: "How each grading company scores cards, what the grades mean, and how a grade impacts the value of your sports cards and Pokemon cards.",
-    author: "MaxoCollects",
-    authorImg: "https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F11960479%2F9e3bacf3-04c3-46c9-8c09-afac5cccbfad.jpeg"
-  },
-  {
-    title: "Modern vs Vintage Trading Cards: Which Is Right for You?",
-    url: "/blog/posts/modern-vs-vintage-trading-cards.html",
-    tag: "sports",
-    emoji: "📦",
-    date: "Feb 24, 2026",
-    readTime: "7 min read",
-    description: "Compare modern and vintage trading cards to understand value trends, risk levels, and which collecting strategy fits your goals.",
-    author: "MaxoCollects",
-    authorImg: "https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F11960479%2F9e3bacf3-04c3-46c9-8c09-afac5cccbfad.jpeg"
-  },
-
-  // ── POKÉMON ────────────────────────────────────────────────
-  {
-    title: "Pokémon Card Collecting Guide (2026)",
-    url: "/blog/posts/pokemon-card-collecting-guide.html",
-    tag: "pokemon",
-    emoji: "⚡",
-    date: "Feb 24, 2026",
-    readTime: "9 min read",
-    description: "How to start collecting Pokémon cards, what makes them valuable, grading basics, modern vs vintage strategy, and how to avoid fakes.",
-    author: "HoneyBunBean",
-    authorImg: "https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg"
-  },
-  {
-    title: "What Makes a Pokémon Card Valuable?",
-    url: "/blog/posts/what-makes-a-pokemon-card-valuable.html",
-    tag: "pokemon",
-    emoji: "💎",
-    date: "Feb 25, 2026",
-    readTime: "7 min read",
-    description: "Rarity tiers, condition and centering, PSA 10 premiums, population reports, and market demand — every factor that drives Pokémon card value.",
-    author: "HoneyBunBean",
-    authorImg: "https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg"
-  },
-  {
-    title: "Modern vs Vintage Pokémon Cards: Which Should You Buy?",
-    url: "/blog/posts/modern-vs-vintage-pokemon-cards.html",
-    tag: "pokemon",
-    emoji: "⚔️",
-    date: "Feb 25, 2026",
-    readTime: "7 min read",
-    description: "Compare modern and vintage Pokémon cards to understand value trends, reprint risk, scarcity fundamentals, and which strategy fits your goals.",
-    author: "HoneyBunBean",
-    authorImg: "https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg"
+  function toggleMenu() {
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.querySelector('.hamburger').classList.toggle('open');
   }
-];
-
-/* ── Tag config ─────────────────────────────────────────────── */
-const TAG_CONFIG = {
-  coins:   { label: "Coins & Bullion", icon: "🪙", className: "tag-coins",   filterClass: "gold" },
-  pokemon: { label: "Pokémon",         icon: "⚡", className: "tag-pokemon", filterClass: "poke" },
-  sports:  { label: "Sports Cards",    icon: "🏀", className: "tag-sports",  filterClass: "green" },
-  shoes:   { label: "Shoes",           icon: "👟", className: "tag-shoes",   filterClass: "" },
-  news:    { label: "News",            icon: "📢", className: "tag-news",    filterClass: "" }
-};
-
-/* ── Render featured post ───────────────────────────────────── */
-function renderFeatured() {
-  const post = POSTS.find(p => p.featured);
-  if (!post) { document.getElementById('featured-wrap').style.display = 'none'; return; }
-  const t = TAG_CONFIG[post.tag];
-  document.getElementById('featured').innerHTML = `
-    <a class="featured-card" href="${post.url}">
-      <div class="featured-thumb">${post.emoji}</div>
-      <div class="featured-body">
-        <div class="post-meta">
-          <span class="post-tag ${t.className}">${t.label.toUpperCase()}</span>
-          <span class="post-date">${post.date}</span>
-          <span class="post-date">· ${post.readTime}</span>
-        </div>
-        <h2>${post.title}</h2>
-        <p>${post.description}</p>
-        <span class="read-btn">Read the Guide</span>
-      </div>
-    </a>`;
-}
-
-/* ── Render filter buttons ──────────────────────────────────── */
-function renderFilters() {
-  const usedTags = [...new Set(POSTS.map(p => p.tag))];
-  const el = document.getElementById('filters');
-  let html = '<button class="filter-btn active" onclick="filterPosts(\'all\',this)">All Posts</button>';
-  usedTags.forEach(tag => {
-    const t = TAG_CONFIG[tag];
-    if (t) html += `<button class="filter-btn ${t.filterClass}" onclick="filterPosts('${tag}',this)">${t.icon} ${t.label}</button>`;
-  });
-  el.innerHTML = html;
-}
-
-/* ── Render grid ────────────────────────────────────────────── */
-function renderGrid() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = POSTS.map(post => {
-    const t = TAG_CONFIG[post.tag];
-    return `
-    <a class="post-card" href="${post.url}" data-tag="${post.tag}">
-      <div class="post-thumb">${post.emoji}</div>
-      <div class="post-body">
-        <div class="post-meta">
-          <span class="post-tag ${t.className}">${t.label.toUpperCase()}</span>
-          <span class="post-date">${post.date}</span>
-        </div>
-        <h2>${post.title}</h2>
-        <p>${post.description}</p>
-        <div class="post-footer">
-          <div class="post-author">
-            <img class="author-img" src="${post.authorImg}" alt="${post.author}"/>
-            ${post.author}
-          </div>
-          <span class="read-more">Read More →</span>
-        </div>
-      </div>
-    </a>`;
-  }).join('');
-}
-
-/* ── Filter handler ─────────────────────────────────────────── */
-function filterPosts(tag, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.post-card').forEach(card => {
-    card.style.display = (tag === 'all' || card.dataset.tag === tag) ? 'flex' : 'none';
-  });
-}
-
-/* ── Init ────────────────────────────────────────────────────── */
-renderFeatured();
-renderFilters();
-renderGrid();
-function toggleMenu() {
-  document.getElementById('mobileMenu').classList.toggle('open');
-  document.querySelector('.hamburger').classList.toggle('open');
-}</script>
+  function filter(tag, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.post-card').forEach(card => {
+      card.style.display = (tag === 'all' || card.dataset.tag === tag) ? 'flex' : 'none';
+    });
+  }
+</script>
 <script src="/js/signup.js"></script>
 </body>
 </html>

@@ -2,7 +2,19 @@
 (function(){
   var FORM_ID = 'YOUR_FORM_ID'; // Replace with your Customer.io Form ID
   var AUTO_DELAY = 10000; // 10 seconds
-  var LS_KEY = 'sn_signup_shown';
+  var COOKIE_NAME = 'sn_signup_shown';
+  var COOKIE_DAYS = 365; // don't auto-popup again for 1 year
+
+  function getCookie(name){
+    var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+  }
+
+  function setCookie(name, value, days){
+    var d = new Date();
+    d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = name + '=' + value + ';expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
+  }
 
   /* ── Open / Close ── */
   window.openSignupModal = function(){
@@ -30,11 +42,12 @@
     if(e.key === 'Escape') closeSignupModal();
   });
 
-  /* ── Auto-popup (once per visitor) ── */
-  if(!localStorage.getItem(LS_KEY)){
+  /* ── Auto-popup (once per visitor, cookie-based) ── */
+  if(!getCookie(COOKIE_NAME)){
     setTimeout(function(){
-      if(!localStorage.getItem(LS_KEY)){
+      if(!getCookie(COOKIE_NAME)){
         openSignupModal();
+        setCookie(COOKIE_NAME, '1', COOKIE_DAYS);
       }
     }, AUTO_DELAY);
   }
@@ -42,7 +55,7 @@
   /* ── Form Submit ── */
   window.handleSignup = function(e){
     e.preventDefault();
-    var form = document.getElementById('signupForm');
+    var form = document.querySelector('.signup-modal form');
     var errorEl = document.getElementById('signupError');
     var successEl = document.getElementById('signupSuccess');
 
@@ -111,6 +124,6 @@
   function showSuccess(form, successEl){
     form.style.display = 'none';
     successEl.style.display = 'block';
-    localStorage.setItem(LS_KEY, '1');
+    setCookie(COOKIE_NAME, '1', COOKIE_DAYS);
   }
 })();

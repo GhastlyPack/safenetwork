@@ -13,8 +13,6 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
 <link rel="canonical" href="https://safenetwork.shop/blog/how-to-spot-fake-silver-gold-coins"/>
-<link rel="stylesheet" href="/css/global.css">
-<link rel="stylesheet" href="/css/article.css">
 
 <script type="application/ld+json">
 {
@@ -65,12 +63,25 @@
 }
 </script>
 
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/article.css">
+<link rel="stylesheet" href="/css/signup.css">
+
 <style>
-  /* Coin-specific + page-unique overrides */
+  /* Coin theme overrides */
   :root{--red:#ef4444;--green:#4ade80}
-  body::before{background:radial-gradient(ellipse at 20% 20%,rgba(30,144,255,.1) 0%,transparent 50%)}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(212,160,23,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(30,144,255,.08) 0%,transparent 50%);pointer-events:none;z-index:0}
   .post-tag{background:rgba(212,160,23,.15);color:var(--gold2);border:1px solid rgba(212,160,23,.25)}
-  .faq-a.open{max-height:200px;padding:0 20px 18px}
+  .author-img{border:2px solid rgba(212,160,23,.4)}
+  .prose h2{border-bottom:1px solid rgba(212,160,23,.25)}
+  .prose a:hover{color:var(--gold2)}
+  .prose blockquote{border-left:3px solid var(--gold);background:rgba(212,160,23,.05)}
+  .faq-section h2{border-bottom:1px solid rgba(212,160,23,.25)}
+  .cta-box{background:linear-gradient(135deg,rgba(212,160,23,.1),rgba(10,14,26,.5));border:1px solid rgba(212,160,23,.25)}
+  .related-card:hover{border-color:rgba(212,160,23,.4)}
+  .related-card span{color:var(--gold2)}
+
+  /* Page-unique: test-grid & test-card */
   .test-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:28px 0}
   .test-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px}
   .test-card .test-icon{font-size:36px;margin-bottom:12px;display:block}
@@ -80,10 +91,14 @@
   .test-card .verdict{display:inline-block;margin-top:12px;font-size:11px;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:999px}
   .verdict-pass{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.3)}
   .verdict-warn{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25)}
+
+  /* Page-unique: spec-table */
   .spec-table{width:100%;border-collapse:collapse;margin:24px 0;font-size:15px}
   .spec-table th{background:rgba(30,144,255,.12);color:var(--blue);font-weight:700;padding:12px 16px;text-align:left;font-size:12px;letter-spacing:.5px;border-bottom:2px solid rgba(30,144,255,.25)}
   .spec-table td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--silver)}
   .spec-table td:first-child{color:var(--white);font-weight:600}
+
+  /* Page-unique: warn-box */
   .warn-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25);border-radius:12px;padding:24px;margin:28px 0}
   .warn-box h4{font-weight:700;font-size:15px;margin-bottom:10px;color:#f87171}
   .warn-box p{color:var(--silver);font-size:15px;line-height:1.7;margin:0}
@@ -136,7 +151,7 @@
     <img class="author-img" src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg" alt="DJ Smoltz"/>
     <div class="author-info">
       <strong>DJ Smoltz</strong>
-      <span>Coins &amp; Bullion Host at Safe Network · <a href="https://www.instagram.com/djsmoltz/" target="_blank" style="color:#1e90ff;text-decoration:none">@djsmoltz</a></span>
+      <span>Coins &amp; Bullion Host at Safe Network · <a href="https://www.instagram.com/djsmoltz/" target="_blank">@djsmoltz</a></span>
     </div>
   </div>
 
@@ -271,6 +286,12 @@
 
   </div>
 
+  <div class="cta-box email-cta">
+    <h3>Sign Up for Exclusive Coupons, Deals &amp; Giveaways</h3>
+    <p>Join the Collector's List for first access to drops, show alerts, and exclusive deals.</p>
+    <button onclick="openSignupModal()">Sign Up Now</button>
+  </div>
+
   <div class="cta-box">
     <h3>Buy With Confidence on Whatnot</h3>
     <p>Every coin on our show is handled by experienced collectors. Follow DJ Smoltz for live auctions, giveaways, and coins you can trust.</p>
@@ -300,6 +321,32 @@
   <p>2026 Safe Network · safenetwork.shop</p>
 </footer>
 
+<!-- SIGNUP MODAL -->
+<div class="signup-overlay" id="signupOverlay">
+  <div class="signup-modal">
+    <button class="signup-close" onclick="closeSignupModal()">&times;</button>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:6px">Join the Collector's List</h2>
+    <p style="color:var(--silver);font-size:14px;margin-bottom:24px">Sign up for exclusive coupons, deals, and giveaways.</p>
+    <form onsubmit="handleSignup(event)">
+      <input type="text" name="first_name" placeholder="First name" required/>
+      <input type="email" name="email" placeholder="Email address" required/>
+      <fieldset class="interest-grid">
+        <legend>I collect…</legend>
+        <label><input type="checkbox" name="interests" value="coins"/> Coins</label>
+        <label><input type="checkbox" name="interests" value="sports_cards"/> Sports Cards</label>
+        <label><input type="checkbox" name="interests" value="pokemon"/> Pokémon</label>
+        <label><input type="checkbox" name="interests" value="other"/> Other</label>
+      </fieldset>
+      <div class="signup-error" id="signupError"></div>
+      <button type="submit">Sign Up Now</button>
+    </form>
+    <div class="signup-success" id="signupSuccess">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:6px">You're In! 🎉</h3>
+      <p style="color:var(--silver);font-size:14px">Check your email to verify and grab your first coupon.</p>
+    </div>
+  </div>
+</div>
+
 <script>
   function toggleMenu() {
     document.getElementById('mobileMenu').classList.toggle('open');
@@ -312,5 +359,6 @@
     icon.textContent = open ? '−' : '+';
   }
 </script>
+<script src="/js/signup.js"></script>
 </body>
 </html>

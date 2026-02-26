@@ -13,8 +13,6 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
 <link rel="canonical" href="https://safenetwork.shop/blog/modern-vs-vintage-trading-cards"/>
-<link rel="stylesheet" href="/css/global.css">
-<link rel="stylesheet" href="/css/article.css">
 
 <script type="application/ld+json">
 {
@@ -65,12 +63,25 @@
 }
 </script>
 
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/article.css">
+<link rel="stylesheet" href="/css/signup.css">
+
 <style>
+  /* Sports card theme overrides */
   :root{--green:#4ade80}
-  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(30,144,255,.1) 0%,transparent 50%);pointer-events:none;z-index:0}
-  .post-tag{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(34,197,94,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(30,144,255,.08) 0%,transparent 50%);pointer-events:none;z-index:0}
+  .post-tag{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+  .author-img{border:2px solid rgba(34,197,94,.4)}
+  .prose h2{border-bottom:1px solid rgba(34,197,94,.25)}
+  .prose a:hover{color:var(--green)}
   .prose blockquote{border-left:3px solid var(--green);background:rgba(74,222,128,.05)}
+  .faq-section h2{border-bottom:1px solid rgba(34,197,94,.25)}
+  .cta-box{background:linear-gradient(135deg,rgba(34,197,94,.1),rgba(10,14,26,.5));border:1px solid rgba(34,197,94,.25)}
+  .related-card:hover{border-color:rgba(34,197,94,.4)}
   .related-card span{color:var(--green)}
+
+  /* Page-unique: split-compare */
   .split-compare{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:28px 0}
   .split-card{border-radius:16px;padding:28px}
   .split-card.modern{background:rgba(30,144,255,.06);border:1px solid rgba(30,144,255,.2)}
@@ -82,15 +93,18 @@
   .pro,.con{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--silver);line-height:1.5}
   .pro::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px}
   .con::before{content:'✗';color:#f87171;font-weight:700;flex-shrink:0;margin-top:1px}
+
+  /* Page-unique: verdict-box */
   .verdict-box{background:linear-gradient(135deg,rgba(74,222,128,.06),rgba(10,14,26,.5));border:1px solid rgba(74,222,128,.2);border-radius:16px;padding:28px;margin:28px 0}
   .verdict-box h4{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--green);margin-bottom:12px}
   .verdict-box p{color:var(--silver);font-size:15px;line-height:1.7;margin:0}
+
+  /* Page-unique: warn-box */
   .warn-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:12px;padding:24px;margin:28px 0}
   .warn-box h4{font-weight:700;font-size:15px;margin-bottom:10px;color:#fbbf24}
   .warn-box p{color:var(--silver);font-size:15px;line-height:1.7;margin:0}
-  @media(max-width:640px){
-    .split-compare{grid-template-columns:1fr}
-  }
+
+  @media(max-width:640px){.split-compare{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -250,6 +264,12 @@
 
   </div>
 
+  <div class="cta-box email-cta">
+    <h3>Sign Up for Exclusive Coupons, Deals &amp; Giveaways</h3>
+    <p>Join the Collector's List for first access to drops, show alerts, and exclusive deals.</p>
+    <button onclick="openSignupModal()">Sign Up Now</button>
+  </div>
+
   <div class="cta-box">
     <h3>Shop Modern and Vintage Live on Whatnot</h3>
     <p>Follow MaxoCollects for live card auctions spanning modern hits, graded slabs, and vintage lots.</p>
@@ -279,6 +299,32 @@
   <p>2026 Safe Network · safenetwork.shop</p>
 </footer>
 
+<!-- SIGNUP MODAL -->
+<div class="signup-overlay" id="signupOverlay">
+  <div class="signup-modal">
+    <button class="signup-close" onclick="closeSignupModal()">&times;</button>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:6px">Join the Collector's List</h2>
+    <p style="color:var(--silver);font-size:14px;margin-bottom:24px">Sign up for exclusive coupons, deals, and giveaways.</p>
+    <form onsubmit="handleSignup(event)">
+      <input type="text" name="first_name" placeholder="First name" required/>
+      <input type="email" name="email" placeholder="Email address" required/>
+      <fieldset class="interest-grid">
+        <legend>I collect…</legend>
+        <label><input type="checkbox" name="interests" value="coins"/> Coins</label>
+        <label><input type="checkbox" name="interests" value="sports_cards"/> Sports Cards</label>
+        <label><input type="checkbox" name="interests" value="pokemon"/> Pokémon</label>
+        <label><input type="checkbox" name="interests" value="other"/> Other</label>
+      </fieldset>
+      <div class="signup-error" id="signupError"></div>
+      <button type="submit">Sign Up Now</button>
+    </form>
+    <div class="signup-success" id="signupSuccess">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:6px">You're In! 🎉</h3>
+      <p style="color:var(--silver);font-size:14px">Check your email to verify and grab your first coupon.</p>
+    </div>
+  </div>
+</div>
+
 <script>
   function toggleMenu() {
     document.getElementById('mobileMenu').classList.toggle('open');
@@ -291,5 +337,6 @@
     icon.textContent = open ? '−' : '+';
   }
 </script>
+<script src="/js/signup.js"></script>
 </body>
 </html>

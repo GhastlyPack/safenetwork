@@ -14,8 +14,63 @@
 <link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
 <link rel="canonical" href="https://safenetwork.shop/blog/pokemon-card-collecting-guide"/>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Pokémon Card Collecting Guide (2026)",
+  "description": "Learn how to start collecting Pokémon cards, what makes them valuable, grading basics, and how to avoid beginner mistakes.",
+  "author": {"@type": "Person", "name": "HoneyBunBean", "sameAs": "https://www.instagram.com/honeybunbean/"},
+  "publisher": {"@type": "Organization", "name": "Safe Network", "url": "https://safenetwork.shop"},
+  "datePublished": "2026-02-24",
+  "url": "https://safenetwork.shop/blog/pokemon-card-collecting-guide"
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem","position": 1,"name": "Home","item": "https://safenetwork.shop"},
+    {"@type": "ListItem","position": 2,"name": "Blog","item": "https://safenetwork.shop/blog"},
+    {"@type": "ListItem","position": 3,"name": "Pokémon Card Collecting Guide (2026)","item": "https://safenetwork.shop/blog/pokemon-card-collecting-guide"}
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I start collecting Pokémon cards?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Start by picking a format you connect with — modern sets if you want to open packs and chase hits, or vintage if you are drawn to Base Set and early era cards. Buy a few packs to learn what is inside current products, then shift to buying singles of specific cards you want. Watching live shows on Whatnot is one of the fastest ways to learn pricing and find deals without overpaying."}
+    },
+    {
+      "@type": "Question",
+      "name": "What Pokémon cards are worth the most money?",
+      "acceptedAnswer": {"@type": "Answer", "text": "The most valuable Pokémon cards include the 1999 Base Set Charizard (especially in PSA 10), the Illustrator Pikachu, Base Set shadowless holos in high grade, and modern Special Illustration Rare cards from recent sets. Condition, grade, and population scarcity determine how much any specific copy is worth."}
+    },
+    {
+      "@type": "Question",
+      "name": "Should I get my Pokémon cards graded?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Grading makes financial sense when a card is worth $100 or more in top raw condition and realistically could achieve a PSA 9 or 10. For vintage cards especially, a PSA 10 can be worth many times a raw copy of the same card. For modern cards pulled from fresh packs, the chances of a 10 are higher and grading costs can be justified on key pulls."}
+    },
+    {
+      "@type": "Question",
+      "name": "Are modern Pokémon cards a good investment?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Modern Pokémon cards can hold and grow in value but require careful selection. Special Illustration Rares, Alternate Arts, and low-population PSA 10s of key cards from popular sets tend to appreciate. Common cards and base rares from large print run sets rarely hold meaningful value long term. Focus on scarcity and player demand rather than buying packs speculatively."}
+    }
+  ]
+}
+</script>
+
 <link rel="stylesheet" href="/css/global.css">
 <link rel="stylesheet" href="/css/article.css">
+<link rel="stylesheet" href="/css/signup.css">
 
 <style>
   /* Pokemon theme overrides */
@@ -45,7 +100,7 @@
   .warn-box h4{font-weight:700;font-size:15px;margin-bottom:10px;color:#f87171}
   .warn-box p{color:var(--silver);font-size:15px;line-height:1.7;margin:0}
 
-  /* Page-unique: rarity list */
+  /* Page-unique: rarity tier list */
   .rarity-list{display:flex;flex-direction:column;gap:10px;margin:28px 0}
   .rarity-row{display:flex;align-items:center;gap:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px 18px}
   .rarity-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
@@ -226,6 +281,13 @@
 
   </div>
 
+
+  <div class="cta-box email-cta">
+    <h3>Sign Up for Exclusive Coupons, Deals &amp; Giveaways</h3>
+    <p>Join the Collector's List for first access to drops, show alerts, and exclusive deals.</p>
+    <button onclick="openSignupModal()">Sign Up Now</button>
+  </div>
+
   <div class="cta-box">
     <h3>Watch Pokémon Live on Whatnot</h3>
     <p>Follow HoneyBunBean for live pack openings, graded card auctions, and Pokémon giveaways on Whatnot.</p>
@@ -255,6 +317,32 @@
   <p>2026 Safe Network · safenetwork.shop</p>
 </footer>
 
+<!-- SIGNUP MODAL -->
+<div class="signup-overlay" id="signupOverlay">
+  <div class="signup-modal">
+    <button class="signup-close" onclick="closeSignupModal()">&times;</button>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:6px">Join the Collector's List</h2>
+    <p style="color:var(--silver);font-size:14px;margin-bottom:24px">Sign up for exclusive coupons, deals, and giveaways.</p>
+    <form onsubmit="handleSignup(event)">
+      <input type="text" name="first_name" placeholder="First name" required/>
+      <input type="email" name="email" placeholder="Email address" required/>
+      <fieldset class="interest-grid">
+        <legend>I collect…</legend>
+        <label><input type="checkbox" name="interests" value="coins"/> Coins</label>
+        <label><input type="checkbox" name="interests" value="sports_cards"/> Sports Cards</label>
+        <label><input type="checkbox" name="interests" value="pokemon"/> Pokémon</label>
+        <label><input type="checkbox" name="interests" value="other"/> Other</label>
+      </fieldset>
+      <div class="signup-error" id="signupError"></div>
+      <button type="submit">Sign Up Now</button>
+    </form>
+    <div class="signup-success" id="signupSuccess">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:6px">You're In! 🎉</h3>
+      <p style="color:var(--silver);font-size:14px">Check your email to verify and grab your first coupon.</p>
+    </div>
+  </div>
+</div>
+
 <script>
   function toggleMenu() {
     document.getElementById('mobileMenu').classList.toggle('open');
@@ -267,5 +355,6 @@
     icon.textContent = open ? '−' : '+';
   }
 </script>
+<script src="/js/signup.js"></script>
 </body>
 </html>

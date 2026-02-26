@@ -16,6 +16,7 @@
 
 <link rel="stylesheet" href="/css/global.css">
 <link rel="stylesheet" href="/css/article.css">
+<link rel="stylesheet" href="/css/signup.css">
 
 <style>
   /* Pokemon theme overrides */
@@ -221,6 +222,12 @@
 
   </div>
 
+  <div class="cta-box email-cta">
+    <h3>Sign Up for Exclusive Coupons, Deals &amp; Giveaways</h3>
+    <p>Join the Collector's List for first access to drops, show alerts, and exclusive deals.</p>
+    <button onclick="openSignupModal()">Sign Up Now</button>
+  </div>
+
   <div class="cta-box">
     <h3>Watch Pokémon Live on Whatnot</h3>
     <p>Follow HoneyBunBean for live pack openings, graded card auctions, and Pokémon giveaways on Whatnot.</p>
@@ -254,6 +261,32 @@
   <p>2026 Safe Network · safenetwork.shop</p>
 </footer>
 
+<!-- SIGNUP MODAL -->
+<div class="signup-overlay" id="signupOverlay">
+  <div class="signup-modal">
+    <button class="signup-close" onclick="closeSignupModal()">&times;</button>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:6px">Join the Collector's List</h2>
+    <p style="color:var(--silver);font-size:14px;margin-bottom:24px">Sign up for exclusive coupons, deals, and giveaways.</p>
+    <form onsubmit="handleSignup(event)">
+      <input type="text" name="first_name" placeholder="First name" required/>
+      <input type="email" name="email" placeholder="Email address" required/>
+      <fieldset class="interest-grid">
+        <legend>I collect…</legend>
+        <label><input type="checkbox" name="interests" value="coins"/> Coins</label>
+        <label><input type="checkbox" name="interests" value="sports_cards"/> Sports Cards</label>
+        <label><input type="checkbox" name="interests" value="pokemon"/> Pokémon</label>
+        <label><input type="checkbox" name="interests" value="other"/> Other</label>
+      </fieldset>
+      <div class="signup-error" id="signupError"></div>
+      <button type="submit">Sign Up Now</button>
+    </form>
+    <div class="signup-success" id="signupSuccess">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:6px">You're In! 🎉</h3>
+      <p style="color:var(--silver);font-size:14px">Check your email to verify and grab your first coupon.</p>
+    </div>
+  </div>
+</div>
+
 <script>
   function toggleMenu() {
     document.getElementById('mobileMenu').classList.toggle('open');
@@ -266,5 +299,6 @@
     icon.textContent = open ? '−' : '+';
   }
 </script>
+<script src="/js/signup.js"></script>
 </body>
 </html>

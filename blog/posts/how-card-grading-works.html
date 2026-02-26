@@ -13,8 +13,6 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
 <link rel="canonical" href="https://safenetwork.shop/blog/how-card-grading-works"/>
-<link rel="stylesheet" href="/css/global.css">
-<link rel="stylesheet" href="/css/article.css">
 
 <script type="application/ld+json">
 {
@@ -65,15 +63,25 @@
 }
 </script>
 
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/article.css">
+<link rel="stylesheet" href="/css/signup.css">
+
 <style>
+  /* Sports card theme overrides */
   :root{--green:#4ade80}
-  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(30,144,255,.1) 0%,transparent 50%);pointer-events:none;z-index:0}
-  .post-tag{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(34,197,94,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(30,144,255,.08) 0%,transparent 50%);pointer-events:none;z-index:0}
+  .post-tag{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+  .author-img{border:2px solid rgba(34,197,94,.4)}
+  .prose h2{border-bottom:1px solid rgba(34,197,94,.25)}
+  .prose a:hover{color:var(--green)}
   .prose blockquote{border-left:3px solid var(--green);background:rgba(74,222,128,.05)}
+  .faq-section h2{border-bottom:1px solid rgba(34,197,94,.25)}
+  .cta-box{background:linear-gradient(135deg,rgba(34,197,94,.1),rgba(10,14,26,.5));border:1px solid rgba(34,197,94,.25)}
+  .related-card:hover{border-color:rgba(34,197,94,.4)}
   .related-card span{color:var(--green)}
-  .green-box{background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.2);border-radius:12px;padding:24px;margin:28px 0}
-  .green-box h4{font-weight:700;font-size:15px;margin-bottom:10px;color:var(--green)}
-  .green-box p{color:var(--silver);font-size:15px;line-height:1.7;margin:0}
+
+  /* Page-unique: grade-scale */
   .grade-scale{margin:28px 0;display:flex;flex-direction:column;gap:8px}
   .grade-row{display:flex;align-items:center;gap:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px 18px}
   .grade-badge{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;min-width:52px;text-align:center}
@@ -84,6 +92,8 @@
   .grade-low{color:rgba(192,200,216,.4)}
   .grade-info strong{display:block;font-size:14px;margin-bottom:2px}
   .grade-info span{color:var(--silver);font-size:13px;opacity:.8}
+
+  /* Page-unique: company-grid */
   .company-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:28px 0}
   .company-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;text-align:center;transition:border-color .2s,transform .2s}
   .company-card:hover{border-color:rgba(30,144,255,.3);transform:translateY(-4px)}
@@ -93,10 +103,17 @@
   .badge-best{background:rgba(212,160,23,.15);color:var(--gold2);border:1px solid rgba(212,160,23,.25)}
   .badge-alt{background:rgba(30,144,255,.12);color:var(--blue);border:1px solid rgba(30,144,255,.25)}
   .badge-rising{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+
+  /* Page-unique: compare-table */
   .compare-table{width:100%;border-collapse:collapse;margin:24px 0;font-size:14px}
   .compare-table th{background:rgba(30,144,255,.12);color:var(--blue);font-weight:700;padding:12px 16px;text-align:left;font-size:12px;letter-spacing:.5px;border-bottom:2px solid rgba(30,144,255,.25)}
   .compare-table td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--silver);vertical-align:top}
   .compare-table td:first-child{color:var(--white);font-weight:600}
+
+  /* Page-unique: green-box */
+  .green-box{background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.2);border-radius:12px;padding:24px;margin:28px 0}
+  .green-box h4{font-weight:700;font-size:15px;margin-bottom:10px;color:var(--green)}
+  .green-box p{color:var(--silver);font-size:15px;line-height:1.7;margin:0}
 </style>
 </head>
 <body>
@@ -268,6 +285,12 @@
 
   </div>
 
+  <div class="cta-box email-cta">
+    <h3>Sign Up for Exclusive Coupons, Deals &amp; Giveaways</h3>
+    <p>Join the Collector's List for first access to drops, show alerts, and exclusive deals.</p>
+    <button onclick="openSignupModal()">Sign Up Now</button>
+  </div>
+
   <div class="cta-box">
     <h3>Watch Graded Cards Live on Whatnot</h3>
     <p>Follow MaxoCollects for live auctions of PSA and CGC graded cards, raw singles, and mystery boxes.</p>
@@ -297,6 +320,32 @@
   <p>2026 Safe Network · safenetwork.shop</p>
 </footer>
 
+<!-- SIGNUP MODAL -->
+<div class="signup-overlay" id="signupOverlay">
+  <div class="signup-modal">
+    <button class="signup-close" onclick="closeSignupModal()">&times;</button>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:6px">Join the Collector's List</h2>
+    <p style="color:var(--silver);font-size:14px;margin-bottom:24px">Sign up for exclusive coupons, deals, and giveaways.</p>
+    <form onsubmit="handleSignup(event)">
+      <input type="text" name="first_name" placeholder="First name" required/>
+      <input type="email" name="email" placeholder="Email address" required/>
+      <fieldset class="interest-grid">
+        <legend>I collect…</legend>
+        <label><input type="checkbox" name="interests" value="coins"/> Coins</label>
+        <label><input type="checkbox" name="interests" value="sports_cards"/> Sports Cards</label>
+        <label><input type="checkbox" name="interests" value="pokemon"/> Pokémon</label>
+        <label><input type="checkbox" name="interests" value="other"/> Other</label>
+      </fieldset>
+      <div class="signup-error" id="signupError"></div>
+      <button type="submit">Sign Up Now</button>
+    </form>
+    <div class="signup-success" id="signupSuccess">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:6px">You're In! 🎉</h3>
+      <p style="color:var(--silver);font-size:14px">Check your email to verify and grab your first coupon.</p>
+    </div>
+  </div>
+</div>
+
 <script>
   function toggleMenu() {
     document.getElementById('mobileMenu').classList.toggle('open');
@@ -309,5 +358,6 @@
     icon.textContent = open ? '−' : '+';
   }
 </script>
+<script src="/js/signup.js"></script>
 </body>
 </html>

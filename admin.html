@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Admin Panel | Safe Network</title>
+<link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/profile.css">
+<link rel="stylesheet" href="/css/cookies.css">
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Customer.io CDP -->
+<script>
+  !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
+</script>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
+    <span>SAFE NETWORK</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/#shows">Shows</a></li>
+    <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+    <li><a href="/#socials">Links</a></li>
+    <li><a href="/blog">Blog</a></li>
+  </ul>
+  <button id="authLoginBtn" class="auth-login-btn" onclick="window.snAuth && snAuth.login()">Log In</button>
+  <div id="authProfileWrap" class="auth-profile-wrap">
+    <div class="auth-avatar" onclick="snAuth.toggleProfileDropdown()">
+      <img id="authAvatarImg" alt="Profile"/>
+      <span id="authAvatarInitials" class="auth-avatar-initials"></span>
+    </div>
+    <div id="authDropdown" class="auth-dropdown">
+      <div class="auth-dropdown-label">Signed in as</div>
+      <div id="authDropdownEmail" class="auth-dropdown-email"></div>
+      <button class="auth-logout-btn" onclick="snAuth.logout()">Log Out</button>
+    </div>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<ul class="mobile-menu" id="mobileMenu">
+  <li><a href="/">Home</a></li>
+  <li><a href="/#shows">Shows</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+  <li><a href="/#socials">Links</a></li>
+  <li><a href="/blog">Blog</a></li>
+  <li id="authMobileLogin" class="auth-mobile-login"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
+  <li id="authMobileProfile" class="auth-mobile-profile">
+    <div class="auth-mobile-signed-in">Signed in as <span id="authMobileEmail" class="auth-mobile-email"></span></div>
+    <button class="auth-mobile-logout" onclick="snAuth.logout()">Log Out</button>
+  </li>
+</ul>
+
+<!-- Loading State -->
+<div class="admin-wrap" id="adminLoading">
+  <div class="profile-loading">
+    <p>Checking access...</p>
+  </div>
+</div>
+
+<!-- Access Denied -->
+<div class="admin-wrap" id="adminDenied" style="display:none">
+  <div class="admin-denied">
+    <h1>Access Denied</h1>
+    <p>You don't have permission to view this page. This area is restricted to Safe Network administrators.</p>
+    <a href="/" class="btn-primary" style="display:inline-block;text-decoration:none;padding:14px 36px;border-radius:10px">Back to Home</a>
+  </div>
+</div>
+
+<!-- Admin Content -->
+<div class="admin-wrap" id="adminContent" style="display:none">
+  <h1>Admin Panel</h1>
+  <p style="color:var(--silver);font-size:14px;margin-bottom:32px">Manage users, roles, and loyalty for the Safe Network.</p>
+
+  <!-- Stats Summary -->
+  <div class="admin-stats" id="adminStats">
+    <div class="stat-card blue">
+      <div class="stat-number" id="statTotal">-</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-number" id="statShoppers">-</div>
+      <div class="stat-label">Shoppers</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-number" id="statHosts">-</div>
+      <div class="stat-label">Hosts</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-number" id="statAdmins">-</div>
+      <div class="stat-label">Admins</div>
+    </div>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="admin-search">
+    <input type="text" id="adminSearchInput" placeholder="Search by username, email, or name..." oninput="debounceSearch()"/>
+    <select class="admin-filter" id="adminRoleFilter" onchange="loadUsers()">
+      <option value="">All Roles</option>
+      <option value="shopper">Shoppers</option>
+      <option value="host">Hosts</option>
+      <option value="admin">Admins</option>
+    </select>
+  </div>
+
+  <!-- Users Table -->
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Tier</th>
+          <th>Points</th>
+          <th>Joined</th>
+        </tr>
+      </thead>
+      <tbody id="adminTableBody">
+        <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--silver)">Loading users...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Edit User Panel (slide from right) -->
+<div class="admin-edit-overlay" id="adminEditOverlay" onclick="closeEditPanel(event)">
+  <div class="admin-edit-panel" onclick="event.stopPropagation()">
+    <button class="admin-edit-close" onclick="closeEditPanel()">&times;</button>
+    <h2>Edit User</h2>
+
+    <div style="margin-bottom:20px;padding:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px">
+      <div style="color:var(--silver);font-size:12px;margin-bottom:4px">Username</div>
+      <div id="editUsername" style="color:var(--blue);font-weight:600;font-size:16px">-</div>
+      <div style="color:var(--silver);font-size:12px;margin-top:8px">Email</div>
+      <div id="editEmail" style="color:var(--silver);font-size:14px">-</div>
+    </div>
+
+    <div class="admin-edit-field">
+      <label>Role</label>
+      <select id="editRole">
+        <option value="shopper">Shopper</option>
+        <option value="host">Host</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+
+    <div class="admin-edit-field">
+      <label>Loyalty Tier</label>
+      <select id="editTier">
+        <option value="bronze">Bronze</option>
+        <option value="silver">Silver</option>
+        <option value="gold">Gold</option>
+        <option value="diamond">Diamond</option>
+      </select>
+    </div>
+
+    <div class="admin-edit-field">
+      <label>Loyalty Points</label>
+      <input type="number" id="editPoints" min="0" step="1"/>
+    </div>
+
+    <button class="admin-save-btn" id="adminSaveBtn" onclick="saveUserEdits()">Save Changes</button>
+    <div class="admin-edit-status" id="adminEditStatus"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">SAFE NETWORK</div>
+  <div><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a></div>
+  <p>2026 Safe Network · safenetwork.shop</p>
+</footer>
+
+<script>
+  function toggleMenu(){
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.querySelector('.hamburger').classList.toggle('open');
+  }
+</script>
+<script src="/js/supabase.js"></script>
+<script src="/js/cookies.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+/* ── Admin Page Logic ── */
+(function(){
+  var allUsers = [];
+  var editingUser = null;
+  var searchTimer = null;
+
+  /* ── Initialize Admin Page ── */
+  async function initAdminPage(){
+    var maxWait = 50;
+    while(!window.snAuth && maxWait > 0){
+      await new Promise(function(r){ setTimeout(r, 100); });
+      maxWait--;
+    }
+
+    if(!window.snAuth){
+      showSection('adminDenied');
+      return;
+    }
+
+    var loggedIn = await snAuth.isLoggedIn();
+    if(!loggedIn){
+      showSection('adminDenied');
+      return;
+    }
+
+    // Check if user is admin
+    var profile = window.snProfile ? snProfile.getCachedProfile() : null;
+    if(!profile){
+      try {
+        var user = await snAuth.getUser();
+        var token = await snAuth.getAccessToken();
+        if(user && token && window.snProfile){
+          profile = await snProfile.initProfile(user, token);
+        }
+      } catch(err){
+        console.warn('Admin profile check error:', err);
+      }
+    }
+
+    if(!profile || profile.role !== 'admin'){
+      showSection('adminDenied');
+      return;
+    }
+
+    // User is admin - show panel and load users
+    showSection('adminContent');
+    loadUsers();
+  }
+
+  function showSection(id){
+    document.getElementById('adminLoading').style.display = 'none';
+    document.getElementById('adminDenied').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'none';
+    document.getElementById(id).style.display = '';
+  }
+
+  /* ── Load Users ── */
+  window.loadUsers = async function(){
+    var search = document.getElementById('adminSearchInput').value.trim();
+    var roleFilter = document.getElementById('adminRoleFilter').value;
+
+    try {
+      var token = await snAuth.getAccessToken();
+      allUsers = await snProfile.adminListUsers(token, search, roleFilter);
+      renderUsers();
+      updateStats();
+    } catch(err){
+      console.warn('Load users error:', err);
+      var tbody = document.getElementById('adminTableBody');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#ff6b6b">Error loading users. Please try again.</td></tr>';
+    }
+  };
+
+  /* ── Render Users Table ── */
+  function renderUsers(){
+    var tbody = document.getElementById('adminTableBody');
+    if(!allUsers.length){
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--silver)">No users found.</td></tr>';
+      return;
+    }
+
+    var html = '';
+    allUsers.forEach(function(u){
+      var joined = u.created_at ? new Date(u.created_at).toLocaleDateString() : '-';
+      html += '<tr class="user-row" onclick=\'openEditPanel(' + JSON.stringify(JSON.stringify(u)) + ')\'>' +
+        '<td class="username-cell">@' + escapeHtml(u.username || '') + '</td>' +
+        '<td>' + escapeHtml(u.email || '') + '</td>' +
+        '<td><span class="profile-badge badge-' + (u.role || 'shopper') + '">' + escapeHtml((u.role || 'shopper')) + '</span></td>' +
+        '<td><span class="profile-badge badge-' + (u.loyalty_tier || 'bronze') + '">' + escapeHtml((u.loyalty_tier || 'bronze')) + '</span></td>' +
+        '<td>' + (u.loyalty_points || 0) + '</td>' +
+        '<td>' + joined + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  /* ── Update Stats ── */
+  function updateStats(){
+    var total = allUsers.length;
+    var shoppers = 0, hosts = 0, admins = 0;
+    allUsers.forEach(function(u){
+      if(u.role === 'host') hosts++;
+      else if(u.role === 'admin') admins++;
+      else shoppers++;
+    });
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statShoppers').textContent = shoppers;
+    document.getElementById('statHosts').textContent = hosts;
+    document.getElementById('statAdmins').textContent = admins;
+  }
+
+  /* ── Search Debounce ── */
+  window.debounceSearch = function(){
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(loadUsers, 400);
+  };
+
+  /* ── Edit Panel ── */
+  window.openEditPanel = function(userJson){
+    editingUser = JSON.parse(userJson);
+    document.getElementById('editUsername').textContent = '@' + (editingUser.username || '');
+    document.getElementById('editEmail').textContent = editingUser.email || '';
+    document.getElementById('editRole').value = editingUser.role || 'shopper';
+    document.getElementById('editTier').value = editingUser.loyalty_tier || 'bronze';
+    document.getElementById('editPoints').value = editingUser.loyalty_points || 0;
+    document.getElementById('adminEditStatus').textContent = '';
+    document.getElementById('adminEditOverlay').classList.add('open');
+  };
+
+  window.closeEditPanel = function(e){
+    if(e && e.target !== document.getElementById('adminEditOverlay')) return;
+    document.getElementById('adminEditOverlay').classList.remove('open');
+    editingUser = null;
+  };
+
+  /* ── Save User Edits ── */
+  window.saveUserEdits = async function(){
+    if(!editingUser) return;
+
+    var btn = document.getElementById('adminSaveBtn');
+    var statusEl = document.getElementById('adminEditStatus');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    statusEl.textContent = '';
+
+    var updates = {
+      role: document.getElementById('editRole').value,
+      loyalty_tier: document.getElementById('editTier').value,
+      loyalty_points: parseInt(document.getElementById('editPoints').value) || 0
+    };
+
+    try {
+      var token = await snAuth.getAccessToken();
+      await snProfile.adminUpdateUser(editingUser.auth0_id, updates, token);
+      statusEl.textContent = 'Saved!';
+      statusEl.style.color = '#4ade80';
+
+      // Refresh the user list
+      setTimeout(function(){
+        closeEditPanel();
+        loadUsers();
+      }, 800);
+    } catch(err){
+      console.warn('Admin save error:', err);
+      statusEl.textContent = 'Error: ' + (err.message || 'Please try again.');
+      statusEl.style.color = '#ff6b6b';
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+  };
+
+  /* ── Helpers ── */
+  function escapeHtml(str){
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  /* ── Listen for auth ready event ── */
+  window.addEventListener('snauth:ready', function(e){
+    if(e.detail && e.detail.profile && e.detail.profile.role === 'admin'){
+      showSection('adminContent');
+      loadUsers();
+    }
+  });
+
+  // Boot
+  initAdminPage();
+})();
+</script>
+</body>
+</html>

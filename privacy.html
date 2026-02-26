@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/css/auth.css">
 <link rel="stylesheet" href="/css/cookies.css">
 <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <!-- Customer.io CDP -->
 <script>
   !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
@@ -109,6 +110,7 @@
     <li><strong>Customer.io</strong> - Email marketing and analytics. <a href="https://customer.io/legal/privacy-policy" target="_blank">Customer.io Privacy Policy</a></li>
     <li><strong>Whatnot</strong> - Live shopping platform (linked from our site). <a href="https://www.whatnot.com/privacy" target="_blank">Whatnot Privacy Policy</a></li>
     <li><strong>Cloudinary</strong> - Image hosting. <a href="https://cloudinary.com/privacy" target="_blank">Cloudinary Privacy Policy</a></li>
+    <li><strong>Supabase</strong> - Database and user profile storage. Your profile data (display name, username, collecting interests, and preferences) is stored securely in Supabase. <a href="https://supabase.com/privacy" target="_blank">Supabase Privacy Policy</a></li>
   </ul>
   <p>We do not sell your personal information to third parties.</p>
 
@@ -124,6 +126,7 @@
     <li><strong>Auth0 session</strong> (localStorage) - Maintains your login session across pages and visits.</li>
     <li><strong>sn_cio_auth_identified</strong> (localStorage) - Prevents duplicate analytics calls when you're logged in.</li>
     <li><strong>Customer.io analytics</strong> (cookies) - Used for analytics tracking including page views and events.</li>
+    <li><strong>sn_profile_cache</strong> (sessionStorage) - Temporarily caches your profile data for faster page loads during your browsing session. Cleared when you close the browser tab.</li>
   </ul>
   <p>You can manage your cookie preferences through the cookie consent banner that appears on your first visit. Choosing "Essential Only" will disable analytics and marketing cookies while preserving core site functionality.</p>
 
@@ -164,6 +167,7 @@
     document.querySelector('.hamburger').classList.toggle('open');
   }
 </script>
+<script src="/js/supabase.js"></script>
 <script src="/js/cookies.js"></script>
 <script src="/js/auth.js"></script>
 </body>

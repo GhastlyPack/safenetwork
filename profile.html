@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>My Profile | Safe Network</title>
+<link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
+<meta name="description" content="Manage your Safe Network profile, collecting interests, and privacy settings."/>
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/profile.css">
+<link rel="stylesheet" href="/css/cookies.css">
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Customer.io CDP -->
+<script>
+  !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
+</script>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
+    <span>SAFE NETWORK</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/#shows">Shows</a></li>
+    <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+    <li><a href="/#socials">Links</a></li>
+    <li><a href="/blog">Blog</a></li>
+  </ul>
+  <button id="authLoginBtn" class="auth-login-btn" onclick="window.snAuth && snAuth.login()">Log In</button>
+  <div id="authProfileWrap" class="auth-profile-wrap">
+    <div class="auth-avatar" onclick="snAuth.toggleProfileDropdown()">
+      <img id="authAvatarImg" alt="Profile"/>
+      <span id="authAvatarInitials" class="auth-avatar-initials"></span>
+    </div>
+    <div id="authDropdown" class="auth-dropdown">
+      <div class="auth-dropdown-label">Signed in as</div>
+      <div id="authDropdownEmail" class="auth-dropdown-email"></div>
+      <button class="auth-logout-btn" onclick="snAuth.logout()">Log Out</button>
+    </div>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<ul class="mobile-menu" id="mobileMenu">
+  <li><a href="/">Home</a></li>
+  <li><a href="/#shows">Shows</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+  <li><a href="/#socials">Links</a></li>
+  <li><a href="/blog">Blog</a></li>
+  <li id="authMobileLogin" class="auth-mobile-login"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
+  <li id="authMobileProfile" class="auth-mobile-profile">
+    <div class="auth-mobile-signed-in">Signed in as <span id="authMobileEmail" class="auth-mobile-email"></span></div>
+    <button class="auth-mobile-logout" onclick="snAuth.logout()">Log Out</button>
+  </li>
+</ul>
+
+<!-- Loading State (shown while checking auth) -->
+<div class="profile-wrap" id="profileLoading">
+  <div class="profile-loading">
+    <p>Loading your profile...</p>
+  </div>
+</div>
+
+<!-- Login Prompt (shown when logged out) -->
+<div class="profile-wrap" id="profileLoginPrompt" style="display:none">
+  <div class="profile-login-prompt">
+    <h1>My Profile</h1>
+    <p>Log in to view and manage your Safe Network profile, collecting interests, and privacy settings.</p>
+    <button class="btn-primary" onclick="window.snAuth && snAuth.login()">Log In to Continue</button>
+  </div>
+</div>
+
+<!-- Profile Content (shown when logged in) -->
+<div class="profile-wrap" id="profileContent" style="display:none">
+  <h1>My Profile</h1>
+
+  <!-- Profile Header -->
+  <div class="profile-header">
+    <div class="profile-avatar" id="profileAvatar">
+      <img id="profileAvatarImg" alt="Avatar"/>
+      <span class="profile-avatar-initials" id="profileAvatarInitials"></span>
+    </div>
+    <div class="profile-header-info">
+      <h2 id="profileDisplayName">Loading...</h2>
+      <div class="profile-username" id="profileUsernameDisplay">@...</div>
+      <div class="profile-badges" id="profileBadges"></div>
+    </div>
+  </div>
+
+  <!-- Loyalty Section -->
+  <div class="profile-loyalty">
+    <h3>Loyalty Status</h3>
+    <div class="loyalty-tier-display">
+      <span class="loyalty-tier-name" id="loyaltyTierName">Bronze</span>
+      <span class="loyalty-points" id="loyaltyPoints">0 points</span>
+    </div>
+    <div class="loyalty-progress">
+      <div class="loyalty-bar" id="loyaltyBar" style="width:0%"></div>
+    </div>
+    <div class="loyalty-hint" id="loyaltyHint">Earn points by shopping on our Whatnot shows</div>
+  </div>
+
+  <!-- Edit Form -->
+  <form id="profileForm" onsubmit="saveProfile(event)">
+
+    <!-- Display Name -->
+    <div class="profile-field">
+      <label for="profileName">Display Name</label>
+      <input type="text" id="profileName" name="display_name" placeholder="Your display name" maxlength="50"/>
+    </div>
+
+    <!-- Username -->
+    <div class="profile-field">
+      <label>Username</label>
+      <div class="username-input-wrap">
+        <span class="username-prefix">@</span>
+        <input type="text" id="profileUsername" name="username" placeholder="your_username" maxlength="30"/>
+        <span class="username-status" id="usernameStatus"></span>
+      </div>
+      <div class="field-hint">Letters, numbers, underscores only. This is how other collectors will find you.</div>
+    </div>
+
+    <!-- Whatnot Username -->
+    <div class="profile-field">
+      <label for="profileWhatnot">Whatnot Username</label>
+      <input type="text" id="profileWhatnot" name="whatnot_username" placeholder="Your Whatnot handle (optional)" maxlength="50"/>
+      <div class="field-hint">Link your Whatnot account so hosts can recognize you during shows.</div>
+    </div>
+
+    <!-- Bio -->
+    <div class="profile-field">
+      <label for="profileBio">Bio</label>
+      <textarea id="profileBio" name="bio" placeholder="Tell us about your collection..." maxlength="300" rows="3"></textarea>
+      <div class="field-hint"><span id="bioCharCount">0</span>/300 characters</div>
+    </div>
+
+    <!-- Collecting Interests -->
+    <div class="profile-field">
+      <label>Collecting Interests</label>
+      <fieldset class="interest-grid">
+        <legend>Interests</legend>
+        <label><input type="checkbox" name="interests" value="coins"/> Coins &amp; Bullion</label>
+        <label><input type="checkbox" name="interests" value="pokemon"/> Pokemon</label>
+        <label><input type="checkbox" name="interests" value="sports_cards"/> Sports Cards</label>
+        <label><input type="checkbox" name="interests" value="shoes"/> Shoes</label>
+      </fieldset>
+    </div>
+
+    <!-- Privacy Settings -->
+    <div class="profile-field">
+      <label>Privacy Settings</label>
+      <label class="toggle-label">
+        <input type="checkbox" id="profilePublic" name="profile_public" checked/>
+        <span>Make my profile public (other collectors can view your profile)</span>
+      </label>
+    </div>
+    <div class="profile-field">
+      <label class="toggle-label">
+        <input type="checkbox" id="profileEmailVisible" name="email_visible"/>
+        <span>Show my email on my public profile</span>
+      </label>
+    </div>
+
+    <!-- Status Message -->
+    <div class="profile-status" id="profileStatus"></div>
+
+    <!-- Save Button -->
+    <button type="submit" class="profile-save-btn" id="profileSaveBtn">Save Changes</button>
+  </form>
+</div>
+
+<footer>
+  <div class="footer-logo">SAFE NETWORK</div>
+  <div><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a></div>
+  <p>2026 Safe Network · safenetwork.shop</p>
+</footer>
+
+<script>
+  function toggleMenu(){
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.querySelector('.hamburger').classList.toggle('open');
+  }
+</script>
+<script src="/js/supabase.js"></script>
+<script src="/js/cookies.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+/* ── Profile Page Logic ── */
+(function(){
+  var currentProfile = null;
+  var originalUsername = '';
+  var usernameTimer = null;
+  var usernameAvailable = true;
+
+  /* Wait for auth to be ready, then load profile */
+  async function initProfilePage(){
+    // Give auth.js a moment to initialize
+    var maxWait = 50; // 5 seconds max
+    while(!window.snAuth && maxWait > 0){
+      await new Promise(function(r){ setTimeout(r, 100); });
+      maxWait--;
+    }
+
+    if(!window.snAuth){
+      showSection('profileLoginPrompt');
+      return;
+    }
+
+    var loggedIn = await snAuth.isLoggedIn();
+    if(!loggedIn){
+      showSection('profileLoginPrompt');
+      return;
+    }
+
+    // User is logged in - try to load profile
+    var cached = window.snProfile ? snProfile.getCachedProfile() : null;
+    if(cached){
+      currentProfile = cached;
+      renderProfile();
+      showSection('profileContent');
+    } else {
+      // Try to init/fetch profile
+      try {
+        var user = await snAuth.getUser();
+        var token = await snAuth.getAccessToken();
+        if(user && token && window.snProfile){
+          currentProfile = await snProfile.initProfile(user, token);
+          if(currentProfile){
+            renderProfile();
+            showSection('profileContent');
+          } else {
+            showSection('profileLoginPrompt');
+          }
+        } else {
+          showSection('profileLoginPrompt');
+        }
+      } catch(err){
+        console.warn('Profile load error:', err);
+        showSection('profileLoginPrompt');
+      }
+    }
+  }
+
+  function showSection(id){
+    document.getElementById('profileLoading').style.display = 'none';
+    document.getElementById('profileLoginPrompt').style.display = 'none';
+    document.getElementById('profileContent').style.display = 'none';
+    document.getElementById(id).style.display = '';
+  }
+
+  /* ── Render Profile Data into Form ── */
+  function renderProfile(){
+    if(!currentProfile) return;
+    var p = currentProfile;
+
+    // Header
+    var avatarImg = document.getElementById('profileAvatarImg');
+    var avatarInitials = document.getElementById('profileAvatarInitials');
+    if(p.avatar_url){
+      avatarImg.src = p.avatar_url;
+      avatarImg.style.display = 'block';
+      avatarInitials.style.display = 'none';
+    } else {
+      avatarImg.style.display = 'none';
+      avatarInitials.style.display = 'flex';
+      avatarInitials.textContent = (p.display_name || p.email || '?').charAt(0).toUpperCase();
+    }
+
+    document.getElementById('profileDisplayName').textContent = p.display_name || p.username || 'Collector';
+    document.getElementById('profileUsernameDisplay').textContent = '@' + (p.username || '');
+
+    // Badges
+    var badgesEl = document.getElementById('profileBadges');
+    badgesEl.innerHTML = '';
+    // Role badge
+    var roleBadge = document.createElement('span');
+    roleBadge.className = 'profile-badge badge-' + (p.role || 'shopper');
+    roleBadge.textContent = (p.role || 'shopper').charAt(0).toUpperCase() + (p.role || 'shopper').slice(1);
+    badgesEl.appendChild(roleBadge);
+    // Tier badge
+    var tierBadge = document.createElement('span');
+    tierBadge.className = 'profile-badge badge-' + (p.loyalty_tier || 'bronze');
+    tierBadge.textContent = (p.loyalty_tier || 'bronze').charAt(0).toUpperCase() + (p.loyalty_tier || 'bronze').slice(1);
+    badgesEl.appendChild(tierBadge);
+
+    // Loyalty
+    var points = p.loyalty_points || 0;
+    var tier = p.loyalty_tier || 'bronze';
+    document.getElementById('loyaltyTierName').textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
+    document.getElementById('loyaltyPoints').textContent = points + ' points';
+
+    // Progress bar (tier thresholds: bronze 0, silver 500, gold 2000, diamond 10000)
+    var thresholds = { bronze: { min: 0, max: 500 }, silver: { min: 500, max: 2000 }, gold: { min: 2000, max: 10000 }, diamond: { min: 10000, max: 10000 } };
+    var t = thresholds[tier] || thresholds.bronze;
+    var progress = tier === 'diamond' ? 100 : Math.min(100, Math.round(((points - t.min) / (t.max - t.min)) * 100));
+    document.getElementById('loyaltyBar').style.width = progress + '%';
+
+    var nextTier = { bronze: 'Silver', silver: 'Gold', gold: 'Diamond', diamond: null };
+    var next = nextTier[tier];
+    document.getElementById('loyaltyHint').textContent = next
+      ? (t.max - points) + ' more points to reach ' + next + ' tier'
+      : 'You\'ve reached the highest tier!';
+
+    // Form fields
+    document.getElementById('profileName').value = p.display_name || '';
+    document.getElementById('profileUsername').value = p.username || '';
+    originalUsername = p.username || '';
+    document.getElementById('profileWhatnot').value = p.whatnot_username || '';
+    document.getElementById('profileBio').value = p.bio || '';
+    updateBioCount();
+    document.getElementById('profilePublic').checked = p.profile_public !== false;
+    document.getElementById('profileEmailVisible').checked = p.email_visible === true;
+
+    // Interests checkboxes
+    var interests = p.interests || [];
+    var boxes = document.querySelectorAll('#profileForm .interest-grid input[type="checkbox"]');
+    boxes.forEach(function(box){
+      box.checked = interests.indexOf(box.value) !== -1;
+    });
+  }
+
+  /* ── Username Availability Check ── */
+  var usernameInput = document.getElementById('profileUsername');
+  if(usernameInput){
+    usernameInput.addEventListener('input', function(){
+      // Sanitize: only letters, numbers, underscores
+      this.value = this.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
+      var val = this.value.trim();
+      var statusEl = document.getElementById('usernameStatus');
+
+      if(!val || val === originalUsername){
+        statusEl.textContent = '';
+        statusEl.className = 'username-status';
+        usernameAvailable = true;
+        return;
+      }
+      if(val.length < 3){
+        statusEl.textContent = 'Too short';
+        statusEl.className = 'username-status taken';
+        usernameAvailable = false;
+        return;
+      }
+
+      statusEl.textContent = '...';
+      statusEl.className = 'username-status checking';
+      usernameAvailable = false;
+
+      clearTimeout(usernameTimer);
+      usernameTimer = setTimeout(async function(){
+        if(!window.snProfile) return;
+        try {
+          var available = await snProfile.checkUsernameAvailable(val);
+          // Re-check value hasn't changed
+          if(usernameInput.value.trim().toLowerCase() !== val) return;
+          if(available){
+            statusEl.textContent = 'Available';
+            statusEl.className = 'username-status available';
+            usernameAvailable = true;
+          } else {
+            statusEl.textContent = 'Taken';
+            statusEl.className = 'username-status taken';
+            usernameAvailable = false;
+          }
+        } catch(err){
+          statusEl.textContent = '';
+          statusEl.className = 'username-status';
+        }
+      }, 500);
+    });
+  }
+
+  /* ── Bio Character Count ── */
+  var bioField = document.getElementById('profileBio');
+  if(bioField){
+    bioField.addEventListener('input', updateBioCount);
+  }
+  function updateBioCount(){
+    var el = document.getElementById('bioCharCount');
+    var bio = document.getElementById('profileBio');
+    if(el && bio) el.textContent = bio.value.length;
+  }
+
+  /* ── Save Profile ── */
+  window.saveProfile = async function(e){
+    e.preventDefault();
+    var statusEl = document.getElementById('profileStatus');
+    var saveBtn = document.getElementById('profileSaveBtn');
+
+    // Validate username
+    var newUsername = document.getElementById('profileUsername').value.trim().toLowerCase();
+    if(newUsername && newUsername !== originalUsername && !usernameAvailable){
+      statusEl.textContent = 'Username is not available. Please choose another.';
+      statusEl.className = 'profile-status error';
+      return;
+    }
+    if(newUsername && newUsername.length < 3){
+      statusEl.textContent = 'Username must be at least 3 characters.';
+      statusEl.className = 'profile-status error';
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    statusEl.className = 'profile-status';
+    statusEl.style.display = 'none';
+
+    // Gather form data
+    var interestBoxes = document.querySelectorAll('#profileForm .interest-grid input[type="checkbox"]:checked');
+    var interests = [];
+    interestBoxes.forEach(function(box){ interests.push(box.value); });
+
+    var updates = {
+      display_name: document.getElementById('profileName').value.trim(),
+      username: newUsername || originalUsername,
+      whatnot_username: document.getElementById('profileWhatnot').value.trim(),
+      bio: document.getElementById('profileBio').value.trim(),
+      interests: interests,
+      profile_public: document.getElementById('profilePublic').checked,
+      email_visible: document.getElementById('profileEmailVisible').checked
+    };
+
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) throw new Error('Not authenticated');
+      currentProfile = await snProfile.updateProfile(updates, token);
+      renderProfile();
+      statusEl.textContent = 'Profile saved successfully!';
+      statusEl.className = 'profile-status success';
+      // Clear success after 3s
+      setTimeout(function(){
+        statusEl.className = 'profile-status';
+        statusEl.style.display = 'none';
+      }, 3000);
+    } catch(err){
+      console.warn('Save error:', err);
+      statusEl.textContent = 'Error saving profile: ' + (err.message || 'Please try again.');
+      statusEl.className = 'profile-status error';
+    }
+
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Changes';
+  };
+
+  /* ── Listen for auth ready event ── */
+  window.addEventListener('snauth:ready', function(e){
+    if(e.detail && e.detail.profile){
+      currentProfile = e.detail.profile;
+      renderProfile();
+      showSection('profileContent');
+    }
+  });
+
+  // Boot
+  initProfilePage();
+})();
+</script>
+</body>
+</html>

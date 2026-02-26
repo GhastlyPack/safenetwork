@@ -1,7 +1,7 @@
-/* ── Auth0 OAuth + Customer.io Integration ── */
+/* ── Auth0 OAuth + Customer.io + Profile Integration ── */
 (function(){
   // ══════════════════════════════════════════════
-  //  REPLACE THESE WITH YOUR AUTH0 CREDENTIALS
+  //  AUTH0 CREDENTIALS
   // ══════════════════════════════════════════════
   var AUTH0_DOMAIN    = 'dev-108l0dja21yjpvlf.us.auth0.com';
   var AUTH0_CLIENT_ID = 'RkxofirZba7k9tXD28jmKGNloH9PnEvD';
@@ -45,8 +45,160 @@
       var user = await auth0Client.getUser();
       handleLoggedInState(user);
       identifyWithCIO(user);
+      // Initialize profile (async, non-blocking for nav)
+      initProfileAfterLogin(user);
     } else {
       handleLoggedOutState();
+    }
+  }
+
+  /* ── Initialize Profile After Login ── */
+  async function initProfileAfterLogin(user){
+    if(!window.snProfile) return;
+
+    // Check for cached profile first (instant UI)
+    var cached = snProfile.getCachedProfile();
+    if(cached){
+      handleProfileReady(cached);
+      return;
+    }
+
+    // Fetch/create profile from Supabase
+    try {
+      var token = await getAccessToken();
+      if(token){
+        var profile = await snProfile.initProfile(user, token);
+        if(profile){
+          handleProfileReady(profile);
+        }
+      }
+    } catch(err){
+      console.warn('Profile init after login error:', err);
+    }
+  }
+
+  /* ── Update Nav with Profile Data ── */
+  function handleProfileReady(profile){
+    if(!profile) return;
+
+    // Desktop dropdown: show @username and "My Profile" link
+    var dd = document.getElementById('authDropdown');
+    if(dd){
+      // Add username below email if not already added
+      var existingUsername = dd.querySelector('.auth-dropdown-username');
+      if(!existingUsername){
+        var usernameEl = document.createElement('div');
+        usernameEl.className = 'auth-dropdown-username';
+        usernameEl.textContent = '@' + (profile.username || '');
+        var emailEl = dd.querySelector('.auth-dropdown-email');
+        if(emailEl) emailEl.after(usernameEl);
+      } else {
+        existingUsername.textContent = '@' + (profile.username || '');
+      }
+
+      // Add "My Profile" link + divider if not already there
+      if(!dd.querySelector('.auth-dropdown-link')){
+        var logoutBtn = dd.querySelector('.auth-logout-btn');
+        if(logoutBtn){
+          var divider = document.createElement('div');
+          divider.className = 'auth-dropdown-divider';
+
+          var profileLink = document.createElement('a');
+          profileLink.href = '/profile.html';
+          profileLink.className = 'auth-dropdown-link';
+          profileLink.textContent = 'My Profile';
+
+          logoutBtn.before(divider);
+          logoutBtn.before(profileLink);
+
+          // Add admin link if admin
+          if(profile.role === 'admin'){
+            var adminLink = document.createElement('a');
+            adminLink.href = '/admin.html';
+            adminLink.className = 'auth-dropdown-link';
+            adminLink.textContent = 'Admin Panel';
+            adminLink.style.color = '#c084fc';
+            logoutBtn.before(adminLink);
+          }
+
+          var divider2 = document.createElement('div');
+          divider2.className = 'auth-dropdown-divider';
+          logoutBtn.before(divider2);
+        }
+      }
+    }
+
+    // Mobile menu: add profile link if not already there
+    var mobileProfile = document.getElementById('authMobileProfile');
+    if(mobileProfile && !mobileProfile.querySelector('.auth-mobile-profile-link')){
+      var mobileSignedIn = mobileProfile.querySelector('.auth-mobile-signed-in');
+      if(mobileSignedIn){
+        // Update "Signed in as" to show username
+        var mobileEmail = document.getElementById('authMobileEmail');
+        if(mobileEmail) mobileEmail.textContent = '@' + (profile.username || profile.email || '');
+
+        // Add "My Profile" link
+        var mobileProfLink = document.createElement('a');
+        mobileProfLink.href = '/profile.html';
+        mobileProfLink.className = 'auth-mobile-profile-link';
+        mobileProfLink.textContent = 'My Profile';
+        mobileSignedIn.after(mobileProfLink);
+
+        // Add admin link if admin
+        if(profile.role === 'admin'){
+          var mobileAdminLink = document.createElement('a');
+          mobileAdminLink.href = '/admin.html';
+          mobileAdminLink.className = 'auth-mobile-profile-link';
+          mobileAdminLink.style.color = '#c084fc';
+          mobileAdminLink.style.display = 'block';
+          mobileAdminLink.style.marginBottom = '8px';
+          mobileAdminLink.textContent = 'Admin Panel';
+          mobileProfLink.after(mobileAdminLink);
+        }
+      }
+    }
+
+    // Sync profile data to Customer.io for segmentation
+    syncProfileToCIO(profile);
+
+    // Dispatch event for profile page and admin page to listen to
+    window.dispatchEvent(new CustomEvent('snauth:ready', { detail: { profile: profile } }));
+  }
+
+  /* ── Sync Profile Data to Customer.io ── */
+  function syncProfileToCIO(profile){
+    if(!profile || !window.cioanalytics) return;
+
+    // Build a version string to avoid redundant calls on every page load
+    var profileVersion = [
+      profile.role, profile.loyalty_tier, profile.loyalty_points,
+      (profile.interests || []).join(','), profile.username,
+      profile.whatnot_username || ''
+    ].join('|');
+
+    var CIO_PROFILE_SYNCED = 'sn_cio_profile_version';
+    if(localStorage.getItem(CIO_PROFILE_SYNCED) === profileVersion) return;
+
+    try {
+      cioanalytics.identify(profile.email, {
+        // Profile attributes for segmentation
+        role: profile.role || 'shopper',
+        loyalty_tier: profile.loyalty_tier || 'bronze',
+        loyalty_points: profile.loyalty_points || 0,
+        username: profile.username || '',
+        whatnot_username: profile.whatnot_username || '',
+        interests: (profile.interests || []).join(', '),
+        interest_coins: (profile.interests || []).indexOf('coins') !== -1,
+        interest_pokemon: (profile.interests || []).indexOf('pokemon') !== -1,
+        interest_sports_cards: (profile.interests || []).indexOf('sports_cards') !== -1,
+        interest_shoes: (profile.interests || []).indexOf('shoes') !== -1,
+        profile_public: profile.profile_public !== false,
+        bio: profile.bio || ''
+      });
+
+      localStorage.setItem(CIO_PROFILE_SYNCED, profileVersion);
+    } catch(err){
+      console.warn('CIO profile sync error:', err);
     }
   }
 
@@ -121,11 +273,25 @@
   async function logout(){
     if(!auth0Client) return;
     localStorage.removeItem(CIO_IDENTIFIED_KEY);
+    localStorage.removeItem('sn_cio_profile_version');
+    // Clear profile cache
+    if(window.snProfile) snProfile.clearCache();
     auth0Client.logout({
       logoutParams: {
         returnTo: window.location.origin
       }
     });
+  }
+
+  /* ── Get Access Token (for Edge Function auth) ── */
+  async function getAccessToken(){
+    if(!auth0Client) return null;
+    try {
+      return await auth0Client.getTokenSilently();
+    } catch(err){
+      console.warn('getAccessToken error:', err);
+      return null;
+    }
   }
 
   /* ── CIO Auto-Enroll on Login ── */
@@ -205,6 +371,7 @@
       if(!auth0Client) return null;
       return await auth0Client.getUser();
     },
+    getAccessToken: getAccessToken,
     toggleProfileDropdown: toggleProfileDropdown
   };
 

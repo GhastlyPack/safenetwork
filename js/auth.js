@@ -118,6 +118,12 @@
           wishlistLink.textContent = 'My Wishlist';
           logoutBtn.before(wishlistLink);
 
+          var collectionLink = document.createElement('a');
+          collectionLink.href = '/collection.html';
+          collectionLink.className = 'auth-dropdown-link';
+          collectionLink.textContent = 'My Collection';
+          logoutBtn.before(collectionLink);
+
           // Add admin link if admin
           if(profile.role === 'admin'){
             var adminLink = document.createElement('a');
@@ -158,6 +164,14 @@
         mobileWishLink.style.marginBottom = '8px';
         mobileWishLink.textContent = 'My Wishlist';
         mobileProfLink.after(mobileWishLink);
+
+        var mobileCollLink = document.createElement('a');
+        mobileCollLink.href = '/collection.html';
+        mobileCollLink.className = 'auth-mobile-profile-link';
+        mobileCollLink.style.display = 'block';
+        mobileCollLink.style.marginBottom = '8px';
+        mobileCollLink.textContent = 'My Collection';
+        mobileWishLink.after(mobileCollLink);
 
         // Add admin link if admin
         if(profile.role === 'admin'){

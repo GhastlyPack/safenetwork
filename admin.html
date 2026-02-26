@@ -87,6 +87,7 @@
     <button class="admin-tab active" id="tabUsers" onclick="switchAdminTab('users')">Users</button>
     <button class="admin-tab" id="tabWishes" onclick="switchAdminTab('wishes')">Wishes</button>
     <button class="admin-tab" id="tabSchedule" onclick="switchAdminTab('schedule')">Schedule</button>
+    <button class="admin-tab" id="tabCollections" onclick="switchAdminTab('collections')">Collections</button>
   </div>
 
   <!-- ═══ Users Tab ═══ -->
@@ -266,6 +267,62 @@
     </div>
 
   </div><!-- /adminTabSchedule -->
+
+  <!-- ═══ Collections Tab ═══ -->
+  <div id="adminTabCollections" style="display:none">
+
+    <!-- Collection Stats -->
+    <div class="admin-stats">
+      <div class="stat-card blue">
+        <div class="stat-number" id="collStatTotal">-</div>
+        <div class="stat-label">Total Items</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-number" id="collStatCoins">-</div>
+        <div class="stat-label">Coins</div>
+      </div>
+      <div class="stat-card" style="background:rgba(255,107,107,.06);border-color:rgba(255,107,107,.15)">
+        <div class="stat-number" id="collStatPokemon" style="color:#ff6b6b">-</div>
+        <div class="stat-label">Pokemon</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-number" id="collStatSports">-</div>
+        <div class="stat-label">Sports Cards</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="admin-search">
+      <input type="text" id="collSearchInput" placeholder="Search collection items by description..." oninput="debounceCollSearch()"/>
+      <select class="admin-filter" id="collCategoryFilter" onchange="loadAdminCollections()">
+        <option value="">All Categories</option>
+        <option value="coins">Coins &amp; Bullion</option>
+        <option value="pokemon">Pokemon</option>
+        <option value="sports_cards">Sports Cards</option>
+        <option value="shoes">Shoes</option>
+      </select>
+    </div>
+
+    <!-- Collections Table -->
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Photos</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Details</th>
+            <th>User</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="collTableBody">
+          <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--silver)">Loading collections...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /adminTabCollections -->
 
 </div>
 
@@ -560,11 +617,14 @@
     document.getElementById('adminTabUsers').style.display = tab === 'users' ? '' : 'none';
     document.getElementById('adminTabWishes').style.display = tab === 'wishes' ? '' : 'none';
     document.getElementById('adminTabSchedule').style.display = tab === 'schedule' ? '' : 'none';
+    document.getElementById('adminTabCollections').style.display = tab === 'collections' ? '' : 'none';
     document.getElementById('tabUsers').classList.toggle('active', tab === 'users');
     document.getElementById('tabWishes').classList.toggle('active', tab === 'wishes');
     document.getElementById('tabSchedule').classList.toggle('active', tab === 'schedule');
+    document.getElementById('tabCollections').classList.toggle('active', tab === 'collections');
     if(tab === 'wishes' && !wishesLoaded) loadWishes();
     if(tab === 'schedule' && !scheduledShowsLoaded) loadScheduledShows();
+    if(tab === 'collections' && !collectionsLoaded) loadAdminCollections();
   };
 
   window.loadWishes = async function(){
@@ -787,6 +847,96 @@
     } catch(err){
       alert('Error deleting show: ' + (err.message || 'Try again'));
     }
+  };
+
+  /* ══════════════════════════════════════════
+     COLLECTIONS TAB
+     ══════════════════════════════════════════ */
+
+  var allCollections = [];
+  var collectionsLoaded = false;
+  var collSearchTimer = null;
+
+  var COLL_CATEGORY_LABELS = {
+    coins: 'Coins & Bullion',
+    pokemon: 'Pokemon',
+    sports_cards: 'Sports Cards',
+    shoes: 'Shoes'
+  };
+
+  window.loadAdminCollections = async function(){
+    var search = document.getElementById('collSearchInput').value.trim();
+    var category = document.getElementById('collCategoryFilter').value;
+    try {
+      var token = await snAuth.getAccessToken();
+      allCollections = await snProfile.adminListCollections(token, category, search);
+      collectionsLoaded = true;
+      renderAdminCollections();
+      updateCollStats();
+    } catch(err){
+      console.warn('Load collections error:', err);
+      document.getElementById('collTableBody').innerHTML =
+        '<tr><td colspan="6" style="text-align:center;padding:40px;color:#ff6b6b">Error loading collections.</td></tr>';
+    }
+  };
+
+  function renderAdminCollections(){
+    var tbody = document.getElementById('collTableBody');
+    if(!allCollections.length){
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--silver)">No collection items found.</td></tr>';
+      return;
+    }
+
+    var html = '';
+    allCollections.forEach(function(c){
+      var date = c.created_at ? new Date(c.created_at).toLocaleDateString() : '-';
+      var cat = c.category || '';
+      var user = c.profiles ? ('@' + escapeHtml(c.profiles.username || '')) : '-';
+      var details = c.details || {};
+      var detailStr = Object.values(details).map(function(v){
+        return escapeHtml(String(v).replace(/_/g, ' '));
+      }).join(', ');
+
+      // Photo thumbnails
+      var photos = c.photo_urls || [];
+      var photoHtml = '';
+      if(photos.length > 0){
+        for(var p = 0; p < photos.length; p++){
+          photoHtml += '<img src="' + escapeHtml(photos[p]) + '" style="width:36px;height:36px;border-radius:6px;object-fit:cover;margin-right:4px;border:1px solid rgba(255,255,255,.1)" loading="lazy"/>';
+        }
+      } else {
+        photoHtml = '<span style="color:var(--silver);font-size:11px">No photos</span>';
+      }
+
+      html += '<tr>' +
+        '<td>' + photoHtml + '</td>' +
+        '<td style="max-width:250px">' + escapeHtml(c.description || '-') + '</td>' +
+        '<td><span class="profile-badge badge-' + escapeHtml(cat) + '" style="font-size:10px">' + escapeHtml(COLL_CATEGORY_LABELS[cat] || cat) + '</span></td>' +
+        '<td style="font-size:12px;color:var(--silver)">' + (detailStr || '-') + '</td>' +
+        '<td style="color:var(--blue);font-weight:600">' + user + '</td>' +
+        '<td>' + date + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  function updateCollStats(){
+    var total = allCollections.length;
+    var coins = 0, pokemon = 0, sports = 0;
+    allCollections.forEach(function(c){
+      if(c.category === 'coins') coins++;
+      else if(c.category === 'pokemon') pokemon++;
+      else if(c.category === 'sports_cards') sports++;
+    });
+    document.getElementById('collStatTotal').textContent = total;
+    document.getElementById('collStatCoins').textContent = coins;
+    document.getElementById('collStatPokemon').textContent = pokemon;
+    document.getElementById('collStatSports').textContent = sports;
+  }
+
+  window.debounceCollSearch = function(){
+    clearTimeout(collSearchTimer);
+    collSearchTimer = setTimeout(loadAdminCollections, 400);
   };
 
   /* ── Helpers ── */

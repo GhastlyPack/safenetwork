@@ -627,6 +627,300 @@ async function handlePublicWishlist(data: any) {
   return { items: items || [] }
 }
 
+/* ── Action: Get Collection Items ── */
+async function handleCollectionGet(auth0User: { sub: string; email: string }) {
+  const { data: items, error } = await supabase
+    .from('collections')
+    .select('*')
+    .eq('auth0_id', auth0User.sub)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return { items: items || [] }
+}
+
+/* ── Action: Add Collection Item ── */
+async function handleCollectionAdd(auth0User: { sub: string; email: string }, data: any) {
+  const validCategories = ['coins', 'pokemon', 'sports_cards', 'shoes']
+  if (!data.category || !validCategories.includes(data.category)) {
+    throw new Error('Invalid category')
+  }
+
+  // Enforce per-user limit
+  const { count, error: countError } = await supabase
+    .from('collections')
+    .select('id', { count: 'exact', head: true })
+    .eq('auth0_id', auth0User.sub)
+
+  if (countError) throw countError
+  if ((count || 0) >= 100) {
+    throw new Error('Collection limit reached (100 items max)')
+  }
+
+  const { data: item, error } = await supabase
+    .from('collections')
+    .insert({
+      auth0_id: auth0User.sub,
+      category: data.category,
+      details: data.details || {},
+      description: data.description ? data.description.trim().slice(0, 500) : '',
+      photo_urls: [],
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return { item }
+}
+
+/* ── Action: Update Collection Item ── */
+async function handleCollectionUpdate(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.id) throw new Error('Item ID is required')
+
+  // Verify ownership
+  const { data: existing, error: fetchError } = await supabase
+    .from('collections')
+    .select('auth0_id')
+    .eq('id', data.id)
+    .single()
+
+  if (fetchError || !existing) throw new Error('Item not found')
+  if (existing.auth0_id !== auth0User.sub) throw new Error('Unauthorized')
+
+  const allowedFields = ['category', 'details', 'description']
+  const updates: Record<string, any> = {}
+  for (const key of allowedFields) {
+    if (data[key] !== undefined) {
+      updates[key] = data[key]
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    throw new Error('No valid fields to update')
+  }
+
+  // Validate
+  if (updates.category) {
+    const valid = ['coins', 'pokemon', 'sports_cards', 'shoes']
+    if (!valid.includes(updates.category)) throw new Error('Invalid category')
+  }
+  if (updates.description !== undefined) {
+    updates.description = updates.description.trim().slice(0, 500)
+  }
+
+  const { data: item, error } = await supabase
+    .from('collections')
+    .update(updates)
+    .eq('id', data.id)
+    .eq('auth0_id', auth0User.sub)
+    .select()
+    .single()
+
+  if (error) throw error
+  return { item }
+}
+
+/* ── Action: Remove Collection Item + Cleanup Photos ── */
+async function handleCollectionRemove(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.id) throw new Error('Item ID is required')
+
+  // Get item to find photo paths for cleanup
+  const { data: existing, error: fetchError } = await supabase
+    .from('collections')
+    .select('auth0_id, photo_urls')
+    .eq('id', data.id)
+    .single()
+
+  if (fetchError || !existing) throw new Error('Item not found')
+  if (existing.auth0_id !== auth0User.sub) throw new Error('Unauthorized')
+
+  // Delete photos from Storage
+  const photos: string[] = existing.photo_urls || []
+  for (const url of photos) {
+    try {
+      const path = extractStoragePath(url)
+      if (path) {
+        await supabase.storage.from('collection-photos').remove([path])
+      }
+    } catch (e) {
+      console.warn('Photo cleanup error:', e)
+    }
+  }
+
+  // Delete the item
+  const { error } = await supabase
+    .from('collections')
+    .delete()
+    .eq('id', data.id)
+    .eq('auth0_id', auth0User.sub)
+
+  if (error) throw error
+  return { success: true }
+}
+
+/* ── Action: Upload Collection Photo ── */
+async function handleUploadCollectionPhoto(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.item_id) throw new Error('item_id is required')
+  if (!data.base64) throw new Error('base64 image data is required')
+  if (!data.content_type) throw new Error('content_type is required')
+
+  // Verify ownership + get current photos
+  const { data: item, error: fetchError } = await supabase
+    .from('collections')
+    .select('auth0_id, photo_urls')
+    .eq('id', data.item_id)
+    .single()
+
+  if (fetchError || !item) throw new Error('Item not found')
+  if (item.auth0_id !== auth0User.sub) throw new Error('Unauthorized')
+
+  const currentPhotos: string[] = item.photo_urls || []
+  if (currentPhotos.length >= 3) {
+    throw new Error('Maximum 3 photos per item')
+  }
+
+  // Decode base64
+  const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0))
+
+  // Validate size (~5MB max after decode)
+  if (bytes.length > 5 * 1024 * 1024) {
+    throw new Error('Photo exceeds 5MB limit')
+  }
+
+  // Upload to Storage
+  const timestamp = Date.now()
+  const ext = data.content_type === 'image/png' ? 'png' : 'jpg'
+  const storagePath = `${auth0User.sub}/${data.item_id}/${timestamp}.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('collection-photos')
+    .upload(storagePath, bytes, {
+      contentType: data.content_type,
+      upsert: false,
+    })
+
+  if (uploadError) throw new Error('Upload failed: ' + uploadError.message)
+
+  // Get public URL
+  const { data: urlData } = supabase.storage
+    .from('collection-photos')
+    .getPublicUrl(storagePath)
+
+  const publicUrl = urlData.publicUrl
+
+  // Append URL to item's photo_urls
+  currentPhotos.push(publicUrl)
+  const { error: updateError } = await supabase
+    .from('collections')
+    .update({ photo_urls: currentPhotos })
+    .eq('id', data.item_id)
+    .eq('auth0_id', auth0User.sub)
+
+  if (updateError) throw updateError
+  return { url: publicUrl }
+}
+
+/* ── Action: Delete Collection Photo ── */
+async function handleDeleteCollectionPhoto(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.item_id) throw new Error('item_id is required')
+  if (!data.photo_url) throw new Error('photo_url is required')
+
+  // Verify ownership
+  const { data: item, error: fetchError } = await supabase
+    .from('collections')
+    .select('auth0_id, photo_urls')
+    .eq('id', data.item_id)
+    .single()
+
+  if (fetchError || !item) throw new Error('Item not found')
+  if (item.auth0_id !== auth0User.sub) throw new Error('Unauthorized')
+
+  // Remove URL from array
+  const currentPhotos: string[] = item.photo_urls || []
+  const filtered = currentPhotos.filter((u: string) => u !== data.photo_url)
+
+  // Update item
+  const { error: updateError } = await supabase
+    .from('collections')
+    .update({ photo_urls: filtered })
+    .eq('id', data.item_id)
+    .eq('auth0_id', auth0User.sub)
+
+  if (updateError) throw updateError
+
+  // Remove file from Storage
+  try {
+    const path = extractStoragePath(data.photo_url)
+    if (path) {
+      await supabase.storage.from('collection-photos').remove([path])
+    }
+  } catch (e) {
+    console.warn('Storage cleanup error:', e)
+  }
+
+  return { success: true }
+}
+
+/* ── Action: Public Collection (no auth required) ── */
+async function handlePublicCollection(data: any) {
+  if (!data.username) throw new Error('Username is required')
+
+  // Look up profile by username, only if public
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('auth0_id, profile_public')
+    .eq('username', data.username)
+    .maybeSingle()
+
+  if (profileError) throw profileError
+  if (!profile) throw new Error('Collector not found')
+  if (!profile.profile_public) throw new Error('This profile is private')
+
+  // Fetch their collection
+  const { data: items, error } = await supabase
+    .from('collections')
+    .select('id, category, details, description, photo_urls, created_at')
+    .eq('auth0_id', profile.auth0_id)
+    .order('created_at', { ascending: false })
+    .limit(100)
+
+  if (error) throw error
+  return { items: items || [] }
+}
+
+/* ── Action: Admin List Collections ── */
+async function handleAdminCollections(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile || callerProfile.role !== 'admin') {
+    throw new Error('Unauthorized: admin access required')
+  }
+
+  let query = supabase
+    .from('collections')
+    .select('*, profiles!inner(username, email, display_name)')
+    .order('created_at', { ascending: false })
+
+  if (data.category) {
+    query = query.eq('category', data.category)
+  }
+  if (data.search) {
+    query = query.ilike('description', `%${data.search}%`)
+  }
+
+  const { data: collections, error } = await query.limit(500)
+  if (error) throw error
+  return { collections: collections || [] }
+}
+
+/* ── Helper: Extract Storage Path from Public URL ── */
+function extractStoragePath(publicUrl: string): string | null {
+  // Public URLs look like: {SUPABASE_URL}/storage/v1/object/public/collection-photos/{path}
+  const marker = '/collection-photos/'
+  const idx = publicUrl.indexOf(marker)
+  if (idx === -1) return null
+  return publicUrl.slice(idx + marker.length)
+}
+
 /* ── Helper: Random Suffix ── */
 function generateRandomSuffix(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -670,6 +964,14 @@ serve(async (req: Request) => {
 
     if (action === 'list-scheduled-shows') {
       result = await handleListScheduledShows(data || {})
+      return new Response(
+        JSON.stringify(result),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (action === 'public-collection') {
+      result = await handlePublicCollection(data || {})
       return new Response(
         JSON.stringify(result),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -722,6 +1024,27 @@ serve(async (req: Request) => {
         break
       case 'delete-scheduled-show':
         result = await handleDeleteScheduledShow(auth0User, data || {})
+        break
+      case 'collection-get':
+        result = await handleCollectionGet(auth0User)
+        break
+      case 'collection-add':
+        result = await handleCollectionAdd(auth0User, data || {})
+        break
+      case 'collection-update':
+        result = await handleCollectionUpdate(auth0User, data || {})
+        break
+      case 'collection-remove':
+        result = await handleCollectionRemove(auth0User, data || {})
+        break
+      case 'upload-collection-photo':
+        result = await handleUploadCollectionPhoto(auth0User, data || {})
+        break
+      case 'delete-collection-photo':
+        result = await handleDeleteCollectionPhoto(auth0User, data || {})
+        break
+      case 'admin-collections':
+        result = await handleAdminCollections(auth0User, data || {})
         break
       default:
         throw new Error('Unknown action: ' + action)

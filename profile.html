@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="/css/global.css">
 <link rel="stylesheet" href="/css/auth.css">
 <link rel="stylesheet" href="/css/profile.css">
+<link rel="stylesheet" href="/css/collection.css">
 <link rel="stylesheet" href="/css/cookies.css">
 <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -177,6 +178,15 @@
     <!-- Save Button -->
     <button type="submit" class="profile-save-btn" id="profileSaveBtn">Save Changes</button>
   </form>
+
+  <!-- Collection Preview -->
+  <div class="collection-preview-section" id="collectionPreview">
+    <div class="collection-preview-header">
+      <h3>My Collection</h3>
+      <a href="/collection.html" class="collection-preview-link">View Full Collection &rarr;</a>
+    </div>
+    <div id="collectionPreviewGrid"></div>
+  </div>
 </div>
 
 <footer>
@@ -228,6 +238,7 @@
       currentProfile = cached;
       renderProfile();
       showSection('profileContent');
+      loadCollectionPreview();
     } else {
       // Try to init/fetch profile
       try {
@@ -238,6 +249,7 @@
           if(currentProfile){
             renderProfile();
             showSection('profileContent');
+            loadCollectionPreview();
           } else {
             showSection('profileLoginPrompt');
           }
@@ -469,12 +481,65 @@
     formEl.addEventListener('change', clearSaveStatus);
   }
 
+  /* ── Collection Preview ── */
+  var COLL_CAT_LABELS = { coins: 'Coins & Bullion', pokemon: 'Pokemon', sports_cards: 'Sports Cards', shoes: 'Shoes' };
+
+  async function loadCollectionPreview(){
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token || !window.snProfile) return;
+      var items = await snProfile.getCollection(token);
+      renderCollectionPreview(items.slice(0, 3));
+    } catch(err){
+      console.warn('Collection preview error:', err);
+    }
+  }
+
+  function renderCollectionPreview(items){
+    var grid = document.getElementById('collectionPreviewGrid');
+    if(!grid) return;
+
+    if(!items || items.length === 0){
+      grid.innerHTML = '<div class="collection-preview-empty">No items yet. <a href="/collection.html">Start Your Collection</a></div>';
+      return;
+    }
+
+    var html = '<div class="collection-preview-grid">';
+    for(var i = 0; i < items.length; i++){
+      var item = items[i];
+      var photos = item.photo_urls || [];
+      var cat = item.category || 'other';
+      var desc = item.description || '';
+      if(desc.length > 60) desc = desc.slice(0, 57) + '...';
+
+      html += '<div class="collection-preview-card">';
+      if(photos.length > 0){
+        html += '<img class="collection-preview-thumb" src="' + escP(photos[0]) + '" alt="' + escP(COLL_CAT_LABELS[cat] || cat) + '" loading="lazy"/>';
+      } else {
+        html += '<div class="collection-preview-thumb-empty">&#128247;</div>';
+      }
+      html += '<div class="collection-preview-info">';
+      html += '<div class="collection-preview-cat">' + escP(COLL_CAT_LABELS[cat] || cat) + '</div>';
+      if(desc) html += '<div class="collection-preview-desc">' + escP(desc) + '</div>';
+      html += '</div></div>';
+    }
+    html += '</div>';
+    grid.innerHTML = html;
+  }
+
+  function escP(str){
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
   /* ── Listen for auth ready event ── */
   window.addEventListener('snauth:ready', function(e){
     if(e.detail && e.detail.profile){
       currentProfile = e.detail.profile;
       renderProfile();
       showSection('profileContent');
+      loadCollectionPreview();
     }
   });
 

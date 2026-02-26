@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/css/auth.css">
 <link rel="stylesheet" href="/css/profile.css">
 <link rel="stylesheet" href="/css/collector.css">
+<link rel="stylesheet" href="/css/collection.css">
 <link rel="stylesheet" href="/css/cookies.css">
 <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -105,6 +106,21 @@
     <div id="collectorWishItems"></div>
   </div>
 
+  <!-- Collection Section -->
+  <div class="public-collection-section" id="collectorCollection" style="display:none">
+    <div class="public-collection-header">Collection <span id="collectorCollCount"></span></div>
+    <div id="collectorCollItems"></div>
+  </div>
+
+</div>
+
+<!-- Collection Lightbox -->
+<div class="collection-lightbox" id="pubCollLightbox">
+  <button class="collection-lightbox-close" id="pubCollLbClose">&times;</button>
+  <button class="collection-lightbox-nav collection-lightbox-prev" id="pubCollLbPrev">&#8249;</button>
+  <img class="collection-lightbox-img" id="pubCollLbImg" alt="Collection photo"/>
+  <button class="collection-lightbox-nav collection-lightbox-next" id="pubCollLbNext">&#8250;</button>
+  <div class="collection-lightbox-counter" id="pubCollLbCounter"></div>
 </div>
 
 <footer>
@@ -191,8 +207,9 @@
     renderProfile(profile);
     showSection('collectorProfile');
 
-    // Fetch public wishlist
+    // Fetch public wishlist + collection
     loadPublicWishlist(username);
+    loadPublicCollection(username);
   }
 
   /* ── Render Profile ── */
@@ -326,6 +343,113 @@
       console.warn('Public wishlist load error:', err);
     }
   }
+
+  /* ── Load Public Collection ── */
+  var publicCollItems = [];
+
+  async function loadPublicCollection(username){
+    if(!window.snProfile || !snProfile.getPublicCollection) return;
+
+    try {
+      var items = await snProfile.getPublicCollection(username);
+      if(!items || items.length === 0) return;
+
+      publicCollItems = items;
+
+      var section = document.getElementById('collectorCollection');
+      section.style.display = '';
+      document.getElementById('collectorCollCount').textContent = '(' + items.length + ')';
+
+      var container = document.getElementById('collectorCollItems');
+      var html = '';
+      for(var i = 0; i < items.length; i++){
+        var item = items[i];
+        var cat = item.category || '';
+        var details = item.details || {};
+        var photos = item.photo_urls || [];
+
+        html += '<div class="collection-card">';
+        html += '<div class="collection-card-top">';
+        html += '<span class="collection-badge badge-cat-' + esc(cat) + '">' + esc(CATEGORY_LABELS[cat] || cat) + '</span>';
+
+        var detailKeys = Object.keys(details);
+        for(var j = 0; j < detailKeys.length; j++){
+          var val = details[detailKeys[j]];
+          if(val){
+            var display = String(val).replace(/_/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+            html += '<span class="collection-detail-tag">' + esc(display) + '</span>';
+          }
+        }
+        html += '</div>';
+
+        // Photos
+        if(photos.length > 0){
+          html += '<div class="collection-card-photos">';
+          for(var p = 0; p < photos.length; p++){
+            html += '<div class="collection-card-thumb" onclick="openPubCollLightbox(' + i + ',' + p + ')">';
+            html += '<img src="' + esc(photos[p]) + '" alt="Photo ' + (p+1) + '" loading="lazy"/>';
+            html += '</div>';
+          }
+          html += '</div>';
+        }
+
+        if(item.description){
+          html += '<p class="collection-card-desc">' + esc(item.description) + '</p>';
+        }
+        html += '</div>';
+      }
+      container.innerHTML = html;
+    } catch(err){
+      console.warn('Public collection load error:', err);
+    }
+  }
+
+  /* ── Public Collection Lightbox ── */
+  var pubLbItem = 0, pubLbPhoto = 0;
+
+  window.openPubCollLightbox = function(itemIdx, photoIdx){
+    pubLbItem = itemIdx;
+    pubLbPhoto = photoIdx;
+    updatePubCollLb();
+    document.getElementById('pubCollLightbox').classList.add('open');
+  };
+
+  function updatePubCollLb(){
+    var photos = (publicCollItems[pubLbItem] || {}).photo_urls || [];
+    if(!photos.length) return;
+    document.getElementById('pubCollLbImg').src = photos[pubLbPhoto];
+    document.getElementById('pubCollLbCounter').textContent = (pubLbPhoto + 1) + ' / ' + photos.length;
+    document.getElementById('pubCollLbPrev').style.display = photos.length > 1 ? '' : 'none';
+    document.getElementById('pubCollLbNext').style.display = photos.length > 1 ? '' : 'none';
+  }
+
+  function closePubCollLb(){
+    document.getElementById('pubCollLightbox').classList.remove('open');
+  }
+
+  document.getElementById('pubCollLbClose').addEventListener('click', closePubCollLb);
+  document.getElementById('pubCollLbPrev').addEventListener('click', function(){
+    var photos = (publicCollItems[pubLbItem] || {}).photo_urls || [];
+    pubLbPhoto = (pubLbPhoto - 1 + photos.length) % photos.length;
+    updatePubCollLb();
+  });
+  document.getElementById('pubCollLbNext').addEventListener('click', function(){
+    var photos = (publicCollItems[pubLbItem] || {}).photo_urls || [];
+    pubLbPhoto = (pubLbPhoto + 1) % photos.length;
+    updatePubCollLb();
+  });
+  document.addEventListener('keydown', function(e){
+    if(!document.getElementById('pubCollLightbox').classList.contains('open')) return;
+    if(e.key === 'Escape') closePubCollLb();
+    var photos = (publicCollItems[pubLbItem] || {}).photo_urls || [];
+    if(photos.length > 1){
+      if(e.key === 'ArrowLeft'){ pubLbPhoto = (pubLbPhoto - 1 + photos.length) % photos.length; updatePubCollLb(); }
+      if(e.key === 'ArrowRight'){ pubLbPhoto = (pubLbPhoto + 1) % photos.length; updatePubCollLb(); }
+    }
+  });
+  document.getElementById('pubCollLightbox').addEventListener('click', function(e){
+    if(e.target === this) closePubCollLb();
+  });
 
   // Boot
   loadCollector();

@@ -278,6 +278,110 @@
     }
   }
 
+  /* ── Collection: Get User's Items ── */
+  async function getCollection(accessToken){
+    try {
+      var result = await callEdge('collection-get', {}, accessToken);
+      return result.items || [];
+    } catch(err){
+      console.warn('Collection get error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Collection: Add Item ── */
+  async function addCollectionItem(data, accessToken){
+    try {
+      var result = await callEdge('collection-add', data, accessToken);
+      return result.item;
+    } catch(err){
+      console.warn('Collection add error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Collection: Update Item ── */
+  async function updateCollectionItem(data, accessToken){
+    try {
+      var result = await callEdge('collection-update', data, accessToken);
+      return result.item;
+    } catch(err){
+      console.warn('Collection update error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Collection: Remove Item ── */
+  async function removeCollectionItem(id, accessToken){
+    try {
+      var result = await callEdge('collection-remove', { id: id }, accessToken);
+      return result.success;
+    } catch(err){
+      console.warn('Collection remove error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Collection: Upload Photo ── */
+  async function uploadCollectionPhoto(itemId, base64, contentType, accessToken){
+    try {
+      var result = await callEdge('upload-collection-photo', {
+        item_id: itemId,
+        base64: base64,
+        content_type: contentType
+      }, accessToken);
+      return result.url;
+    } catch(err){
+      console.warn('Collection photo upload error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Collection: Delete Photo ── */
+  async function deleteCollectionPhoto(itemId, photoUrl, accessToken){
+    try {
+      var result = await callEdge('delete-collection-photo', {
+        item_id: itemId,
+        photo_url: photoUrl
+      }, accessToken);
+      return result.success;
+    } catch(err){
+      console.warn('Collection photo delete error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Public Collection (no auth needed) ── */
+  async function getPublicCollection(username){
+    try {
+      var res = await fetch(EDGE_FN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'public-collection', data: { username: username } })
+      });
+      var json = await res.json();
+      if(!res.ok || json.error) return [];
+      return json.items || [];
+    } catch(err){
+      console.warn('Public collection error:', err);
+      return [];
+    }
+  }
+
+  /* ── Admin: List All Collections ── */
+  async function adminListCollections(accessToken, category, search){
+    try {
+      var result = await callEdge('admin-collections', {
+        category: category || '',
+        search: search || ''
+      }, accessToken);
+      return result.collections || [];
+    } catch(err){
+      console.warn('Admin collections error:', err);
+      throw err;
+    }
+  }
+
   /* ── Cache Helpers ── */
   function cacheProfile(){
     try {
@@ -316,7 +420,15 @@
     listScheduledShows: listScheduledShows,
     createScheduledShow: createScheduledShow,
     updateScheduledShow: updateScheduledShow,
-    deleteScheduledShow: deleteScheduledShow
+    deleteScheduledShow: deleteScheduledShow,
+    getCollection: getCollection,
+    addCollectionItem: addCollectionItem,
+    updateCollectionItem: updateCollectionItem,
+    removeCollectionItem: removeCollectionItem,
+    uploadCollectionPhoto: uploadCollectionPhoto,
+    deleteCollectionPhoto: deleteCollectionPhoto,
+    getPublicCollection: getPublicCollection,
+    adminListCollections: adminListCollections
   };
 
   init();

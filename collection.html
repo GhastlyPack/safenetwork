@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>My Collection | Safe Network</title>
+<link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
+<meta name="description" content="Showcase your collection of coins, Pokemon, sports cards, and sneakers on Safe Network."/>
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/collection.css">
+<link rel="stylesheet" href="/css/cookies.css">
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Customer.io CDP -->
+<script>
+  !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
+</script>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
+    <span>SAFE NETWORK</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/#shows">Shows</a></li>
+    <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+    <li><a href="/#socials">Links</a></li>
+    <li><a href="/blog">Blog</a></li>
+  </ul>
+  <button id="authLoginBtn" class="auth-login-btn" onclick="window.snAuth && snAuth.login()">Log In</button>
+  <div id="authProfileWrap" class="auth-profile-wrap">
+    <div class="auth-avatar" onclick="snAuth.toggleProfileDropdown()">
+      <img id="authAvatarImg" alt="Profile"/>
+      <span id="authAvatarInitials" class="auth-avatar-initials"></span>
+    </div>
+    <div id="authDropdown" class="auth-dropdown">
+      <div class="auth-dropdown-label">Signed in as</div>
+      <div id="authDropdownEmail" class="auth-dropdown-email"></div>
+      <button class="auth-logout-btn" onclick="snAuth.logout()">Log Out</button>
+    </div>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<ul class="mobile-menu" id="mobileMenu">
+  <li><a href="/">Home</a></li>
+  <li><a href="/#shows">Shows</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+  <li><a href="/#socials">Links</a></li>
+  <li><a href="/blog">Blog</a></li>
+  <li id="authMobileLogin" class="auth-mobile-login"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
+  <li id="authMobileProfile" class="auth-mobile-profile">
+    <div class="auth-mobile-signed-in">Signed in as <span id="authMobileEmail" class="auth-mobile-email"></span></div>
+    <button class="auth-mobile-logout" onclick="snAuth.logout()">Log Out</button>
+  </li>
+</ul>
+
+<!-- Loading State -->
+<div class="collection-wrap" id="collectionLoading">
+  <div class="collection-loading"><p>Loading your collection...</p></div>
+</div>
+
+<!-- Login Prompt -->
+<div class="collection-wrap" id="collectionLoginPrompt" style="display:none">
+  <div class="collection-login-prompt">
+    <h1>My Collection</h1>
+    <p>Log in to showcase your collection. Show off the coins, cards, shoes, and Pokemon you've picked up.</p>
+    <button class="btn-primary" onclick="window.snAuth && snAuth.login()">Log In to Continue</button>
+  </div>
+</div>
+
+<!-- Collection Content -->
+<div class="collection-wrap" id="collectionContent" style="display:none">
+  <h1>My Collection</h1>
+  <p class="collection-intro">Show off what you've got. Add your collectibles with photos so other collectors can see your picks.</p>
+
+  <!-- Add / Edit Form -->
+  <form id="collectionForm" class="collection-add-form" onsubmit="handleCollectionSubmit(event)">
+    <h3 id="collFormTitle">Add an Item</h3>
+
+    <!-- Step 1: Category -->
+    <div class="collection-field">
+      <label for="collCategory">What category is this item?</label>
+      <select id="collCategory" onchange="onCollCategoryChange()">
+        <option value="">-- Select a category --</option>
+        <option value="coins">Coins &amp; Bullion</option>
+        <option value="pokemon">Pokemon</option>
+        <option value="sports_cards">Sports Cards</option>
+        <option value="shoes">Shoes</option>
+      </select>
+    </div>
+
+    <!-- Step 2: Dynamic Sub-fields -->
+    <div class="collection-sub-fields" id="collSubFields"></div>
+
+    <!-- Step 3: Description -->
+    <div class="collection-description" id="collDescWrap">
+      <div class="collection-field">
+        <label for="collDescription">Describe this item</label>
+        <textarea id="collDescription" placeholder="Year, edition, condition, grade, colorway — anything that makes it special." maxlength="500" rows="3"></textarea>
+        <div class="field-hint"><span id="collDescCount">0</span>/500 characters</div>
+      </div>
+    </div>
+
+    <!-- Step 4: Photos -->
+    <div class="collection-photos-zone" id="collPhotosZone">
+      <label>Photos (up to 3)</label>
+      <div class="collection-dropzone" id="collDropzone">
+        <div class="collection-dropzone-icon">&#128247;</div>
+        <div class="collection-dropzone-text">Drag photos here or <strong>click to browse</strong></div>
+        <div class="collection-dropzone-hint">JPEG or PNG, max 5 MB each. Images will be auto-resized.</div>
+      </div>
+      <input type="file" class="collection-file-input" id="collFileInput" accept="image/jpeg,image/png,image/webp" multiple/>
+      <div class="collection-photo-previews" id="collPhotoPreviews"></div>
+      <div class="collection-upload-progress" id="collUploadProgress">
+        <span id="collUploadText">Uploading...</span>
+        <div class="collection-upload-bar"><div class="collection-upload-bar-fill" id="collUploadBarFill"></div></div>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="collection-form-status" id="collFormStatus"></div>
+
+    <!-- Buttons -->
+    <button type="submit" class="collection-add-btn" id="collSubmitBtn">Add to Collection</button>
+    <button type="button" class="collection-cancel-btn" id="collCancelBtn" onclick="cancelCollEdit()">Cancel Editing</button>
+  </form>
+
+  <!-- Collection Items List -->
+  <div class="collection-items-header">
+    <h3>Your Collection <span class="collection-count" id="collectionCount">(0)</span></h3>
+  </div>
+  <div id="collectionItems"></div>
+  <div class="collection-empty" id="collectionEmpty" style="display:none">
+    <div class="collection-empty-icon">&#128230;</div>
+    <p>Your collection is empty. Add items above to show off what you've got!</p>
+  </div>
+</div>
+
+<!-- Lightbox Overlay -->
+<div class="collection-lightbox" id="collLightbox">
+  <button class="collection-lightbox-close" id="collLightboxClose">&times;</button>
+  <button class="collection-lightbox-nav collection-lightbox-prev" id="collLightboxPrev">&#8249;</button>
+  <img class="collection-lightbox-img" id="collLightboxImg" alt="Collection photo"/>
+  <button class="collection-lightbox-nav collection-lightbox-next" id="collLightboxNext">&#8250;</button>
+  <div class="collection-lightbox-counter" id="collLightboxCounter"></div>
+</div>
+
+<footer>
+  <div class="footer-logo">SAFE NETWORK</div>
+  <div><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a></div>
+  <p>2026 Safe Network · safenetwork.shop</p>
+</footer>
+
+<script>
+  function toggleMenu(){
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.querySelector('.hamburger').classList.toggle('open');
+  }
+</script>
+<script src="/js/supabase.js"></script>
+<script src="/js/cookies.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+/* ── Collection Page Logic ── */
+(function(){
+  var currentCollection = [];
+  var editingId = null;       // null = add mode, uuid = edit mode
+  var pendingPhotos = [];     // { file, dataUrl, base64, contentType } staged for upload
+  var existingPhotoUrls = []; // URLs from existing item during edit
+
+  var MAX_PHOTOS = 3;
+  var MAX_WIDTH = 1200;
+  var JPEG_QUALITY = 0.85;
+
+  /* ── Sub-field definitions (same as wishlist) ── */
+  var CATEGORY_FIELDS = {
+    coins: [
+      { key: 'type', label: 'Type', options: ['Coins', 'Bullion Bars', 'Bullion Rounds', 'Currency/Notes'] },
+      { key: 'metal', label: 'Metal', options: ['Gold', 'Silver', 'Platinum', 'Copper/Other'] },
+      { key: 'condition', label: 'Condition', options: ['Raw/Ungraded', 'Graded (PCGS/NGC)'] }
+    ],
+    pokemon: [
+      { key: 'product_type', label: 'Product Type', options: ['Singles', 'Booster Packs', 'Sealed Boxes/ETBs', 'Graded Cards'] },
+      { key: 'era', label: 'Era', options: ['Vintage (WOTC/Base Set)', 'Modern', 'Japanese'] },
+      { key: 'condition', label: 'Condition', options: ['Raw', 'Graded (PSA/BGS/CGC)'] }
+    ],
+    sports_cards: [
+      { key: 'sport', label: 'Sport', options: ['Baseball', 'Basketball', 'Football', 'Hockey', 'Soccer', 'Other'] },
+      { key: 'product_type', label: 'Product Type', options: ['Singles', 'Hobby Boxes', 'Retail Packs', 'Graded Cards'] },
+      { key: 'era', label: 'Era', options: ['Vintage (pre-1980)', 'Junk Wax (1980-1995)', 'Modern (1996+)'] }
+    ],
+    shoes: [
+      { key: 'brand', label: 'Brand', options: ['Nike', 'Jordan', 'Adidas', 'New Balance', 'Yeezy', 'Other'] },
+      { key: 'shoe_type', label: 'Type', options: ['Sneakers', 'Basketball', 'Running', 'Lifestyle'] },
+      { key: 'size', label: 'Size', type: 'text', placeholder: 'e.g. 10.5' },
+      { key: 'condition', label: 'Condition', options: ['New/Deadstock', 'Used/Pre-owned'] }
+    ]
+  };
+
+  var CATEGORY_LABELS = {
+    coins: 'Coins & Bullion',
+    pokemon: 'Pokemon',
+    sports_cards: 'Sports Cards',
+    shoes: 'Shoes'
+  };
+
+  /* ── Category change: render sub-fields ── */
+  window.onCollCategoryChange = function(){
+    var cat = document.getElementById('collCategory').value;
+    var subWrap = document.getElementById('collSubFields');
+    var descWrap = document.getElementById('collDescWrap');
+    var photoZone = document.getElementById('collPhotosZone');
+
+    if(!cat){
+      subWrap.innerHTML = '';
+      subWrap.classList.remove('visible');
+      descWrap.classList.remove('visible');
+      photoZone.classList.remove('visible');
+      return;
+    }
+
+    var fields = CATEGORY_FIELDS[cat] || [];
+    var cols = fields.length >= 3 ? 'collection-field-row-3' : 'collection-field-row';
+    var html = '<div class="' + cols + '">';
+    for(var i = 0; i < fields.length; i++){
+      var f = fields[i];
+      html += '<div class="collection-field">';
+      html += '<label>' + f.label + '</label>';
+      if(f.type === 'text'){
+        html += '<input type="text" id="collSub_' + f.key + '" placeholder="' + (f.placeholder || '') + '" maxlength="20"/>';
+      } else {
+        html += '<select id="collSub_' + f.key + '">';
+        html += '<option value="">-- Select --</option>';
+        for(var j = 0; j < f.options.length; j++){
+          var val = f.options[j].toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/_+$/, '');
+          html += '<option value="' + val + '">' + f.options[j] + '</option>';
+        }
+        html += '</select>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    subWrap.innerHTML = html;
+    subWrap.classList.add('visible');
+    descWrap.classList.add('visible');
+    photoZone.classList.add('visible');
+  };
+
+  /* ── Gather sub-field values ── */
+  function gatherDetails(){
+    var cat = document.getElementById('collCategory').value;
+    var fields = CATEGORY_FIELDS[cat] || [];
+    var details = {};
+    for(var i = 0; i < fields.length; i++){
+      var el = document.getElementById('collSub_' + fields[i].key);
+      if(el && el.value.trim()){
+        details[fields[i].key] = el.value.trim();
+      }
+    }
+    return details;
+  }
+
+  /* ── Description character count ── */
+  document.addEventListener('input', function(e){
+    if(e.target.id === 'collDescription'){
+      var el = document.getElementById('collDescCount');
+      if(el) el.textContent = e.target.value.length;
+    }
+  });
+
+  /* ══════════════════════════════════════════════
+     PHOTO HANDLING: Dropzone, Resize, Preview
+     ══════════════════════════════════════════════ */
+
+  /* ── Wire up dropzone click → file input ── */
+  var dropzone = document.getElementById('collDropzone');
+  var fileInput = document.getElementById('collFileInput');
+
+  dropzone.addEventListener('click', function(){ fileInput.click(); });
+  fileInput.addEventListener('change', function(){ handleFiles(this.files); this.value = ''; });
+
+  /* Drag and drop */
+  dropzone.addEventListener('dragover', function(e){ e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', function(){ dropzone.classList.remove('dragover'); });
+  dropzone.addEventListener('drop', function(e){
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    if(e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+  });
+
+  /* ── Handle selected files ── */
+  function handleFiles(fileList){
+    var totalSlots = MAX_PHOTOS - existingPhotoUrls.length - pendingPhotos.length;
+    if(totalSlots <= 0) return;
+
+    var toProcess = Math.min(fileList.length, totalSlots);
+    for(var i = 0; i < toProcess; i++){
+      var file = fileList[i];
+      if(!file.type.match(/^image\/(jpeg|png|webp)$/)) continue;
+      if(file.size > 5 * 1024 * 1024){ alert('Image must be under 5 MB.'); continue; }
+      processFile(file);
+    }
+  }
+
+  /* ── Read + resize file → stage for upload ── */
+  function processFile(file){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        resizeImage(img, function(base64, contentType){
+          pendingPhotos.push({
+            file: file,
+            dataUrl: 'data:' + contentType + ';base64,' + base64,
+            base64: base64,
+            contentType: contentType
+          });
+          renderPhotoPreviews();
+        });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* ── Canvas resize (max 1200px wide, JPEG 85%) ── */
+  function resizeImage(img, callback){
+    var w = img.width;
+    var h = img.height;
+    if(w > MAX_WIDTH){
+      h = Math.round(h * (MAX_WIDTH / w));
+      w = MAX_WIDTH;
+    }
+
+    var canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+
+    var dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+    var base64 = dataUrl.split(',')[1];
+    callback(base64, 'image/jpeg');
+  }
+
+  /* ── Render photo preview thumbnails in form ── */
+  function renderPhotoPreviews(){
+    var container = document.getElementById('collPhotoPreviews');
+    var html = '';
+
+    // Existing photos (during edit)
+    for(var i = 0; i < existingPhotoUrls.length; i++){
+      html += '<div class="collection-photo-preview">';
+      html += '<img src="' + esc(existingPhotoUrls[i]) + '" alt="Photo"/>';
+      html += '<button type="button" class="collection-photo-remove" onclick="removeExistingPhoto(' + i + ')" title="Remove">&times;</button>';
+      html += '</div>';
+    }
+
+    // Pending (newly added) photos
+    for(var j = 0; j < pendingPhotos.length; j++){
+      html += '<div class="collection-photo-preview">';
+      html += '<img src="' + pendingPhotos[j].dataUrl + '" alt="Photo"/>';
+      html += '<button type="button" class="collection-photo-remove" onclick="removePendingPhoto(' + j + ')" title="Remove">&times;</button>';
+      html += '</div>';
+    }
+
+    container.innerHTML = html;
+
+    // Show/hide dropzone based on slot availability
+    var totalPhotos = existingPhotoUrls.length + pendingPhotos.length;
+    dropzone.style.display = totalPhotos >= MAX_PHOTOS ? 'none' : '';
+  }
+
+  /* ── Remove staged photo ── */
+  window.removePendingPhoto = function(idx){
+    pendingPhotos.splice(idx, 1);
+    renderPhotoPreviews();
+  };
+
+  /* ── Remove existing photo (during edit — queued for deletion on save) ── */
+  var photosToDelete = []; // URLs to delete on save
+  window.removeExistingPhoto = function(idx){
+    var url = existingPhotoUrls[idx];
+    photosToDelete.push(url);
+    existingPhotoUrls.splice(idx, 1);
+    renderPhotoPreviews();
+  };
+
+  /* ══════════════════════════════════════════════
+     SUBMIT: Create/Update item, then upload photos
+     ══════════════════════════════════════════════ */
+  window.handleCollectionSubmit = async function(e){
+    e.preventDefault();
+    var statusEl = document.getElementById('collFormStatus');
+    var submitBtn = document.getElementById('collSubmitBtn');
+    var progressEl = document.getElementById('collUploadProgress');
+    var progressText = document.getElementById('collUploadText');
+    var progressBar = document.getElementById('collUploadBarFill');
+
+    var category = document.getElementById('collCategory').value;
+    if(!category){
+      statusEl.textContent = 'Please select a category.';
+      statusEl.className = 'collection-form-status error';
+      return;
+    }
+
+    var description = document.getElementById('collDescription').value.trim();
+    var details = gatherDetails();
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = editingId ? 'Saving...' : 'Adding...';
+    statusEl.className = 'collection-form-status';
+    statusEl.style.display = 'none';
+
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) throw new Error('Not authenticated');
+
+      var itemId;
+
+      if(editingId){
+        /* ── Update existing item ── */
+        await snProfile.updateCollectionItem({
+          id: editingId,
+          category: category,
+          details: details,
+          description: description
+        }, token);
+        itemId = editingId;
+
+        // Delete photos that were removed
+        for(var d = 0; d < photosToDelete.length; d++){
+          try {
+            await snProfile.deleteCollectionPhoto(itemId, photosToDelete[d], token);
+          } catch(delErr){
+            console.warn('Photo delete error:', delErr);
+          }
+        }
+
+        trackCollEvent('collection_item_updated', category);
+      } else {
+        /* ── Create new item ── */
+        var result = await snProfile.addCollectionItem({
+          category: category,
+          details: details,
+          description: description
+        }, token);
+        itemId = result.id;
+        trackCollEvent('collection_item_added', category);
+      }
+
+      /* ── Upload pending photos with progress ── */
+      if(pendingPhotos.length > 0){
+        progressEl.classList.add('visible');
+        for(var p = 0; p < pendingPhotos.length; p++){
+          progressText.textContent = 'Uploading photo ' + (p + 1) + '/' + pendingPhotos.length + '...';
+          progressBar.style.width = Math.round(((p) / pendingPhotos.length) * 100) + '%';
+
+          await snProfile.uploadCollectionPhoto(
+            itemId,
+            pendingPhotos[p].base64,
+            pendingPhotos[p].contentType,
+            token
+          );
+        }
+        progressBar.style.width = '100%';
+        progressText.textContent = 'Upload complete!';
+        setTimeout(function(){ progressEl.classList.remove('visible'); progressBar.style.width = '0'; }, 1200);
+      }
+
+      // Reload list
+      await loadCollection();
+
+      // Reset form
+      resetForm();
+      statusEl.textContent = editingId ? 'Item updated!' : 'Added to your collection!';
+      statusEl.className = 'collection-form-status success';
+      editingId = null;
+      photosToDelete = [];
+      document.getElementById('collFormTitle').textContent = 'Add an Item';
+      document.getElementById('collSubmitBtn').textContent = 'Add to Collection';
+      document.getElementById('collCancelBtn').classList.remove('visible');
+
+    } catch(err){
+      console.warn('Collection submit error:', err);
+      statusEl.textContent = err.message || 'Something went wrong. Please try again.';
+      statusEl.className = 'collection-form-status error';
+      progressEl.classList.remove('visible');
+    }
+
+    submitBtn.disabled = false;
+    if(!editingId) submitBtn.textContent = 'Add to Collection';
+  };
+
+  /* ── Edit Item ── */
+  window.editCollItem = function(id){
+    var item = null;
+    for(var i = 0; i < currentCollection.length; i++){
+      if(currentCollection[i].id === id){ item = currentCollection[i]; break; }
+    }
+    if(!item) return;
+
+    editingId = id;
+    pendingPhotos = [];
+    photosToDelete = [];
+    existingPhotoUrls = (item.photo_urls || []).slice(); // clone
+
+    // Populate form
+    document.getElementById('collCategory').value = item.category;
+    onCollCategoryChange();
+
+    // Fill sub-fields
+    var details = item.details || {};
+    var fields = CATEGORY_FIELDS[item.category] || [];
+    for(var i = 0; i < fields.length; i++){
+      var el = document.getElementById('collSub_' + fields[i].key);
+      if(el && details[fields[i].key]){
+        el.value = details[fields[i].key];
+      }
+    }
+
+    document.getElementById('collDescription').value = item.description || '';
+    document.getElementById('collDescCount').textContent = (item.description || '').length;
+
+    // Render existing photo previews
+    renderPhotoPreviews();
+
+    // Update UI
+    document.getElementById('collFormTitle').textContent = 'Edit Item';
+    document.getElementById('collSubmitBtn').textContent = 'Save Changes';
+    document.getElementById('collCancelBtn').classList.add('visible');
+
+    // Clear status
+    var statusEl = document.getElementById('collFormStatus');
+    statusEl.className = 'collection-form-status';
+    statusEl.style.display = 'none';
+
+    // Scroll to form
+    document.getElementById('collectionForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  /* ── Cancel Edit ── */
+  window.cancelCollEdit = function(){
+    editingId = null;
+    photosToDelete = [];
+    resetForm();
+    document.getElementById('collFormTitle').textContent = 'Add an Item';
+    document.getElementById('collSubmitBtn').textContent = 'Add to Collection';
+    document.getElementById('collCancelBtn').classList.remove('visible');
+    var statusEl = document.getElementById('collFormStatus');
+    statusEl.className = 'collection-form-status';
+    statusEl.style.display = 'none';
+  };
+
+  /* ── Remove Item ── */
+  window.removeCollItem = async function(id){
+    if(!confirm('Remove this item from your collection? Photos will be deleted too.')) return;
+
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) throw new Error('Not authenticated');
+      await snProfile.removeCollectionItem(id, token);
+      trackCollEvent('collection_item_removed', '');
+      await loadCollection();
+    } catch(err){
+      console.warn('Remove error:', err);
+      alert('Error removing item: ' + (err.message || 'Please try again.'));
+    }
+  };
+
+  /* ── Reset Form ── */
+  function resetForm(){
+    document.getElementById('collCategory').value = '';
+    document.getElementById('collSubFields').innerHTML = '';
+    document.getElementById('collSubFields').classList.remove('visible');
+    document.getElementById('collDescWrap').classList.remove('visible');
+    document.getElementById('collPhotosZone').classList.remove('visible');
+    document.getElementById('collDescription').value = '';
+    document.getElementById('collDescCount').textContent = '0';
+    pendingPhotos = [];
+    existingPhotoUrls = [];
+    document.getElementById('collPhotoPreviews').innerHTML = '';
+    dropzone.style.display = '';
+  }
+
+  /* ══════════════════════════════════════════════
+     LOAD + RENDER COLLECTION
+     ══════════════════════════════════════════════ */
+
+  async function loadCollection(){
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) return;
+      currentCollection = await snProfile.getCollection(token);
+      renderCollection();
+    } catch(err){
+      console.warn('Load collection error:', err);
+    }
+  }
+
+  function renderCollection(){
+    var container = document.getElementById('collectionItems');
+    var emptyEl = document.getElementById('collectionEmpty');
+    var countEl = document.getElementById('collectionCount');
+
+    countEl.textContent = '(' + currentCollection.length + ')';
+
+    if(currentCollection.length === 0){
+      container.innerHTML = '';
+      emptyEl.style.display = '';
+      return;
+    }
+
+    emptyEl.style.display = 'none';
+    var html = '';
+    for(var i = 0; i < currentCollection.length; i++){
+      var item = currentCollection[i];
+      var cat = item.category || 'other';
+      var details = item.details || {};
+      var photos = item.photo_urls || [];
+
+      html += '<div class="collection-card">';
+      html += '<div class="collection-card-top">';
+      html += '<span class="collection-badge badge-cat-' + esc(cat) + '">' + esc(CATEGORY_LABELS[cat] || cat) + '</span>';
+
+      // Detail tags
+      var detailKeys = Object.keys(details);
+      for(var j = 0; j < detailKeys.length; j++){
+        var val = details[detailKeys[j]];
+        if(val){
+          html += '<span class="collection-detail-tag">' + formatDetailValue(val) + '</span>';
+        }
+      }
+      html += '</div>';
+
+      // Photo thumbnails
+      if(photos.length > 0){
+        html += '<div class="collection-card-photos">';
+        for(var p = 0; p < photos.length; p++){
+          html += '<div class="collection-card-thumb" onclick="openLightbox(' + i + ',' + p + ')">';
+          html += '<img src="' + esc(photos[p]) + '" alt="Photo ' + (p+1) + '" loading="lazy"/>';
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+
+      if(item.description){
+        html += '<p class="collection-card-desc">' + esc(item.description) + '</p>';
+      }
+
+      html += '<div class="collection-card-actions">';
+      html += '<button class="collection-edit-btn" onclick="editCollItem(\'' + item.id + '\')">Edit</button>';
+      html += '<button class="collection-remove-btn" onclick="removeCollItem(\'' + item.id + '\')">Remove</button>';
+      html += '</div>';
+      html += '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  function formatDetailValue(val){
+    return esc(val.replace(/_/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); }));
+  }
+
+  /* ══════════════════════════════════════════════
+     LIGHTBOX
+     ══════════════════════════════════════════════ */
+  var lightboxItemIdx = 0;
+  var lightboxPhotoIdx = 0;
+
+  window.openLightbox = function(itemIdx, photoIdx){
+    lightboxItemIdx = itemIdx;
+    lightboxPhotoIdx = photoIdx;
+    updateLightbox();
+    document.getElementById('collLightbox').classList.add('open');
+  };
+
+  function updateLightbox(){
+    var photos = (currentCollection[lightboxItemIdx] || {}).photo_urls || [];
+    if(photos.length === 0) return;
+    document.getElementById('collLightboxImg').src = photos[lightboxPhotoIdx];
+    document.getElementById('collLightboxCounter').textContent = (lightboxPhotoIdx + 1) + ' / ' + photos.length;
+
+    // Show/hide nav buttons
+    document.getElementById('collLightboxPrev').style.display = photos.length > 1 ? '' : 'none';
+    document.getElementById('collLightboxNext').style.display = photos.length > 1 ? '' : 'none';
+  }
+
+  function closeLightbox(){
+    document.getElementById('collLightbox').classList.remove('open');
+  }
+
+  document.getElementById('collLightboxClose').addEventListener('click', closeLightbox);
+  document.getElementById('collLightboxPrev').addEventListener('click', function(){
+    var photos = (currentCollection[lightboxItemIdx] || {}).photo_urls || [];
+    lightboxPhotoIdx = (lightboxPhotoIdx - 1 + photos.length) % photos.length;
+    updateLightbox();
+  });
+  document.getElementById('collLightboxNext').addEventListener('click', function(){
+    var photos = (currentCollection[lightboxItemIdx] || {}).photo_urls || [];
+    lightboxPhotoIdx = (lightboxPhotoIdx + 1) % photos.length;
+    updateLightbox();
+  });
+
+  // Escape key closes lightbox
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeLightbox();
+    if(e.key === 'ArrowLeft'){
+      var photos = (currentCollection[lightboxItemIdx] || {}).photo_urls || [];
+      if(photos.length > 1){
+        lightboxPhotoIdx = (lightboxPhotoIdx - 1 + photos.length) % photos.length;
+        updateLightbox();
+      }
+    }
+    if(e.key === 'ArrowRight'){
+      var photos = (currentCollection[lightboxItemIdx] || {}).photo_urls || [];
+      if(photos.length > 1){
+        lightboxPhotoIdx = (lightboxPhotoIdx + 1) % photos.length;
+        updateLightbox();
+      }
+    }
+  });
+
+  // Click backdrop to close
+  document.getElementById('collLightbox').addEventListener('click', function(e){
+    if(e.target === this) closeLightbox();
+  });
+
+  /* ══════════════════════════════════════════════
+     CIO TRACKING + HELPERS
+     ══════════════════════════════════════════════ */
+
+  function trackCollEvent(eventName, category){
+    try {
+      if(window.cioanalytics){
+        cioanalytics.track(eventName, {
+          category: category,
+          collection_count: currentCollection.length
+        });
+      }
+    } catch(err){
+      console.warn('CIO collection tracking error:', err);
+    }
+  }
+
+  function esc(str){
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  /* ── Show/Hide Sections ── */
+  function showSection(id){
+    document.getElementById('collectionLoading').style.display = 'none';
+    document.getElementById('collectionLoginPrompt').style.display = 'none';
+    document.getElementById('collectionContent').style.display = 'none';
+    document.getElementById(id).style.display = '';
+  }
+
+  /* ── Init Page ── */
+  async function initCollectionPage(){
+    var maxWait = 50;
+    while(!window.snAuth && maxWait > 0){
+      await new Promise(function(r){ setTimeout(r, 100); });
+      maxWait--;
+    }
+
+    if(!window.snAuth){
+      showSection('collectionLoginPrompt');
+      return;
+    }
+
+    var loggedIn = await snAuth.isLoggedIn();
+    if(!loggedIn){
+      showSection('collectionLoginPrompt');
+      return;
+    }
+
+    showSection('collectionContent');
+    await loadCollection();
+  }
+
+  /* Listen for auth ready event */
+  window.addEventListener('snauth:ready', function(){
+    showSection('collectionContent');
+    loadCollection();
+  });
+
+  // Boot
+  initCollectionPage();
+})();
+</script>
+</body>
+</html>

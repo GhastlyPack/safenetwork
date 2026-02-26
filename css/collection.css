@@ -1,0 +1,260 @@
+/* ── Collection Page ── */
+.collection-wrap{max-width:760px;margin:0 auto;padding:100px 24px 60px;position:relative;z-index:1}
+.collection-wrap h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);letter-spacing:2px;margin-bottom:4px;color:var(--white)}
+.collection-intro{color:var(--silver);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;margin-bottom:32px}
+
+/* ── Add / Edit Form ── */
+.collection-add-form{background:rgba(255,255,255,.03);border:1px solid rgba(30,144,255,.15);border-radius:20px;padding:28px;margin-bottom:36px}
+.collection-add-form h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--silver);text-transform:uppercase;margin-bottom:20px}
+
+.collection-field{margin-bottom:16px}
+.collection-field label{display:block;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--silver);letter-spacing:.5px;margin-bottom:8px}
+.collection-field input,
+.collection-field textarea,
+.collection-field select{
+  width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;padding:14px 16px;color:var(--white);font-family:'Inter',sans-serif;
+  font-size:14px;outline:none;transition:border-color .2s;box-sizing:border-box;resize:none
+}
+.collection-field input:focus,
+.collection-field textarea:focus,
+.collection-field select:focus{border-color:var(--blue)}
+.collection-field select{cursor:pointer;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23c0c8d8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+.collection-field select option{background:#0f1628;color:var(--white)}
+.collection-field .field-hint{color:rgba(192,200,216,.5);font-family:'Inter',sans-serif;font-size:12px;margin-top:6px}
+
+/* Two / Three column row for sub-dropdowns */
+.collection-field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.collection-field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* Dynamic sub-fields container */
+.collection-sub-fields{display:none;margin-top:4px}
+.collection-sub-fields.visible{display:block}
+
+/* Description area */
+.collection-description{display:none;margin-top:4px}
+.collection-description.visible{display:block}
+
+/* ── Photo Upload Zone ── */
+.collection-photos-zone{display:none;margin-top:4px}
+.collection-photos-zone.visible{display:block}
+.collection-photos-zone label{display:block;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--silver);letter-spacing:.5px;margin-bottom:8px}
+
+.collection-dropzone{
+  border:2px dashed rgba(30,144,255,.25);border-radius:12px;padding:32px 20px;
+  text-align:center;cursor:pointer;transition:border-color .2s,background .2s;
+  background:rgba(30,144,255,.03)
+}
+.collection-dropzone:hover,.collection-dropzone.dragover{
+  border-color:var(--blue);background:rgba(30,144,255,.08)
+}
+.collection-dropzone-icon{font-size:32px;margin-bottom:8px;opacity:.5}
+.collection-dropzone-text{color:var(--silver);font-family:'Inter',sans-serif;font-size:13px;line-height:1.5}
+.collection-dropzone-text strong{color:var(--blue);font-weight:600}
+.collection-dropzone-hint{color:rgba(192,200,216,.4);font-family:'Inter',sans-serif;font-size:11px;margin-top:6px}
+.collection-file-input{display:none}
+
+/* Photo previews in form */
+.collection-photo-previews{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+.collection-photo-preview{
+  position:relative;width:100px;height:100px;border-radius:10px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.1);flex-shrink:0
+}
+.collection-photo-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.collection-photo-remove{
+  position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
+  background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.2);color:#ff6b6b;
+  font-size:14px;line-height:20px;text-align:center;cursor:pointer;
+  transition:background .2s,color .2s;padding:0
+}
+.collection-photo-remove:hover{background:rgba(255,80,80,.3);color:#fff}
+
+/* Upload progress */
+.collection-upload-progress{
+  display:none;margin-top:12px;font-family:'Inter',sans-serif;font-size:13px;
+  color:var(--blue);font-weight:600
+}
+.collection-upload-progress.visible{display:block}
+.collection-upload-bar{
+  height:4px;border-radius:2px;background:rgba(30,144,255,.15);margin-top:6px;overflow:hidden
+}
+.collection-upload-bar-fill{
+  height:100%;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--blue2));
+  transition:width .3s ease;width:0
+}
+
+/* Form status message */
+.collection-form-status{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:10px 0;display:none}
+.collection-form-status.success{display:block;color:#4ade80}
+.collection-form-status.error{display:block;color:#ff6b6b}
+
+/* Add / Save button */
+.collection-add-btn{
+  display:block;width:100%;background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;border:none;padding:14px;border-radius:10px;font-family:'Inter',sans-serif;
+  font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;
+  box-shadow:0 0 16px rgba(30,144,255,.3);transition:transform .2s,box-shadow .2s;margin-top:8px
+}
+.collection-add-btn:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(30,144,255,.5)}
+.collection-add-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Cancel edit button */
+.collection-cancel-btn{
+  display:none;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  color:var(--silver);padding:12px;border-radius:10px;font-family:'Inter',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;transition:background .2s,color .2s;margin-top:8px
+}
+.collection-cancel-btn:hover{background:rgba(255,255,255,.1);color:var(--white)}
+.collection-cancel-btn.visible{display:block}
+
+/* ── Collection Items Section ── */
+.collection-items-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.collection-items-header h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--silver);text-transform:uppercase;margin:0}
+.collection-count{color:var(--blue);font-weight:600}
+
+/* Collection Card */
+.collection-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;margin-bottom:12px;transition:border-color .2s}
+.collection-card:hover{border-color:rgba(30,144,255,.2)}
+
+.collection-card-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+
+/* Category badge — reuse same wishlist badge classes */
+.collection-badge{padding:4px 12px;border-radius:999px;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:inline-block}
+
+/* Sub-detail tags */
+.collection-detail-tag{display:inline-block;padding:3px 10px;border-radius:999px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--silver);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+
+/* Card photo thumbnails */
+.collection-card-photos{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.collection-card-thumb{
+  width:80px;height:80px;border-radius:10px;overflow:hidden;cursor:pointer;
+  border:1px solid rgba(255,255,255,.1);transition:border-color .2s,transform .2s;flex-shrink:0
+}
+.collection-card-thumb:hover{border-color:var(--blue);transform:scale(1.04)}
+.collection-card-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* Description */
+.collection-card-desc{color:var(--silver);font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;margin-bottom:12px}
+
+/* Card actions */
+.collection-card-actions{display:flex;gap:8px}
+.collection-edit-btn,
+.collection-remove-btn{
+  background:none;border:1px solid rgba(255,255,255,.1);color:var(--silver);
+  padding:6px 14px;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;
+  font-weight:600;cursor:pointer;transition:background .2s,color .2s,border-color .2s
+}
+.collection-edit-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(30,144,255,.06)}
+.collection-remove-btn:hover{border-color:#ff6b6b;color:#ff6b6b;background:rgba(255,80,80,.06)}
+
+/* Empty state */
+.collection-empty{text-align:center;padding:48px 20px;color:var(--silver);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6}
+.collection-empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
+
+/* ── Loading / Login Prompt ── */
+.collection-loading{text-align:center;padding:120px 20px;color:var(--silver);font-family:'Inter',sans-serif}
+.collection-login-prompt{text-align:center;padding:120px 20px}
+.collection-login-prompt h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);letter-spacing:2px;margin-bottom:16px}
+.collection-login-prompt p{color:var(--silver);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;margin-bottom:24px;max-width:500px;margin-left:auto;margin-right:auto}
+.collection-login-prompt .btn-primary{
+  display:inline-block;background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;border:none;padding:14px 36px;border-radius:10px;font-family:'Inter',sans-serif;
+  font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 0 20px rgba(30,144,255,.4);
+  transition:transform .2s,box-shadow .2s
+}
+.collection-login-prompt .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(30,144,255,.7)}
+
+/* ── Lightbox Overlay ── */
+.collection-lightbox{
+  display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);
+  align-items:center;justify-content:center;padding:20px
+}
+.collection-lightbox.open{display:flex}
+.collection-lightbox-img{
+  max-width:90vw;max-height:85vh;border-radius:12px;object-fit:contain;
+  box-shadow:0 0 60px rgba(0,0,0,.6)
+}
+.collection-lightbox-close{
+  position:absolute;top:20px;right:24px;width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:var(--white);
+  font-size:20px;line-height:38px;text-align:center;cursor:pointer;
+  transition:background .2s
+}
+.collection-lightbox-close:hover{background:rgba(255,255,255,.2)}
+.collection-lightbox-nav{
+  position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;
+  border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  color:var(--white);font-size:20px;line-height:42px;text-align:center;cursor:pointer;
+  transition:background .2s
+}
+.collection-lightbox-nav:hover{background:rgba(255,255,255,.2)}
+.collection-lightbox-prev{left:20px}
+.collection-lightbox-next{right:20px}
+.collection-lightbox-counter{
+  position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+  color:var(--silver);font-family:'Inter',sans-serif;font-size:13px;font-weight:600
+}
+
+/* ── Profile Preview (profile.html) ── */
+.collection-preview-section{margin-top:36px}
+.collection-preview-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.collection-preview-header h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--silver);text-transform:uppercase;margin:0}
+.collection-preview-link{
+  color:var(--blue);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+  text-decoration:none;transition:color .2s
+}
+.collection-preview-link:hover{color:var(--blue2)}
+.collection-preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.collection-preview-card{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;overflow:hidden;transition:border-color .2s
+}
+.collection-preview-card:hover{border-color:rgba(30,144,255,.2)}
+.collection-preview-thumb{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:rgba(255,255,255,.04)}
+.collection-preview-thumb-empty{
+  width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.04);color:var(--silver);font-size:32px;opacity:.3
+}
+.collection-preview-info{padding:10px 12px}
+.collection-preview-cat{
+  font-family:'Inter',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--blue);margin-bottom:4px
+}
+.collection-preview-desc{
+  color:var(--silver);font-family:'Inter',sans-serif;font-size:12px;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden
+}
+.collection-preview-empty{
+  text-align:center;padding:32px 20px;color:var(--silver);font-family:'Inter',sans-serif;
+  font-size:13px;line-height:1.6;background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.08);
+  border-radius:14px
+}
+.collection-preview-empty a{color:var(--blue);text-decoration:none;font-weight:600}
+.collection-preview-empty a:hover{text-decoration:underline}
+
+/* ── Public Collection (collector.html) ── */
+.public-collection-section{margin-top:40px}
+.public-collection-header{
+  font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;
+  color:var(--white);margin-bottom:16px
+}
+.public-collection-header span{color:var(--silver);font-size:16px;font-weight:400}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .collection-wrap{padding:80px 16px 40px}
+  .collection-field-row,.collection-field-row-3{grid-template-columns:1fr}
+  .collection-add-form{padding:20px}
+  .collection-card{padding:16px}
+  .collection-card-thumb{width:64px;height:64px}
+  .collection-preview-grid{grid-template-columns:repeat(2,1fr)}
+  .collection-lightbox-nav{width:36px;height:36px;font-size:16px;line-height:34px}
+  .collection-lightbox-prev{left:10px}
+  .collection-lightbox-next{right:10px}
+}
+@media(max-width:480px){
+  .collection-card-actions{flex-direction:column}
+  .collection-edit-btn,.collection-remove-btn{width:100%;text-align:center}
+  .collection-preview-grid{grid-template-columns:1fr}
+  .collection-photo-preview{width:80px;height:80px}
+}

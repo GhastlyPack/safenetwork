@@ -1,6 +1,5 @@
-/* ── Email Signup Modal ── */
+/* ── Email Signup Modal + Customer.io Integration ── */
 (function(){
-  var FORM_ID = 'YOUR_FORM_ID'; // Replace with your Customer.io Form ID
   var AUTO_DELAY = 10000; // 10 seconds
   var COOKIE_NAME = 'sn_signup_shown';
   var COOKIE_DAYS = 365; // don't auto-popup again for 1 year
@@ -52,7 +51,7 @@
     }, AUTO_DELAY);
   }
 
-  /* ── Form Submit ── */
+  /* ── Form Submit via Customer.io JS Snippet ── */
   window.handleSignup = function(e){
     e.preventDefault();
     var form = document.querySelector('.signup-modal form');
@@ -86,28 +85,34 @@
     btn.disabled = true;
     btn.textContent = 'Submitting...';
 
-    // POST to Customer.io Forms API
-    fetch('https://track.customer.io/api/v1/forms/' + FORM_ID + '/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data: {
+    // Identify user in Customer.io
+    try {
+      if(window.cioanalytics){
+        // Identify creates/updates the person in Customer.io
+        cioanalytics.identify(email, {
           email: email,
           first_name: firstName,
           interests: interests,
           source: 'website_signup',
-          coupon_eligible: true
-        }
-      })
-    })
-    .then(function(res){
-      // Show success regardless (placeholder FORM_ID will 404 but UX should still demo)
-      showSuccess(form, successEl);
-    })
-    .catch(function(){
-      // Show success anyway for demo (network error expected with placeholder ID)
-      showSuccess(form, successEl);
-    });
+          signup_page: window.location.pathname,
+          coupon_eligible: true,
+          signed_up_at: new Date().toISOString()
+        });
+
+        // Track the signup event
+        cioanalytics.track('email_list_signup', {
+          first_name: firstName,
+          interests: interests,
+          source: 'website_signup',
+          signup_page: window.location.pathname
+        });
+      }
+    } catch(err) {
+      console.warn('Customer.io tracking error:', err);
+    }
+
+    // Show success (CIO calls are fire-and-forget, no need to wait)
+    showSuccess(form, successEl);
   };
 
   function showError(el, msg){

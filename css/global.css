@@ -35,7 +35,11 @@ footer p{color:rgba(192,200,216,.5);font-size:13px}
 .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--silver)}
 footer a{color:var(--blue);text-decoration:none;font-size:13px}
 
-/* MOBILE */
+/* TABLET - hide secondary nav links first */
+@media(max-width:900px){
+  .nav-secondary{display:none}
+}
+/* MOBILE - full hamburger */
 @media(max-width:768px){
   nav{padding:14px 20px}
   .nav-links{display:none}

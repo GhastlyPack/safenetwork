@@ -239,7 +239,21 @@
   .social-btn.tt:hover{border-color:#69c9d0;box-shadow:0 0 24px rgba(105,201,208,.2)}
   .social-btn.ebay{border-color:rgba(14,118,168,.3)}
   .social-btn.ebay:hover{border-color:#0e76a8;box-shadow:0 0 24px rgba(14,118,168,.2)}
-  .social-icon{font-size:26px}
+  .social-icon{
+    width:44px;height:44px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;transition:transform .3s,box-shadow .3s;
+  }
+  .social-icon img{width:28px;height:28px;object-fit:contain;border-radius:4px}
+  .social-btn:hover .social-icon{transform:scale(1.15)}
+  .whatnot-btn .social-icon{background:rgba(230,100,255,.12)}
+  .whatnot-btn:hover .social-icon{box-shadow:0 0 16px rgba(230,100,255,.3)}
+  .ig .social-icon{background:rgba(225,48,108,.12)}
+  .ig:hover .social-icon{box-shadow:0 0 16px rgba(225,48,108,.3)}
+  .tt .social-icon{background:rgba(105,201,208,.12)}
+  .tt:hover .social-icon{box-shadow:0 0 16px rgba(105,201,208,.3)}
+  .ebay .social-icon{background:rgba(14,118,168,.12)}
+  .ebay:hover .social-icon{box-shadow:0 0 16px rgba(14,118,168,.3)}
   .social-info span{display:block;font-size:12px;color:var(--silver);font-weight:400}
 
   /* EBAY */
@@ -391,6 +405,91 @@
   }
   .host-modal-profile-btn:hover{transform:translateY(-2px);box-shadow:0 0 36px rgba(30,144,255,.7)}
 
+  /* SHOW DETAIL MODAL */
+  .show-modal-overlay{
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(10,14,26,.85);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    display:none;align-items:center;justify-content:center;
+    padding:24px;opacity:0;transition:opacity .3s ease;
+  }
+  .show-modal-overlay.active{display:flex;opacity:1}
+  .show-modal{
+    position:relative;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(30,144,255,.2);
+    border-radius:20px;padding:48px 36px 36px;
+    box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 60px rgba(30,144,255,.1);
+    animation:hostModalIn .3s ease;
+  }
+  .show-modal-close{
+    position:absolute;top:16px;right:20px;
+    background:none;border:none;color:var(--silver);
+    font-size:28px;cursor:pointer;line-height:1;transition:color .2s;
+  }
+  .show-modal-close:hover{color:#fff}
+  .show-modal-emoji{
+    font-size:72px;text-align:center;margin-bottom:20px;
+    filter:drop-shadow(0 4px 20px rgba(30,144,255,.3));
+  }
+  .show-modal h3{
+    font-family:'Bebas Neue',sans-serif;font-size:36px;
+    letter-spacing:2px;text-align:center;margin-bottom:10px;
+  }
+  .show-modal-status{text-align:center;margin-bottom:20px}
+  .show-modal-status .show-badge{font-size:12px;padding:6px 16px}
+  .show-modal-desc{
+    color:var(--silver);font-size:15px;line-height:1.7;
+    text-align:center;margin-bottom:24px;
+  }
+  .show-modal-host{
+    text-align:center;margin-bottom:20px;
+    padding:16px;border-radius:12px;
+    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  }
+  .show-modal-host-label{font-size:11px;letter-spacing:1.5px;color:var(--silver);margin-bottom:6px;font-weight:700;text-transform:uppercase}
+  .show-modal-host a{color:var(--blue);font-weight:600;font-size:15px;text-decoration:none;transition:color .2s}
+  .show-modal-host a:hover{color:var(--gold2)}
+  .show-modal-schedule{
+    text-align:center;color:var(--silver);font-size:13px;
+    margin-bottom:28px;padding:12px 16px;
+    background:rgba(212,160,23,.06);border:1px solid rgba(212,160,23,.15);
+    border-radius:10px;
+  }
+  .show-modal-schedule strong{color:var(--gold2)}
+  .show-modal-actions{display:flex;flex-direction:column;gap:12px}
+  .show-modal-page-btn{
+    display:block;width:100%;text-align:center;
+    background:linear-gradient(135deg,var(--blue),var(--blue2));
+    color:#fff;padding:14px 28px;border-radius:10px;border:none;
+    font-family:'Inter',sans-serif;font-weight:700;font-size:15px;
+    cursor:pointer;letter-spacing:.5px;text-decoration:none;
+    box-shadow:0 0 20px rgba(30,144,255,.4);
+    transition:transform .2s,box-shadow .2s;
+  }
+  .show-modal-page-btn:hover{transform:translateY(-2px);box-shadow:0 0 36px rgba(30,144,255,.7)}
+  .show-modal-live-btn{
+    display:block;width:100%;text-align:center;
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    color:#fff;padding:14px 28px;border-radius:10px;border:none;
+    font-family:'Inter',sans-serif;font-weight:700;font-size:15px;
+    cursor:pointer;letter-spacing:.5px;text-decoration:none;
+    box-shadow:0 0 20px rgba(34,197,94,.4);
+    transition:transform .2s,box-shadow .2s;
+  }
+  .show-modal-live-btn:hover{transform:translateY(-2px);box-shadow:0 0 36px rgba(34,197,94,.7)}
+  .show-modal-notify-btn{
+    display:block;width:100%;text-align:center;
+    background:transparent;
+    color:var(--gold2);padding:14px 28px;border-radius:10px;
+    border:2px solid rgba(212,160,23,.3);
+    font-family:'Inter',sans-serif;font-weight:700;font-size:15px;
+    cursor:pointer;letter-spacing:.5px;text-decoration:none;
+    transition:transform .2s,border-color .2s;
+  }
+  .show-modal-notify-btn:hover{transform:translateY(-2px);border-color:var(--gold2)}
+  .show-card{cursor:pointer}
+
   @media(max-width:768px){
     .email-bar{font-size:13px;padding:8px 16px;gap:8px}
     .email-bar .bar-full{display:none}
@@ -483,25 +582,25 @@
   <h2 class="section-title">The <span style="color:var(--gold)">Shows</span></h2>
   <p class="section-sub">One network. Multiple verticals. Something for every collector.</p>
   <div class="shows-grid">
-    <div class="show-card">
+    <div class="show-card" onclick="openShowModal('coins')">
       <span class="show-emoji">🪙</span>
       <h3>Coins &amp; Bullion</h3>
       <p>Rare coins, silver bars, gold bullion and surprise mystery lots hosted live by @djsmoltz. Auctions, giveaways, and unboxings every show.</p>
       <div class="show-badge badge-live">🟢 LIVE NOW</div>
     </div>
-    <div class="show-card coming-soon">
+    <div class="show-card coming-soon" onclick="openShowModal('pokemon')">
       <span class="show-emoji">⚡</span>
       <h3>Pokemon</h3>
       <p>Pack openings, graded card auctions, and Pokemon lots for collectors of all levels. From vintage Base Set to modern hits.</p>
       <div class="show-badge badge-soon">COMING SOON</div>
     </div>
-    <div class="show-card coming-soon">
+    <div class="show-card coming-soon" onclick="openShowModal('sports')">
       <span class="show-emoji">🏀</span>
       <h3>Sports Cards</h3>
       <p>Rookie cards, autographs, graded slabs and mystery boxes across football, basketball, baseball and more.</p>
       <div class="show-badge badge-soon">COMING SOON</div>
     </div>
-    <div class="show-card coming-soon">
+    <div class="show-card coming-soon" onclick="openShowModal('shoes')">
       <span class="show-emoji">👟</span>
       <h3>Shoes</h3>
       <p>Authenticated sneakers, heat releases, and grail pickups. Live shopping built for the sneakerhead community.</p>
@@ -663,23 +762,23 @@
   <p class="section-sub">Follow @SafeNetwork.Shop across all platforms for show alerts, behind the scenes content, and exclusive deals.</p>
   <div class="socials-grid">
     <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="social-btn whatnot-btn">
-      <span class="social-icon">💜</span>
+      <div class="social-icon"><img src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png" alt="Whatnot"/></div>
       <div class="social-info">Whatnot (Network)<span>@SafeNetwork</span></div>
     </a>
     <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="social-btn whatnot-btn">
-      <span class="social-icon">🪙</span>
+      <div class="social-icon"><img src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png" alt="Whatnot"/></div>
       <div class="social-info">Whatnot (DJ Smoltz)<span>@djsmoltz</span></div>
     </a>
     <a href="https://www.instagram.com/safenetwork.shop" target="_blank" class="social-btn ig">
-      <span class="social-icon">📸</span>
+      <div class="social-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram"/></div>
       <div class="social-info">Instagram<span>@SafeNetwork.Shop</span></div>
     </a>
     <a href="https://www.tiktok.com/@safenetwork.shop" target="_blank" class="social-btn tt">
-      <span class="social-icon">🎵</span>
+      <div class="social-icon"><svg viewBox="0 0 24 24" fill="#69c9d0" width="28" height="28"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.09 1.58.82 3.14 2.1 4.1 1.18.89 2.67 1.25 4.15 1.25v3.65c-1.53.02-3.03-.41-4.32-1.2-.02 3.67.01 7.33-.02 11-.08 1.79-.73 3.57-1.87 4.95-1.68 2.08-4.33 3.24-6.96 3.2-1.77.02-3.49-.54-4.88-1.59-2.28-1.72-3.64-4.47-3.6-7.32-.01-1.82.61-3.61 1.73-5.04 1.46-1.86 3.74-3.04 6.12-3.16.39-.01.78.01 1.16.07-.01 1.37-.01 2.74-.01 4.11-.41-.09-.83-.12-1.24-.1-1.27.09-2.44.79-3.1 1.83-.4.65-.54 1.42-.51 2.18.06 1.12.61 2.2 1.49 2.87.56.44 1.24.72 1.95.82.72.1 1.46-.01 2.11-.33.82-.38 1.47-1.1 1.76-1.97.1-.31.16-.64.16-.97.01-3.94.01-7.88.01-11.82z"/></svg></div>
       <div class="social-info">TikTok<span>@SafeNetwork.Shop</span></div>
     </a>
     <a href="https://www.ebay.com/usr/safenetwork.shop" target="_blank" class="social-btn ebay">
-      <span class="social-icon">🛒</span>
+      <div class="social-icon"><svg viewBox="0 0 24 24" fill="#0e76a8" width="28" height="28"><path d="M5.71 8.975c-2.006 0-3.639 1.078-3.639 3.296 0 1.89 1.135 3.145 3.742 3.145 2.838 0 3.537-1.632 3.537-1.632H9.35v-.003h.006V12.9H6.58c0-.001 0-1.419 1.595-1.419.87 0 1.545.274 1.545.274l.377-1.594s-.878-.488-2.387-.488v.302zm-.116 4.645c-.924 0-1.365-.557-1.365-1.17 0-.787.534-1.206 1.365-1.206.78 0 1.28.38 1.28 1.175 0 .714-.437 1.2-1.28 1.2zm13.39-4.645c-1.473 0-2.222.622-2.222.622V5.464h-2.592v9.685h.012c0 .003-.012.01-.012.015h2.364c0-.002.133-.465.133-.465s.74.63 2.14.63c2.072 0 3.264-1.308 3.264-3.36 0-1.916-1.14-2.994-3.088-2.994zm-.457 4.612c-.81 0-1.317-.444-1.317-.444v-2.323s.495-.418 1.183-.418c.85 0 1.365.546 1.365 1.564 0 1.075-.492 1.621-1.231 1.621zm-7.81-4.325v5.762h-1.13c0-.003-.177.445-.177.445s-.732.591-2.068.591c-1.997 0-3.087-.938-3.087-3.243 0-2.204 1.365-3.555 3.58-3.555.605 0 1.082.128 1.082.128V8.975l2.134-.12-.334.407zm-2.257 4.652c.793 0 1.252-.363 1.252-.363v-2.485s-.39-.267-1.09-.267c-1.03 0-1.561.638-1.561 1.636 0 .97.459 1.479 1.399 1.479z"/></svg></div>
       <div class="social-info">eBay Store<span>@SafeNetwork.Shop</span></div>
     </a>
   </div>
@@ -707,6 +806,20 @@
     <p class="host-modal-bio" id="hostModalBio"></p>
     <div class="host-modal-tags" id="hostModalTags"></div>
     <button class="host-modal-profile-btn" id="hostModalProfileBtn">View Full Profile &rarr;</button>
+  </div>
+</div>
+
+<!-- SHOW DETAIL MODAL -->
+<div class="show-modal-overlay" id="showModalOverlay" onclick="if(event.target===this)closeShowModal()">
+  <div class="show-modal">
+    <button class="show-modal-close" onclick="closeShowModal()">&times;</button>
+    <div class="show-modal-emoji" id="showModalEmoji"></div>
+    <h3 id="showModalName"></h3>
+    <div class="show-modal-status" id="showModalStatus"></div>
+    <p class="show-modal-desc" id="showModalDesc"></p>
+    <div class="show-modal-host" id="showModalHost"></div>
+    <div class="show-modal-schedule" id="showModalSchedule"></div>
+    <div class="show-modal-actions" id="showModalActions"></div>
   </div>
 </div>
 
@@ -854,8 +967,109 @@
 
   // Close on Escape key
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeHostModal();
+    if (e.key === 'Escape') { closeHostModal(); closeShowModal(); }
   });
+
+  /* ── Show Detail Modal ── */
+  var showData = {
+    coins: {
+      name: 'Coins & Bullion',
+      emoji: '\u{1FA99}',
+      status: 'live',
+      host: 'DJ Smoltz',
+      hostHandle: 'djsmoltz',
+      hostWhatnot: 'https://www.whatnot.com/user/djsmoltz',
+      desc: 'Rare coins, silver bars, gold bullion and surprise mystery lots hosted live by @djsmoltz. From Morgan dollars to gold eagles, every stream brings something new. Auctions, giveaways, mystery lots, and unboxings packed into every show.',
+      schedule: 'Weekly on Whatnot \u2014 Follow @djsmoltz for notifications',
+      slug: 'coins',
+      whatnot: 'https://www.whatnot.com/user/djsmoltz'
+    },
+    pokemon: {
+      name: 'Pokemon',
+      emoji: '\u26A1',
+      status: 'coming_soon',
+      host: 'HoneyBunBean',
+      hostHandle: 'honeybunbean',
+      hostWhatnot: 'https://www.whatnot.com/user/honeybunbean',
+      desc: 'Pack openings, graded card auctions, and Pokemon lots for collectors of all levels. From vintage Base Set to the latest modern hits. Coming soon to the Safe Network lineup with mystery lots, giveaways, and live breaks.',
+      schedule: 'Coming soon \u2014 Sign up for launch alerts',
+      slug: 'pokemon',
+      whatnot: 'https://www.whatnot.com/user/honeybunbean'
+    },
+    sports: {
+      name: 'Sports Cards',
+      emoji: '\u{1F3C0}',
+      status: 'coming_soon',
+      host: 'MaxoCollects',
+      hostHandle: 'maxocollects',
+      hostWhatnot: 'https://www.whatnot.com/user/maxocollects',
+      desc: 'Rookie cards, autographs, graded slabs and mystery boxes across football, basketball, baseball and more. High energy shows packed with hits, giveaways, and community vibes.',
+      schedule: 'Coming soon \u2014 Sign up for launch alerts',
+      slug: 'sports',
+      whatnot: 'https://www.whatnot.com/user/maxocollects'
+    },
+    shoes: {
+      name: 'Shoes',
+      emoji: '\u{1F45F}',
+      status: 'coming_soon',
+      host: 'TBA',
+      hostHandle: null,
+      hostWhatnot: null,
+      desc: 'Authenticated sneakers, heat releases, and grail pickups. Live shopping built for the sneakerhead community. Stay tuned for host announcements and launch dates.',
+      schedule: 'Coming soon \u2014 Sign up for launch alerts',
+      slug: 'shoes',
+      whatnot: null
+    }
+  };
+
+  function openShowModal(key) {
+    var s = showData[key];
+    if (!s) return;
+    // Emoji
+    document.getElementById('showModalEmoji').textContent = s.emoji;
+    // Name
+    document.getElementById('showModalName').textContent = s.name;
+    // Status badge
+    if (s.status === 'live') {
+      document.getElementById('showModalStatus').innerHTML = '<div class="show-badge badge-live">\u{1F7E2} LIVE NOW</div>';
+    } else {
+      document.getElementById('showModalStatus').innerHTML = '<div class="show-badge badge-soon">COMING SOON</div>';
+    }
+    // Description
+    document.getElementById('showModalDesc').textContent = s.desc;
+    // Host
+    var hostHTML = '<div class="show-modal-host-label">Hosted by</div>';
+    if (s.hostHandle) {
+      hostHTML += '<a href="' + s.hostWhatnot + '" target="_blank" onclick="event.stopPropagation()">@' + s.hostHandle + ' (' + s.host + ')</a>';
+    } else {
+      hostHTML += '<span style="color:var(--gold2);font-weight:600">Host TBA</span>';
+    }
+    document.getElementById('showModalHost').innerHTML = hostHTML;
+    // Schedule
+    document.getElementById('showModalSchedule').innerHTML = '<strong>\u{1F4C5} Schedule:</strong> ' + s.schedule;
+    // Actions
+    var actionsHTML = '';
+    actionsHTML += '<a href="/shows/' + s.slug + '.html" class="show-modal-page-btn">Explore ' + s.name + ' \u2192</a>';
+    if (s.status === 'live' && s.whatnot) {
+      actionsHTML += '<a href="' + s.whatnot + '" target="_blank" class="show-modal-live-btn">\u{1F534} Watch Live on Whatnot</a>';
+    } else {
+      actionsHTML += '<button class="show-modal-notify-btn" onclick="event.stopPropagation();window.snAuth && snAuth.login()">\u{1F514} Get Notified at Launch</button>';
+    }
+    document.getElementById('showModalActions').innerHTML = actionsHTML;
+    // Show overlay
+    var overlay = document.getElementById('showModalOverlay');
+    overlay.style.display = 'flex';
+    void overlay.offsetWidth;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeShowModal() {
+    var overlay = document.getElementById('showModalOverlay');
+    overlay.classList.remove('active');
+    setTimeout(function() { overlay.style.display = 'none'; }, 300);
+    document.body.style.overflow = '';
+  }
 </script>
 <script src="/js/signup.js"></script>
 <script src="/js/supabase.js"></script>

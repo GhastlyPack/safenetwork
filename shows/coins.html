@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Coins & Bullion – Safe Network</title>
+<link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
+<meta property="og:title" content="Coins & Bullion – Safe Network"/>
+<meta property="og:description" content="Live coin auctions, silver bars, gold bullion and mystery lots on Whatnot. Hosted by DJ Smoltz."/>
+<meta property="og:image" content="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979965/ChatGPT_Image_Feb_24_2026_04_39_12_PM_bvf4rt.png"/>
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/shows.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/cookies.css">
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
+</script>
+<style>
+  body::before{background:radial-gradient(ellipse at 50% 0%,rgba(212,160,23,.12),transparent 60%)}
+  .show-hero{background:linear-gradient(180deg,rgba(212,160,23,.08) 0%,var(--navy) 100%)}
+  .show-hero::before{background:radial-gradient(ellipse at 50% 0%,rgba(212,160,23,.15),transparent 60%)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
+    <span>SAFE NETWORK</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/#shows">Shows</a></li>
+    <li><a href="/#host">Hosts</a></li>
+    <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+    <li><a href="/blog">Blog</a></li>
+    <li><a href="/schedule.html">Schedule</a></li>
+  </ul>
+  <button id="authLoginBtn" class="auth-login-btn" onclick="window.snAuth && snAuth.login()">Log In</button>
+  <div id="authProfileWrap" class="auth-profile-wrap">
+    <div class="auth-avatar" onclick="snAuth.toggleProfileDropdown()">
+      <img id="authAvatarImg" alt="Profile"/>
+      <span id="authAvatarInitials" class="auth-avatar-initials"></span>
+    </div>
+    <div id="authDropdown" class="auth-dropdown">
+      <div class="auth-dropdown-label">Signed in as</div>
+      <div id="authDropdownEmail" class="auth-dropdown-email"></div>
+      <button class="auth-logout-btn" onclick="snAuth.logout()">Log Out</button>
+    </div>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<ul class="mobile-menu" id="mobileMenu">
+  <li><a href="/#shows" onclick="toggleMenu()">Shows</a></li>
+  <li><a href="/#host" onclick="toggleMenu()">Hosts</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank" onclick="toggleMenu()">Watch Live</a></li>
+  <li><a href="/blog">Blog</a></li>
+  <li><a href="/schedule.html" onclick="toggleMenu()">Schedule</a></li>
+  <li id="authMobileLogin" class="auth-mobile-login"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
+  <li id="authMobileProfile" class="auth-mobile-profile">
+    <div class="auth-mobile-signed-in">Signed in as <span id="authMobileEmail" class="auth-mobile-email"></span></div>
+    <button class="auth-mobile-logout" onclick="snAuth.logout()">Log Out</button>
+  </li>
+</ul>
+
+<!-- SHOW HERO -->
+<section class="show-hero">
+  <span class="show-hero-emoji">&#x1FA99;</span>
+  <h1>Coins &amp; <span style="color:var(--gold)">Bullion</span></h1>
+  <div class="show-hero-badge">
+    <span class="show-badge badge-live" style="font-size:13px;padding:8px 20px">&#x1F7E2; LIVE NOW</span>
+  </div>
+  <p class="show-hero-desc">Live auctions, giveaways, and mystery lots featuring rare coins, silver bars, and gold bullion. Hosted by DJ Smoltz on Whatnot.</p>
+  <div class="show-hero-btns">
+    <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="btn-gold">&#x1F534; Watch Live on Whatnot</a>
+    <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="btn-outline">&#x1F514; Follow @djsmoltz</a>
+  </div>
+</section>
+
+<div class="show-content">
+
+  <!-- Host -->
+  <div class="show-host-card">
+    <div class="show-host-avatar">
+      <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg" alt="DJ Smoltz"/>
+    </div>
+    <div class="show-host-info">
+      <h3>DJ Smoltz</h3>
+      <a href="https://www.whatnot.com/user/djsmoltz" target="_blank">@djsmoltz on Whatnot</a>
+      <p>The face of Safe Network's Coins and Bullion show. Energy, expertise, and incredible deals every stream.</p>
+    </div>
+  </div>
+
+  <!-- About -->
+  <div class="show-about">
+    <h2>About the <span style="color:var(--gold)">Show</span></h2>
+    <p>The Coins &amp; Bullion show is Safe Network's flagship live shopping experience. Every stream features a curated mix of rare coins, silver bars, gold bullion, and surprise mystery lots. DJ Smoltz brings the energy, expertise, and incredible deals that keep collectors coming back for more.</p>
+    <p>Whether you're a seasoned numismatist or just starting your stack, every show has something for you. From Morgan silver dollars and American Gold Eagles to surprise mystery lots that could contain anything, the thrill of live collecting is unmatched.</p>
+  </div>
+
+  <!-- What to Expect -->
+  <div class="show-expect">
+    <h2>What to <span style="color:var(--blue)">Expect</span></h2>
+    <div class="expect-grid">
+      <div class="expect-item">
+        <span class="expect-emoji">&#x1F528;</span>
+        <h4>Live Auctions</h4>
+        <p>Bid on rare coins and bullion in real-time. Fair, transparent, and exciting.</p>
+      </div>
+      <div class="expect-item">
+        <span class="expect-emoji">&#x1F381;</span>
+        <h4>Giveaways</h4>
+        <p>Free prizes every stream. Just show up and you could win silver, coins, or more.</p>
+      </div>
+      <div class="expect-item">
+        <span class="expect-emoji">&#x1F4E6;</span>
+        <h4>Mystery Lots</h4>
+        <p>Blind boxes packed with coins and bullion. You never know what you'll pull.</p>
+      </div>
+      <div class="expect-item">
+        <span class="expect-emoji">&#x1F3AF;</span>
+        <h4>Games &amp; Fun</h4>
+        <p>Wheel spins, lucky draws, and interactive games with real prizes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Shows -->
+  <div class="show-upcoming" id="showUpcoming">
+    <h2>Upcoming <span style="color:var(--gold)">Shows</span></h2>
+    <div class="upcoming-list" id="upcomingList">
+      <div class="upcoming-placeholder">
+        <p>&#x1F4C5; Show schedule coming soon.<br/>
+        <a href="https://www.whatnot.com/user/djsmoltz" target="_blank">Follow @djsmoltz on Whatnot</a> to get notified when we go live.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="show-cta">
+    <h2>Don't Miss a <span style="color:var(--gold)">Drop</span></h2>
+    <p>Follow DJ Smoltz on Whatnot and sign up for Safe Network alerts to get notified before every show.</p>
+    <div class="show-cta-btns">
+      <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="btn-gold">Follow @djsmoltz</a>
+      <a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()" class="btn-primary">Join Safe Network</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">SAFE NETWORK</div>
+  <div><a href="/privacy.html">Privacy Policy</a> &middot; <a href="/terms.html">Terms of Service</a></div>
+  <p>2026 Safe Network &middot; safenetwork.shop</p>
+</footer>
+
+<script>
+  function toggleMenu() {
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.querySelector('.hamburger').classList.toggle('open');
+  }
+</script>
+<script src="/js/supabase.js"></script>
+<script src="/js/cookies.js"></script>
+<script src="/js/auth.js"></script>
+</body>
+</html>

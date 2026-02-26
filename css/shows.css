@@ -1,0 +1,110 @@
+/* ── Show Category Pages ── */
+.show-hero{
+  min-height:50vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:120px 20px 60px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(10,14,26,.3) 0%,var(--navy) 100%);
+}
+.show-hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(30,144,255,.15),transparent 60%);
+  pointer-events:none;
+}
+.show-hero>*{position:relative;z-index:1}
+.show-hero-emoji{font-size:80px;margin-bottom:20px;display:block;filter:drop-shadow(0 4px 24px rgba(30,144,255,.4))}
+.show-hero h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(40px,7vw,72px);letter-spacing:3px;
+  margin-bottom:10px;
+}
+.show-hero-badge{margin-bottom:20px}
+.show-hero-desc{
+  font-size:clamp(15px,2vw,18px);color:var(--silver);
+  max-width:600px;margin:0 auto 32px;line-height:1.7;
+}
+.show-hero-btns{display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
+
+/* Show Content */
+.show-content{max-width:900px;margin:0 auto;padding:0 24px 60px;position:relative;z-index:1}
+
+/* Host Feature Card */
+.show-host-card{
+  display:flex;align-items:center;gap:24px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(30,144,255,.15);
+  border-radius:20px;padding:28px 32px;margin-bottom:40px;
+  transition:border-color .3s;
+}
+.show-host-card:hover{border-color:rgba(30,144,255,.35)}
+.show-host-avatar{
+  width:72px;height:72px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  box-shadow:0 0 20px rgba(30,144,255,.3);
+}
+.show-host-avatar img{width:100%;height:100%;object-fit:cover}
+.show-host-info{flex:1}
+.show-host-info h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;margin-bottom:4px}
+.show-host-info a{color:var(--blue);font-weight:600;font-size:14px;text-decoration:none;transition:color .2s}
+.show-host-info a:hover{color:var(--gold2)}
+.show-host-info p{color:var(--silver);font-size:13px;margin-top:6px}
+
+/* About Section */
+.show-about{margin-bottom:40px}
+.show-about h2{
+  font-family:'Bebas Neue',sans-serif;font-size:28px;
+  letter-spacing:2px;margin-bottom:16px;
+}
+.show-about p{color:var(--silver);font-size:15px;line-height:1.8;margin-bottom:16px}
+
+/* What to Expect Grid */
+.show-expect{margin-bottom:48px}
+.show-expect h2{
+  font-family:'Bebas Neue',sans-serif;font-size:28px;
+  letter-spacing:2px;margin-bottom:24px;
+}
+.expect-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;
+}
+.expect-item{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;padding:24px 20px;text-align:center;
+  transition:border-color .3s,transform .3s;
+}
+.expect-item:hover{border-color:rgba(30,144,255,.2);transform:translateY(-3px)}
+.expect-item .expect-emoji{font-size:32px;margin-bottom:10px;display:block}
+.expect-item h4{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;margin-bottom:6px}
+.expect-item p{color:var(--silver);font-size:12px;line-height:1.5}
+
+/* Upcoming Shows (Schedule Preview) */
+.show-upcoming{margin-bottom:48px}
+.show-upcoming h2{
+  font-family:'Bebas Neue',sans-serif;font-size:28px;
+  letter-spacing:2px;margin-bottom:24px;
+}
+.upcoming-list{display:flex;flex-direction:column;gap:12px}
+.upcoming-placeholder{
+  text-align:center;padding:40px 20px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;color:var(--silver);font-size:14px;
+}
+.upcoming-placeholder a{color:var(--blue);text-decoration:none;font-weight:600}
+.upcoming-placeholder a:hover{text-decoration:underline}
+
+/* CTA Section */
+.show-cta{
+  text-align:center;padding:48px 32px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(30,144,255,.15);
+  border-radius:20px;margin-bottom:48px;
+}
+.show-cta h2{
+  font-family:'Bebas Neue',sans-serif;font-size:32px;
+  letter-spacing:2px;margin-bottom:12px;
+}
+.show-cta p{color:var(--silver);font-size:15px;margin-bottom:28px;max-width:500px;margin-left:auto;margin-right:auto}
+.show-cta-btns{display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
+
+/* Responsive */
+@media(max-width:640px){
+  .show-host-card{flex-direction:column;text-align:center}
+  .show-hero-btns{flex-direction:column;align-items:center}
+}

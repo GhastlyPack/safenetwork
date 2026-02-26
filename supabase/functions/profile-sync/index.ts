@@ -1773,6 +1773,102 @@ async function handleGetFollowing(data: any) {
   return { following, count: profile.following_count || 0, auth0_id: profile.auth0_id }
 }
 
+/* ── Toggle Reaction on Item ── */
+async function handleToggleReaction(auth0User: any, data: any) {
+  const { item_id, item_type, emoji } = data
+  if (!item_id || !item_type || !emoji) throw new Error('item_id, item_type, and emoji are required')
+  if (!['collection', 'wishlist'].includes(item_type)) throw new Error('item_type must be collection or wishlist')
+
+  const validEmojis = ['🔥', '❤️', '🤩', '👀', '💎']
+  if (!validEmojis.includes(emoji)) throw new Error('Invalid emoji')
+
+  // Check for existing reaction by this user on this item
+  const { data: existing } = await supabase
+    .from('item_reactions')
+    .select('id, emoji')
+    .eq('item_id', item_id)
+    .eq('reactor_auth0_id', auth0User.sub)
+    .maybeSingle()
+
+  let resultAction = 'added'
+
+  if (existing) {
+    if (existing.emoji === emoji) {
+      // Same emoji → remove reaction
+      await supabase.from('item_reactions').delete().eq('id', existing.id)
+      resultAction = 'removed'
+    } else {
+      // Different emoji → update reaction
+      await supabase.from('item_reactions').update({ emoji }).eq('id', existing.id)
+      resultAction = 'changed'
+    }
+  } else {
+    // New reaction → insert
+    const { error } = await supabase.from('item_reactions').insert({
+      item_id,
+      item_type,
+      reactor_auth0_id: auth0User.sub,
+      emoji,
+    })
+    if (error) throw error
+  }
+
+  // Get updated counts for this item
+  const { data: allReactions } = await supabase
+    .from('item_reactions')
+    .select('emoji')
+    .eq('item_id', item_id)
+
+  const counts: Record<string, number> = {}
+  for (const r of (allReactions || [])) {
+    counts[r.emoji] = (counts[r.emoji] || 0) + 1
+  }
+
+  // Get user's current reaction (after toggle)
+  const { data: userReaction } = await supabase
+    .from('item_reactions')
+    .select('emoji')
+    .eq('item_id', item_id)
+    .eq('reactor_auth0_id', auth0User.sub)
+    .maybeSingle()
+
+  return { action: resultAction, counts, user_emoji: userReaction?.emoji || null }
+}
+
+/* ── Get Item Reactions (public with optional auth) ── */
+async function handleGetItemReactions(data: any, auth0User: any | null) {
+  const { item_ids, item_type } = data
+  if (!item_ids || !Array.isArray(item_ids) || !item_type) throw new Error('item_ids array and item_type are required')
+  if (item_ids.length === 0) return { reactions: {} }
+  if (item_ids.length > 100) throw new Error('Maximum 100 items per request')
+
+  // Get all reactions for these items
+  const { data: reactions, error } = await supabase
+    .from('item_reactions')
+    .select('item_id, emoji, reactor_auth0_id')
+    .in('item_id', item_ids)
+    .eq('item_type', item_type)
+
+  if (error) throw error
+
+  // Build response: { [item_id]: { counts: {emoji: count}, user_emoji: emoji|null } }
+  const result: Record<string, any> = {}
+
+  for (const id of item_ids) {
+    result[id] = { counts: {}, user_emoji: null }
+  }
+
+  for (const r of (reactions || [])) {
+    if (!result[r.item_id]) result[r.item_id] = { counts: {}, user_emoji: null }
+    result[r.item_id].counts[r.emoji] = (result[r.item_id].counts[r.emoji] || 0) + 1
+    if (auth0User && r.reactor_auth0_id === auth0User.sub) {
+      result[r.item_id].user_emoji = r.emoji
+    }
+  }
+
+  return { reactions: result }
+}
+
 /* ── Helper: Random Suffix ── */
 function generateRandomSuffix(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -1840,6 +1936,20 @@ serve(async (req: Request) => {
 
     if (action === 'get-following') {
       result = await handleGetFollowing(data || {})
+      return new Response(
+        JSON.stringify(result),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // ── Item Reactions: public with optional auth ──
+    if (action === 'get-item-reactions') {
+      let auth0User = null
+      const reactAuthHeader = req.headers.get('Authorization') || ''
+      if (reactAuthHeader.startsWith('Bearer ')) {
+        auth0User = await validateToken(reactAuthHeader)
+      }
+      result = await handleGetItemReactions(data || {}, auth0User)
       return new Response(
         JSON.stringify(result),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -1970,6 +2080,9 @@ serve(async (req: Request) => {
         break
       case 'is-following':
         result = await handleIsFollowing(auth0User, data || {})
+        break
+      case 'toggle-reaction':
+        result = await handleToggleReaction(auth0User, data || {})
         break
       default:
         throw new Error('Unknown action: ' + action)

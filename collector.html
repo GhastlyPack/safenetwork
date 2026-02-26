@@ -30,9 +30,11 @@
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
     <li><a href="/#shows">Shows</a></li>
+    <li><a href="/#host">Hosts</a></li>
     <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
-    <li><a href="/#socials">Links</a></li>
     <li><a href="/blog">Blog</a></li>
+    <li><a href="/schedule.html">Schedule</a></li>
+    <li class="nav-secondary"><a href="/#socials">Links</a></li>
   </ul>
   <button id="authLoginBtn" class="auth-login-btn" onclick="window.snAuth && snAuth.login()">Log In</button>
   <div id="authProfileWrap" class="auth-profile-wrap">
@@ -54,9 +56,11 @@
 <ul class="mobile-menu" id="mobileMenu">
   <li><a href="/">Home</a></li>
   <li><a href="/#shows">Shows</a></li>
+  <li><a href="/#host">Hosts</a></li>
   <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
-  <li><a href="/#socials">Links</a></li>
   <li><a href="/blog">Blog</a></li>
+  <li><a href="/schedule.html">Schedule</a></li>
+  <li><a href="/#socials">Links</a></li>
   <li id="authMobileLogin" class="auth-mobile-login"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
   <li id="authMobileProfile" class="auth-mobile-profile">
     <div class="auth-mobile-signed-in">Signed in as <span id="authMobileEmail" class="auth-mobile-email"></span></div>
@@ -215,6 +219,9 @@
     renderProfile(profile);
     showSection('collectorProfile');
 
+    // Initialize reaction auth state (non-blocking for rendering)
+    await initReactionAuth();
+
     // Fetch public wishlist + collection + follow data
     loadPublicWishlist(username);
     loadPublicCollection(username);
@@ -312,6 +319,78 @@
     }
   }
 
+  /* ── Reaction System ── */
+  var REACTION_EMOJIS = ['🔥', '❤️', '🤩', '👀', '💎'];
+  var reactionsCache = {};
+  var isLoggedIn = false;
+  var accessToken = null;
+
+  function buildReactionBar(itemId, itemType){
+    var data = reactionsCache[itemId] || { counts: {}, user_emoji: null };
+    var html = '<div class="reaction-bar" data-item-id="' + esc(itemId) + '" data-item-type="' + esc(itemType) + '">';
+    for(var i = 0; i < REACTION_EMOJIS.length; i++){
+      var em = REACTION_EMOJIS[i];
+      var count = data.counts[em] || 0;
+      var isActive = data.user_emoji === em;
+      var cls = 'reaction-btn' + (isActive ? ' active' : '') + (!isLoggedIn ? ' no-auth' : '');
+      html += '<button class="' + cls + '" data-emoji="' + em + '"';
+      if(isLoggedIn) html += ' onclick="handleReaction(this)"';
+      html += '>';
+      html += '<span class="reaction-emoji">' + em + '</span>';
+      if(count > 0) html += '<span class="reaction-count">' + count + '</span>';
+      html += '</button>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  window.handleReaction = async function(btn){
+    if(!isLoggedIn || !accessToken) return;
+    var bar = btn.closest('.reaction-bar');
+    var itemId = bar.getAttribute('data-item-id');
+    var itemType = bar.getAttribute('data-item-type');
+    var emoji = btn.getAttribute('data-emoji');
+
+    // Disable all buttons in this bar
+    var btns = bar.querySelectorAll('.reaction-btn');
+    for(var i = 0; i < btns.length; i++) btns[i].disabled = true;
+
+    try {
+      var result = await snProfile.toggleReaction(itemId, itemType, emoji, accessToken);
+      reactionsCache[itemId] = { counts: result.counts || {}, user_emoji: result.user_emoji || null };
+      bar.outerHTML = buildReactionBar(itemId, itemType);
+    } catch(err){
+      console.warn('Reaction toggle error:', err);
+      // Re-enable buttons on error
+      for(var j = 0; j < btns.length; j++) btns[j].disabled = false;
+    }
+  };
+
+  async function loadReactions(itemIds, itemType){
+    if(!window.snProfile || !snProfile.getItemReactions || itemIds.length === 0) return;
+    try {
+      var result = await snProfile.getItemReactions(itemIds, itemType, accessToken);
+      var reactions = result.reactions || {};
+      for(var id in reactions){
+        reactionsCache[id] = reactions[id];
+      }
+      for(var i = 0; i < itemIds.length; i++){
+        var bar = document.querySelector('.reaction-bar[data-item-id="' + itemIds[i] + '"]');
+        if(bar) bar.outerHTML = buildReactionBar(itemIds[i], itemType);
+      }
+    } catch(err){
+      console.warn('Load reactions error:', err);
+    }
+  }
+
+  async function initReactionAuth(){
+    if(!window.snAuth) return;
+    try {
+      isLoggedIn = await snAuth.isLoggedIn();
+      if(isLoggedIn) accessToken = await snAuth.getAccessToken();
+    } catch(e){}
+  }
+
   /* ── Load Public Wishlist ── */
   async function loadPublicWishlist(username){
     if(!window.snProfile || !snProfile.getPublicWishlist) return;
@@ -326,10 +405,12 @@
 
       var container = document.getElementById('collectorWishItems');
       var html = '';
+      var wishIds = [];
       for(var i = 0; i < items.length; i++){
         var w = items[i];
         var cat = w.category || '';
         var details = w.details || {};
+        if(w.id) wishIds.push(w.id);
 
         html += '<div class="collector-wish-card">';
         html += '<div class="collector-wish-top">';
@@ -345,9 +426,13 @@
         }
         html += '</div>';
         html += '<p class="collector-wish-desc">' + esc(w.description || '') + '</p>';
+        html += buildReactionBar(w.id, 'wishlist');
         html += '</div>';
       }
       container.innerHTML = html;
+
+      // Fetch actual reaction counts + user's own reactions
+      if(wishIds.length > 0) loadReactions(wishIds, 'wishlist');
     } catch(err){
       console.warn('Public wishlist load error:', err);
     }
@@ -371,11 +456,13 @@
 
       var container = document.getElementById('collectorCollItems');
       var html = '';
+      var collIds = [];
       for(var i = 0; i < items.length; i++){
         var item = items[i];
         var cat = item.category || '';
         var details = item.details || {};
         var photos = item.photo_urls || [];
+        if(item.id) collIds.push(item.id);
 
         html += '<div class="collection-card">';
         html += '<div class="collection-card-top">';
@@ -405,9 +492,13 @@
         if(item.description){
           html += '<p class="collection-card-desc">' + esc(item.description) + '</p>';
         }
+        html += buildReactionBar(item.id, 'collection');
         html += '</div>';
       }
       container.innerHTML = html;
+
+      // Fetch actual reaction counts + user's own reactions
+      if(collIds.length > 0) loadReactions(collIds, 'collection');
     } catch(err){
       console.warn('Public collection load error:', err);
     }

@@ -617,6 +617,34 @@
     }
   }
 
+  /* ── Reactions: Toggle (authenticated) ── */
+  async function toggleReaction(itemId, itemType, emoji, accessToken){
+    return callEdge('toggle-reaction', {
+      item_id: itemId,
+      item_type: itemType,
+      emoji: emoji
+    }, accessToken);
+  }
+
+  /* ── Reactions: Get for Items (public with optional auth) ── */
+  async function getItemReactions(itemIds, itemType, accessToken){
+    try {
+      var headers = { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON };
+      if(accessToken) headers['Authorization'] = 'Bearer ' + accessToken;
+      var res = await fetch(EDGE_FN_URL, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ action: 'get-item-reactions', data: { item_ids: itemIds, item_type: itemType } })
+      });
+      var json = await res.json();
+      if(!res.ok || json.error) return { reactions: {} };
+      return json;
+    } catch(err){
+      console.warn('Get item reactions error:', err);
+      return { reactions: {} };
+    }
+  }
+
   /* ── Cache Helpers ── */
   function cacheProfile(){
     try {
@@ -680,7 +708,9 @@
     unfollow: unfollow,
     isFollowing: isFollowing,
     getFollowers: getFollowers,
-    getFollowing: getFollowing
+    getFollowing: getFollowing,
+    toggleReaction: toggleReaction,
+    getItemReactions: getItemReactions
   };
 
   init();

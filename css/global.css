@@ -28,6 +28,10 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:14px 2
 .mobile-menu a{color:var(--white);text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;transition:color .2s}
 .mobile-menu a:hover{color:var(--blue)}
 .mobile-menu .mobile-cta{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;padding:14px 36px;border-radius:10px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;letter-spacing:.5px;box-shadow:0 0 20px rgba(30,144,255,.4);margin-top:12px}
+/* Hide "Watch Live" + "Links" from mobile menu to reduce clutter */
+.mobile-menu li:has(> a[href*="whatnot.com"]){display:none}
+.mobile-menu li:has(> a[href$="#socials"]){display:none}
+.mobile-menu li:has(> a[href$="/#socials"]){display:none}
 
 /* FOOTER */
 footer{border-top:1px solid rgba(255,255,255,.07);padding:32px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative;z-index:1}

@@ -93,7 +93,7 @@
       }
     }
 
-    // Desktop dropdown: show @username and "My Profile" link
+    // Desktop dropdown: show @username and management links
     var dd = document.getElementById('authDropdown');
     if(dd){
       // Add username below email if not already added
@@ -108,20 +108,13 @@
         existingUsername.textContent = '@' + (profile.username || '');
       }
 
-      // Add "My Profile" link + divider if not already there
+      // Add dropdown links if not already there (My Profile is in the header bar instead)
       if(!dd.querySelector('.auth-dropdown-link')){
         var logoutBtn = dd.querySelector('.auth-logout-btn');
         if(logoutBtn){
           var divider = document.createElement('div');
           divider.className = 'auth-dropdown-divider';
-
-          var profileLink = document.createElement('a');
-          profileLink.href = '/profile.html';
-          profileLink.className = 'auth-dropdown-link';
-          profileLink.textContent = 'My Profile';
-
           logoutBtn.before(divider);
-          logoutBtn.before(profileLink);
 
           var wishlistLink = document.createElement('a');
           wishlistLink.href = '/wishlist.html';
@@ -244,10 +237,20 @@
 
   /* ── Nav UI: Logged-In State ── */
   function handleLoggedInState(user){
-    // Desktop: hide login button, show avatar dropdown
+    // Desktop: hide login button, show "My Profile" button + avatar dropdown
     var loginBtn = document.getElementById('authLoginBtn');
     var profileWrap = document.getElementById('authProfileWrap');
     if(loginBtn) loginBtn.style.display = 'none';
+    // Insert "My Profile" header button (before avatar)
+    if(profileWrap && !document.getElementById('authNavProfile')){
+      var navProfileBtn = document.createElement('a');
+      navProfileBtn.id = 'authNavProfile';
+      navProfileBtn.href = '/profile.html';
+      navProfileBtn.className = 'auth-nav-profile';
+      navProfileBtn.textContent = 'My Profile';
+      profileWrap.parentNode.insertBefore(navProfileBtn, profileWrap);
+      navProfileBtn.style.display = 'inline-block';
+    }
     if(profileWrap){
       profileWrap.style.display = 'flex';
       // Avatar: picture or initials fallback
@@ -303,7 +306,9 @@
   function handleLoggedOutState(){
     var loginBtn = document.getElementById('authLoginBtn');
     var profileWrap = document.getElementById('authProfileWrap');
+    var navProfileBtn = document.getElementById('authNavProfile');
     if(loginBtn) loginBtn.style.display = '';
+    if(navProfileBtn) navProfileBtn.style.display = 'none';
     if(profileWrap) profileWrap.style.display = 'none';
 
     var mobileLogin = document.getElementById('authMobileLogin');

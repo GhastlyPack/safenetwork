@@ -85,6 +85,22 @@
 
 .collector-wishlist-empty{text-align:center;padding:32px 16px;color:rgba(192,200,216,.4);font-family:'Inter',sans-serif;font-size:13px}
 
+/* ── Reaction Bar ── */
+.reaction-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}
+.reaction-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;
+  font-family:'Inter',sans-serif;font-size:13px;color:var(--silver);
+  user-select:none
+}
+.reaction-btn:hover{border-color:rgba(30,144,255,.3);background:rgba(30,144,255,.06)}
+.reaction-btn.active{border-color:rgba(30,144,255,.5);background:rgba(30,144,255,.1);color:var(--blue)}
+.reaction-btn .reaction-emoji{font-size:15px;line-height:1}
+.reaction-btn .reaction-count{font-size:12px;font-weight:600;min-width:8px;text-align:center}
+.reaction-btn.no-auth{cursor:default}
+.reaction-btn.no-auth:hover{border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.03)}
+
 /* ── Responsive ── */
 @media(max-width:768px){
   .collector-wrap{padding:80px 16px 40px}

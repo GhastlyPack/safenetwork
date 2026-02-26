@@ -19,6 +19,28 @@
   box-shadow:0 0 28px rgba(30,144,255,.7);
 }
 
+/* ── Auth: "My Profile" Header Button (desktop nav) ── */
+.auth-nav-profile{
+  display:none;
+  color:var(--silver);
+  text-decoration:none;
+  font-size:13px;
+  font-weight:700;
+  font-family:'Inter',sans-serif;
+  letter-spacing:.5px;
+  padding:8px 18px;
+  border:1px solid rgba(30,144,255,.25);
+  border-radius:8px;
+  transition:color .2s,border-color .2s,background .2s;
+  white-space:nowrap;
+  margin-right:12px;
+}
+.auth-nav-profile:hover{
+  color:var(--blue);
+  border-color:var(--blue);
+  background:rgba(30,144,255,.08);
+}
+
 /* ── Auth: Profile Wrapper (desktop nav) ── */
 .auth-profile-wrap{
   position:relative;
@@ -200,5 +222,6 @@
 /* ── Responsive: Hide desktop auth on mobile ── */
 @media(max-width:768px){
   .auth-login-btn{display:none}
+  .auth-nav-profile{display:none !important}
   .auth-profile-wrap{display:none !important}
 }

@@ -13,6 +13,9 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <link rel="stylesheet" href="/css/global.css">
 <link rel="stylesheet" href="/css/signup.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/cookies.css">
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
 <!-- Customer.io CDP -->
 <script>
   !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
@@ -121,10 +124,24 @@
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
     <li><a href="/#shows">Shows</a></li>
+    <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
     <li><a href="/#socials">Links</a></li>
     <li><a href="/blog" class="active">Blog</a></li>
   </ul>
-  <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="nav-cta">Watch Live</a>
+  <!-- Auth: Login Button (shown when logged out) -->
+  <button id="authLoginBtn" class="auth-login-btn" onclick="window.snAuth && snAuth.login()">Log In</button>
+  <!-- Auth: Profile Avatar + Dropdown (shown when logged in) -->
+  <div id="authProfileWrap" class="auth-profile-wrap">
+    <div class="auth-avatar" onclick="snAuth.toggleProfileDropdown()">
+      <img id="authAvatarImg" alt="Profile"/>
+      <span id="authAvatarInitials" class="auth-avatar-initials"></span>
+    </div>
+    <div id="authDropdown" class="auth-dropdown">
+      <div class="auth-dropdown-label">Signed in as</div>
+      <div id="authDropdownEmail" class="auth-dropdown-email"></div>
+      <button class="auth-logout-btn" onclick="snAuth.logout()">Log Out</button>
+    </div>
+  </div>
   <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
@@ -133,9 +150,16 @@
 <ul class="mobile-menu" id="mobileMenu">
   <li><a href="/">Home</a></li>
   <li><a href="/#shows">Shows</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
   <li><a href="/#socials">Links</a></li>
   <li><a href="/blog">Blog</a></li>
-  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="mobile-cta">Watch Live</a></li>
+  <!-- Auth: Mobile Login -->
+  <li id="authMobileLogin" class="auth-mobile-login"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
+  <!-- Auth: Mobile Profile -->
+  <li id="authMobileProfile" class="auth-mobile-profile">
+    <div class="auth-mobile-signed-in">Signed in as <span id="authMobileEmail" class="auth-mobile-email"></span></div>
+    <button class="auth-mobile-logout" onclick="snAuth.logout()">Log Out</button>
+  </li>
 </ul>
 
 <!-- HERO -->
@@ -404,7 +428,7 @@
 
 <footer>
   <div class="footer-logo">SAFE NETWORK</div>
-  <a href="/">Back to Home</a>
+  <div><a href="/">Home</a> · <a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a></div>
   <p>2026 Safe Network · safenetwork.shop</p>
 </footer>
 
@@ -422,5 +446,7 @@
   }
 </script>
 <script src="/js/signup.js"></script>
+<script src="/js/cookies.js"></script>
+<script src="/js/auth.js"></script>
 </body>
 </html>

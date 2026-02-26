@@ -19,6 +19,31 @@
   window.openSignupModal = function(){
     var overlay = document.getElementById('signupOverlay');
     if(!overlay) return;
+
+    // If logged in via Auth0, show "already enrolled" instead of form
+    if(window.snAuth && typeof window.snAuth.isLoggedIn === 'function'){
+      window.snAuth.isLoggedIn().then(function(loggedIn){
+        if(loggedIn){
+          var form = overlay.querySelector('.signup-modal form');
+          var successEl = document.getElementById('signupSuccess');
+          if(form) form.style.display = 'none';
+          if(successEl){
+            successEl.style.display = 'block';
+            var h3 = successEl.querySelector('h3');
+            var p = successEl.querySelector('p');
+            if(h3) h3.textContent = "You're Already Enrolled!";
+            if(p) p.textContent = "You're signed in and already on the list. Watch for exclusive deals in your inbox!";
+          }
+        }
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }).catch(function(){
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      });
+      return;
+    }
+
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
   };
@@ -41,12 +66,25 @@
     if(e.key === 'Escape') closeSignupModal();
   });
 
-  /* ── Auto-popup (once per visitor, cookie-based) ── */
+  /* ── Auto-popup (once per visitor, cookie-based, skip if logged in) ── */
   if(!getCookie(COOKIE_NAME)){
     setTimeout(function(){
       if(!getCookie(COOKIE_NAME)){
-        openSignupModal();
-        setCookie(COOKIE_NAME, '1', COOKIE_DAYS);
+        // Skip popup for authenticated users (auto-enrolled via CIO on login)
+        if(window.snAuth && typeof window.snAuth.isLoggedIn === 'function'){
+          window.snAuth.isLoggedIn().then(function(loggedIn){
+            if(!loggedIn){
+              openSignupModal();
+              setCookie(COOKIE_NAME, '1', COOKIE_DAYS);
+            }
+          }).catch(function(){
+            openSignupModal();
+            setCookie(COOKIE_NAME, '1', COOKIE_DAYS);
+          });
+        } else {
+          openSignupModal();
+          setCookie(COOKIE_NAME, '1', COOKIE_DAYS);
+        }
       }
     }, AUTO_DELAY);
   }

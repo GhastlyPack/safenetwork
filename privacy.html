@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Privacy Policy | Safe Network</title>
+<link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
+<meta name="description" content="Privacy Policy for Safe Network - how we collect, use, and protect your personal information."/>
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/cookies.css">
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+<!-- Customer.io CDP -->
+<script>
+  !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
+</script>
+<style>
+  body::before{background:radial-gradient(ellipse at 20% 20%,rgba(30,144,255,.1) 0%,transparent 50%)}
+  .legal-wrap{max-width:800px;margin:0 auto;padding:80px 24px 60px;position:relative;z-index:1}
+  .legal-wrap h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);letter-spacing:2px;margin-bottom:8px}
+  .legal-updated{color:var(--silver);font-size:13px;opacity:.6;margin-bottom:40px}
+  .legal-wrap h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--blue);margin:36px 0 12px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06)}
+  .legal-wrap h2:first-of-type{border-top:none;padding-top:0}
+  .legal-wrap p,.legal-wrap li{color:var(--silver);font-size:15px;line-height:1.8;margin-bottom:12px}
+  .legal-wrap ul{margin:0 0 16px 20px;padding:0}
+  .legal-wrap li{margin-bottom:8px}
+  .legal-wrap a{color:var(--blue)}
+  .legal-wrap strong{color:var(--white)}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
+    <span>SAFE NETWORK</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/#shows">Shows</a></li>
+    <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+    <li><a href="/#socials">Links</a></li>
+    <li><a href="/blog">Blog</a></li>
+  </ul>
+  <button id="authLoginBtn" class="auth-login-btn" onclick="window.snAuth && snAuth.login()">Log In</button>
+  <div id="authProfileWrap" class="auth-profile-wrap">
+    <div class="auth-avatar" onclick="snAuth.toggleProfileDropdown()">
+      <img id="authAvatarImg" alt="Profile"/>
+      <span id="authAvatarInitials" class="auth-avatar-initials"></span>
+    </div>
+    <div id="authDropdown" class="auth-dropdown">
+      <div class="auth-dropdown-label">Signed in as</div>
+      <div id="authDropdownEmail" class="auth-dropdown-email"></div>
+      <button class="auth-logout-btn" onclick="snAuth.logout()">Log Out</button>
+    </div>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<ul class="mobile-menu" id="mobileMenu">
+  <li><a href="/">Home</a></li>
+  <li><a href="/#shows">Shows</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+  <li><a href="/#socials">Links</a></li>
+  <li><a href="/blog">Blog</a></li>
+  <li id="authMobileLogin" class="auth-mobile-login"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
+  <li id="authMobileProfile" class="auth-mobile-profile">
+    <div class="auth-mobile-signed-in">Signed in as <span id="authMobileEmail" class="auth-mobile-email"></span></div>
+    <button class="auth-mobile-logout" onclick="snAuth.logout()">Log Out</button>
+  </li>
+</ul>
+
+<div class="legal-wrap">
+  <h1>Privacy Policy</h1>
+  <p class="legal-updated">Last updated: February 25, 2026</p>
+
+  <h2>1. Who We Are</h2>
+  <p>Safe Network ("we," "us," or "our") operates the website <strong>safenetwork.shop</strong> and associated live shopping shows on the Whatnot platform. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website.</p>
+
+  <h2>2. Information We Collect</h2>
+  <p><strong>Information you provide directly:</strong></p>
+  <ul>
+    <li><strong>Account information</strong> - When you sign up or log in via our authentication provider (Auth0), we receive your name, email address, and profile picture from the social login provider (Google or Apple) or the email/password you create.</li>
+    <li><strong>Email signup</strong> - If you join our email list, we collect your first name, email address, and collecting interests (e.g., coins, sports cards, Pokemon).</li>
+  </ul>
+  <p><strong>Information collected automatically:</strong></p>
+  <ul>
+    <li><strong>Analytics data</strong> - We use Customer.io to track page views, signup events, and login events. This may include your IP address, browser type, device type, referring URL, and pages visited.</li>
+    <li><strong>Cookies and local storage</strong> - We use cookies and browser local storage to remember your preferences, manage your login session, and suppress repeat popups. See Section 6 for details.</li>
+  </ul>
+
+  <h2>3. How We Use Your Information</h2>
+  <p>We use the information we collect to:</p>
+  <ul>
+    <li>Create and manage your account</li>
+    <li>Send you marketing emails about exclusive coupons, deals, and giveaways (with your consent)</li>
+    <li>Personalize your experience based on your collecting interests</li>
+    <li>Analyze website traffic and improve our site</li>
+    <li>Communicate with you about our live shows and products</li>
+    <li>Comply with legal obligations</li>
+  </ul>
+
+  <h2>4. Third-Party Services</h2>
+  <p>We share your information with the following service providers who help us operate our site:</p>
+  <ul>
+    <li><strong>Auth0 (by Okta)</strong> - Authentication and login management. <a href="https://auth0.com/privacy" target="_blank">Auth0 Privacy Policy</a></li>
+    <li><strong>Customer.io</strong> - Email marketing and analytics. <a href="https://customer.io/legal/privacy-policy" target="_blank">Customer.io Privacy Policy</a></li>
+    <li><strong>Whatnot</strong> - Live shopping platform (linked from our site). <a href="https://www.whatnot.com/privacy" target="_blank">Whatnot Privacy Policy</a></li>
+    <li><strong>Cloudinary</strong> - Image hosting. <a href="https://cloudinary.com/privacy" target="_blank">Cloudinary Privacy Policy</a></li>
+  </ul>
+  <p>We do not sell your personal information to third parties.</p>
+
+  <h2>5. Email Marketing</h2>
+  <p>When you create an account or sign up for our email list, you consent to receive marketing emails from Safe Network including coupons, deals, giveaway announcements, and show schedules.</p>
+  <p>You can unsubscribe at any time by clicking the "Unsubscribe" link at the bottom of any marketing email. We will process your unsubscribe request promptly.</p>
+
+  <h2>6. Cookies and Tracking Technologies</h2>
+  <p>We use the following cookies and storage mechanisms:</p>
+  <ul>
+    <li><strong>sn_signup_shown</strong> (cookie) - Remembers if you've seen the email signup popup so it doesn't appear again. Expires after 1 year.</li>
+    <li><strong>sn_cookie_consent</strong> (localStorage) - Stores your cookie consent preference.</li>
+    <li><strong>Auth0 session</strong> (localStorage) - Maintains your login session across pages and visits.</li>
+    <li><strong>sn_cio_auth_identified</strong> (localStorage) - Prevents duplicate analytics calls when you're logged in.</li>
+    <li><strong>Customer.io analytics</strong> (cookies) - Used for analytics tracking including page views and events.</li>
+  </ul>
+  <p>You can manage your cookie preferences through the cookie consent banner that appears on your first visit. Choosing "Essential Only" will disable analytics and marketing cookies while preserving core site functionality.</p>
+
+  <h2>7. Data Retention</h2>
+  <p>We retain your personal information for as long as your account is active or as needed to provide you services. If you request account deletion, we will remove your data within 30 days, except where we are required to retain it for legal or legitimate business purposes.</p>
+
+  <h2>8. Your Rights</h2>
+  <p>Depending on your location, you may have the following rights regarding your personal data:</p>
+  <ul>
+    <li><strong>Access</strong> - Request a copy of the personal data we hold about you</li>
+    <li><strong>Correction</strong> - Request correction of inaccurate data</li>
+    <li><strong>Deletion</strong> - Request deletion of your personal data</li>
+    <li><strong>Opt-out</strong> - Unsubscribe from marketing emails at any time</li>
+    <li><strong>Data portability</strong> - Request your data in a portable format</li>
+  </ul>
+  <p>To exercise any of these rights, contact us at the email address below.</p>
+
+  <h2>9. Children's Privacy</h2>
+  <p>Our website is not intended for children under 13. We do not knowingly collect personal information from children under 13. If you believe we have collected information from a child under 13, please contact us immediately.</p>
+
+  <h2>10. Changes to This Policy</h2>
+  <p>We may update this Privacy Policy from time to time. The "Last updated" date at the top reflects the most recent revision. We encourage you to review this policy periodically.</p>
+
+  <h2>11. Contact Us</h2>
+  <p>If you have questions about this Privacy Policy or wish to exercise your data rights, contact us at:</p>
+  <p><strong>Safe Network</strong><br/>Email: privacy@safenetwork.shop</p>
+</div>
+
+<footer>
+  <div class="footer-logo">SAFE NETWORK</div>
+  <div><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a></div>
+  <p>2026 Safe Network · safenetwork.shop</p>
+</footer>
+
+<script>
+  function toggleMenu(){
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.querySelector('.hamburger').classList.toggle('open');
+  }
+</script>
+<script src="/js/cookies.js"></script>
+<script src="/js/auth.js"></script>
+</body>
+</html>

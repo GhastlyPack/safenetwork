@@ -22,6 +22,9 @@
 <meta name="twitter:image" content="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979965/ChatGPT_Image_Feb_24_2026_04_39_12_PM_bvf4rt.png"/>
 <link rel="stylesheet" href="/css/global.css">
 <link rel="stylesheet" href="/css/signup.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/cookies.css">
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
 <!-- Customer.io CDP -->
 <script>
   !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
@@ -299,30 +302,51 @@
   <ul class="nav-links">
     <li><a href="#shows">Shows</a></li>
     <li><a href="#host">Hosts</a></li>
+    <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
     <li><a href="/blog">Blog</a></li>
     <li class="nav-secondary"><a href="#follow">Follow</a></li>
     <li class="nav-secondary"><a href="#socials">Links</a></li>
   </ul>
-  <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="nav-cta">Watch Live</a>
+  <!-- Auth: Login Button (shown when logged out) -->
+  <button id="authLoginBtn" class="auth-login-btn" onclick="window.snAuth && snAuth.login()">Log In</button>
+  <!-- Auth: Profile Avatar + Dropdown (shown when logged in) -->
+  <div id="authProfileWrap" class="auth-profile-wrap">
+    <div class="auth-avatar" onclick="snAuth.toggleProfileDropdown()">
+      <img id="authAvatarImg" alt="Profile"/>
+      <span id="authAvatarInitials" class="auth-avatar-initials"></span>
+    </div>
+    <div id="authDropdown" class="auth-dropdown">
+      <div class="auth-dropdown-label">Signed in as</div>
+      <div id="authDropdownEmail" class="auth-dropdown-email"></div>
+      <button class="auth-logout-btn" onclick="snAuth.logout()">Log Out</button>
+    </div>
+  </div>
   <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
 </nav>
 
 <ul class="mobile-menu" id="mobileMenu">
-  <li><a href="#shows">Shows</a></li>
-  <li><a href="#host">Hosts</a></li>
+  <li><a href="#shows" onclick="toggleMenu()">Shows</a></li>
+  <li><a href="#host" onclick="toggleMenu()">Hosts</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank" onclick="toggleMenu()">Watch Live</a></li>
   <li><a href="/blog">Blog</a></li>
-  <li><a href="#follow">Follow</a></li>
-  <li><a href="#socials">Links</a></li>
-  <li><a href="#" onclick="event.preventDefault();toggleMenu();openSignupModal()">🎁 Join the Collector's List</a></li>
-  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="mobile-cta">Watch Live</a></li>
+  <li><a href="#follow" onclick="toggleMenu()">Follow</a></li>
+  <li><a href="#socials" onclick="toggleMenu()">Links</a></li>
+  <li id="joinCollectorsList"><a href="#" onclick="event.preventDefault();toggleMenu();window.snAuth && snAuth.login()">🎁 Sign Up / Log In</a></li>
+  <!-- Auth: Mobile Login (hidden since joinCollectorsList serves as login CTA) -->
+  <li id="authMobileLogin" class="auth-mobile-login" style="display:none"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
+  <!-- Auth: Mobile Profile (shown when logged in) -->
+  <li id="authMobileProfile" class="auth-mobile-profile">
+    <div class="auth-mobile-signed-in">Signed in as <span id="authMobileEmail" class="auth-mobile-email"></span></div>
+    <button class="auth-mobile-logout" onclick="snAuth.logout()">Log Out</button>
+  </li>
 </ul>
 
 <!-- EMAIL BAR -->
-<div class="email-bar" onclick="openSignupModal()">
-  <span class="bar-full">🎁 Join the Collector's List - Exclusive Coupons, Deals &amp; Giveaways</span>
-  <span class="bar-short">🎁 Exclusive Coupons &amp; Giveaways</span>
+<div class="email-bar" onclick="window.snAuth && snAuth.login()">
+  <span class="bar-full">🎁 Sign Up for Exclusive Coupons, Deals &amp; Giveaways</span>
+  <span class="bar-short">🎁 Sign Up / Log In</span>
   <button>Sign Up</button>
 </div>
 
@@ -341,7 +365,7 @@
   </div>
   <div class="hero-btns">
     <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="btn-primary">🔔 Follow @SafeNetwork on Whatnot</a>
-    <a href="#" onclick="event.preventDefault();openSignupModal()" class="btn-gold">🎁 Get Exclusive Deals &amp; Giveaways</a>
+    <a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()" class="btn-gold">🎁 Get Exclusive Deals &amp; Giveaways</a>
   </div>
 </section>
 
@@ -543,8 +567,8 @@
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">SAFE NETWORK</div>
+  <div><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a></div>
   <p>2026 Safe Network · safenetwork.shop</p>
-  <p style="color:rgba(192,200,216,.4);font-size:12px">Your trusted live shopping network on Whatnot</p>
 </footer>
 
 <script>
@@ -554,5 +578,7 @@
   }
 </script>
 <script src="/js/signup.js"></script>
+<script src="/js/cookies.js"></script>
+<script src="/js/auth.js"></script>
 </body>
 </html>

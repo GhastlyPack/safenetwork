@@ -38,12 +38,13 @@
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON,
         'Authorization': 'Bearer ' + accessToken
       },
       body: JSON.stringify({ action: action, data: data })
     });
     var json = await res.json();
-    if(!res.ok || json.error) throw new Error(json.error || 'Edge function error');
+    if(!res.ok || json.error) throw new Error(json.error || json.msg || json.message || 'Edge function error');
     return json;
   }
 
@@ -199,7 +200,7 @@
     try {
       var res = await fetch(EDGE_FN_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
         body: JSON.stringify({ action: 'public-wishlist', data: { username: username } })
       });
       var json = await res.json();
@@ -216,7 +217,7 @@
     try {
       var res = await fetch(EDGE_FN_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
         body: JSON.stringify({ action: 'list-scheduled-shows', data: filters || {} })
       });
       var json = await res.json();
@@ -266,7 +267,7 @@
     try {
       var res = await fetch(EDGE_FN_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
         body: JSON.stringify({ action: 'list-hosts', data: {} })
       });
       var json = await res.json();
@@ -356,7 +357,7 @@
     try {
       var res = await fetch(EDGE_FN_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
         body: JSON.stringify({ action: 'public-collection', data: { username: username } })
       });
       var json = await res.json();
@@ -385,7 +386,7 @@
   /* ── Feed: Get Public Feed (optional auth for user_reaction) ── */
   async function getFeed(cursor, category, eventType, followingOnly){
     try {
-      var headers = { 'Content-Type': 'application/json' };
+      var headers = { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON };
       if(window.snAuth){
         try {
           var token = await snAuth.getAccessToken();
@@ -411,7 +412,7 @@
   /* ── Feed: Get Event Detail with Comments ── */
   async function getFeedEventDetail(feedEventId){
     try {
-      var headers = { 'Content-Type': 'application/json' };
+      var headers = { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON };
       if(window.snAuth){
         try {
           var token = await snAuth.getAccessToken();
@@ -587,7 +588,7 @@
     try {
       var res = await fetch(EDGE_FN_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
         body: JSON.stringify({ action: 'get-followers', data: { username: username } })
       });
       var json = await res.json();
@@ -604,7 +605,7 @@
     try {
       var res = await fetch(EDGE_FN_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
         body: JSON.stringify({ action: 'get-following', data: { username: username } })
       });
       var json = await res.json();

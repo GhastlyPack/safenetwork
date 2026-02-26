@@ -32,6 +32,7 @@
     if(params.has('code') && params.has('state')){
       try {
         await auth0Client.handleRedirectCallback();
+        window._snJustLoggedIn = true;
       } catch(err){
         console.warn('Auth0 callback error:', err);
       }
@@ -82,6 +83,16 @@
   function handleProfileReady(profile){
     if(!profile) return;
 
+    // Fresh login redirect: send user to their public profile
+    if(window._snJustLoggedIn && profile.username){
+      window._snJustLoggedIn = false;
+      var path = window.location.pathname;
+      if(path === '/' || path === '/index.html'){
+        window.location.href = '/collector.html?u=' + encodeURIComponent(profile.username);
+        return;
+      }
+    }
+
     // Desktop dropdown: show @username and "My Profile" link
     var dd = document.getElementById('authDropdown');
     if(dd){
@@ -123,12 +134,6 @@
           collectionLink.className = 'auth-dropdown-link';
           collectionLink.textContent = 'My Collection';
           logoutBtn.before(collectionLink);
-
-          var feedLink = document.createElement('a');
-          feedLink.href = '/feed.html';
-          feedLink.className = 'auth-dropdown-link';
-          feedLink.textContent = 'Community Feed';
-          logoutBtn.before(feedLink);
 
           // Add admin link if admin
           if(profile.role === 'admin'){
@@ -179,14 +184,6 @@
         mobileCollLink.textContent = 'My Collection';
         mobileWishLink.after(mobileCollLink);
 
-        var mobileFeedLink = document.createElement('a');
-        mobileFeedLink.href = '/feed.html';
-        mobileFeedLink.className = 'auth-mobile-profile-link';
-        mobileFeedLink.style.display = 'block';
-        mobileFeedLink.style.marginBottom = '8px';
-        mobileFeedLink.textContent = 'Community Feed';
-        mobileCollLink.after(mobileFeedLink);
-
         // Add admin link if admin
         if(profile.role === 'admin'){
           var mobileAdminLink = document.createElement('a');
@@ -196,7 +193,7 @@
           mobileAdminLink.style.display = 'block';
           mobileAdminLink.style.marginBottom = '8px';
           mobileAdminLink.textContent = 'Admin Panel';
-          mobileWishLink.after(mobileAdminLink);
+          mobileCollLink.after(mobileAdminLink);
         }
       }
     }
@@ -284,11 +281,12 @@
     var emailBar = document.querySelector('.email-bar');
     if(emailBar) emailBar.style.display = 'none';
 
-    // Homepage hero: swap signup CTA for dashboard CTA
+    // Homepage hero: swap signup CTA for Whatnot CTA
     var heroCTA = document.getElementById('heroCTA');
     if(heroCTA){
-      heroCTA.textContent = '📋 My Dashboard';
-      heroCTA.href = '/profile.html';
+      heroCTA.textContent = '🔴 Watch Live on Whatnot';
+      heroCTA.href = 'https://www.whatnot.com/user/safenetwork';
+      heroCTA.target = '_blank';
       heroCTA.onclick = null;
       heroCTA.removeAttribute('onclick');
     }

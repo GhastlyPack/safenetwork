@@ -211,6 +211,23 @@
     }
   }
 
+  /* ── List Hosts (no auth needed) ── */
+  async function listHosts(){
+    try {
+      var res = await fetch(EDGE_FN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list-hosts', data: {} })
+      });
+      var json = await res.json();
+      if(!res.ok || json.error) return [];
+      return json.hosts || [];
+    } catch(err){
+      console.warn('List hosts error:', err);
+      return [];
+    }
+  }
+
   /* ── Cache Helpers ── */
   function cacheProfile(){
     try {
@@ -244,7 +261,8 @@
     updateWishItem: updateWishItem,
     removeWishItem: removeWishItem,
     adminListWishes: adminListWishes,
-    getPublicWishlist: getPublicWishlist
+    getPublicWishlist: getPublicWishlist,
+    listHosts: listHosts
   };
 
   init();

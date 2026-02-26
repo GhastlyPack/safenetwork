@@ -94,6 +94,9 @@
     </div>
   </div>
 
+  <!-- View Public Profile Link -->
+  <a href="#" id="viewPublicProfile" class="view-public-link" style="display:none">View my public profile &rarr;</a>
+
   <!-- Loyalty Section -->
   <div class="profile-loyalty">
     <h3>Loyalty Status</h3>
@@ -307,6 +310,13 @@
     document.getElementById('loyaltyHint').textContent = next
       ? (t.max - points) + ' more points to reach ' + next + ' tier'
       : 'You\'ve reached the highest tier!';
+
+    // View public profile link
+    var pubLink = document.getElementById('viewPublicProfile');
+    if(pubLink && p.username){
+      pubLink.href = '/collector.html?u=' + encodeURIComponent(p.username);
+      pubLink.style.display = '';
+    }
 
     // Form fields
     document.getElementById('profileName').value = p.display_name || '';

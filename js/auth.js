@@ -256,6 +256,18 @@
     var emailBar = document.querySelector('.email-bar');
     if(emailBar) emailBar.style.display = 'none';
 
+    // Homepage hero: swap signup CTA for dashboard CTA
+    var heroCTA = document.getElementById('heroCTA');
+    if(heroCTA){
+      heroCTA.textContent = '📋 My Dashboard';
+      heroCTA.href = '/profile.html';
+      heroCTA.onclick = null;
+      heroCTA.removeAttribute('onclick');
+    }
+    // Hide benefits line for logged-in users
+    var heroBenefits = document.querySelector('.hero-benefits');
+    if(heroBenefits) heroBenefits.style.display = 'none';
+
     // Homepage mobile menu: hide "Join the Collector's List"
     var joinLink = document.getElementById('joinCollectorsList');
     if(joinLink) joinLink.style.display = 'none';

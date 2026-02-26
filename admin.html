@@ -215,10 +215,17 @@
 
     <div class="admin-edit-field">
       <label>Role</label>
-      <select id="editRole">
+      <select id="editRole" onchange="onRoleChange()">
         <option value="shopper">Shopper</option>
         <option value="host">Host</option>
         <option value="admin">Admin</option>
+      </select>
+    </div>
+
+    <div class="admin-edit-field" id="hostPickerField" style="display:none">
+      <label>Linked Host</label>
+      <select id="editHostSlug">
+        <option value="">-- None --</option>
       </select>
     </div>
 
@@ -263,6 +270,7 @@
   var allUsers = [];
   var editingUser = null;
   var searchTimer = null;
+  var hostsList = [];
 
   /* ── Initialize Admin Page ── */
   async function initAdminPage(){
@@ -302,8 +310,9 @@
       return;
     }
 
-    // User is admin - show panel and load users
+    // User is admin - show panel, load hosts list, and load users
     showSection('adminContent');
+    loadHostsList();
     loadUsers();
   }
 
@@ -313,6 +322,30 @@
     document.getElementById('adminContent').style.display = 'none';
     document.getElementById(id).style.display = '';
   }
+
+  /* ── Load Hosts List ── */
+  async function loadHostsList(){
+    try {
+      hostsList = await snProfile.listHosts();
+      var select = document.getElementById('editHostSlug');
+      // Clear existing options beyond the default
+      select.innerHTML = '<option value="">-- None --</option>';
+      hostsList.forEach(function(h){
+        var opt = document.createElement('option');
+        opt.value = h.slug;
+        opt.textContent = h.name;
+        select.appendChild(opt);
+      });
+    } catch(err){
+      console.warn('Load hosts error:', err);
+    }
+  }
+
+  /* ── Role Change Handler ── */
+  window.onRoleChange = function(){
+    var role = document.getElementById('editRole').value;
+    document.getElementById('hostPickerField').style.display = role === 'host' ? '' : 'none';
+  };
 
   /* ── Load Users ── */
   window.loadUsers = async function(){

@@ -17,6 +17,8 @@
 .profile-header-info h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;margin-bottom:4px}
 .profile-username{color:var(--blue);font-size:14px;font-weight:600;margin-bottom:8px}
 .profile-badges{display:flex;gap:8px;flex-wrap:wrap}
+.view-public-link{display:block;text-align:center;color:var(--blue);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;text-decoration:none;margin-bottom:28px;transition:color .2s}
+.view-public-link:hover{color:var(--gold2);text-decoration:underline}
 
 /* Badges */
 .profile-badge{font-size:11px;font-weight:700;letter-spacing:1px;padding:4px 12px;border-radius:999px;text-transform:uppercase}

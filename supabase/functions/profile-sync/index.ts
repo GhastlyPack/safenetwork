@@ -238,7 +238,7 @@ async function handleAdminUpdate(auth0User: { sub: string; email: string; email_
   }
 
   // Admin-only fields
-  const adminFields = ['role', 'loyalty_tier', 'loyalty_points']
+  const adminFields = ['role', 'loyalty_tier', 'loyalty_points', 'host_slug']
   const updates: Record<string, any> = {}
   for (const key of adminFields) {
     if (data.updates[key] !== undefined) {
@@ -396,6 +396,17 @@ async function handleAdminWishlist(auth0User: { sub: string; email: string }, da
   return { wishes: wishes || [] }
 }
 
+/* ── Action: List Hosts (no auth required) ── */
+async function handleListHosts() {
+  const { data: hosts, error } = await supabase
+    .from('hosts')
+    .select('*')
+    .order('name')
+
+  if (error) throw error
+  return { hosts: hosts || [] }
+}
+
 /* ── Action: Public Wishlist (no auth required) ── */
 async function handlePublicWishlist(data: any) {
   if (!data.username) throw new Error('Username is required')
@@ -450,6 +461,14 @@ serve(async (req: Request) => {
     // ── Public actions (no auth required) ──
     if (action === 'public-wishlist') {
       result = await handlePublicWishlist(data || {})
+      return new Response(
+        JSON.stringify(result),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (action === 'list-hosts') {
+      result = await handleListHosts()
       return new Response(
         JSON.stringify(result),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -1,8 +1,22 @@
 /* ── Email Signup Modal + Customer.io Integration ── */
 (function(){
-  var AUTO_DELAY = 10000; // 10 seconds
   var COOKIE_NAME = 'sn_signup_shown';
   var COOKIE_DAYS = 365; // don't auto-popup again for 1 year
+
+  /* ── Signup Funnel Tracking ── */
+  function trackSignupEvent(eventName, extra){
+    if(!window.cioanalytics) return;
+    try {
+      var params = new URLSearchParams(window.location.search);
+      cioanalytics.track(eventName, Object.assign({
+        page: window.location.pathname,
+        referrer: document.referrer || 'direct',
+        utm_source: params.get('utm_source') || '',
+        utm_medium: params.get('utm_medium') || '',
+        utm_campaign: params.get('utm_campaign') || ''
+      }, extra || {}));
+    } catch(e){}
+  }
 
   function getCookie(name){
     var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -46,6 +60,7 @@
 
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
+    trackSignupEvent('signup_modal_shown', { trigger: 'manual' });
   };
 
   window.closeSignupModal = function(){
@@ -66,28 +81,74 @@
     if(e.key === 'Escape') closeSignupModal();
   });
 
-  /* ── Auto-popup (once per visitor, cookie-based, skip if logged in) ── */
-  if(!getCookie(COOKIE_NAME)){
-    setTimeout(function(){
-      if(!getCookie(COOKIE_NAME)){
-        // Skip popup for authenticated users (auto-enrolled via CIO on login)
-        if(window.snAuth && typeof window.snAuth.isLoggedIn === 'function'){
-          window.snAuth.isLoggedIn().then(function(loggedIn){
-            if(!loggedIn){
-              openSignupModal();
-              setCookie(COOKIE_NAME, '1', COOKIE_DAYS);
-            }
-          }).catch(function(){
-            openSignupModal();
-            setCookie(COOKIE_NAME, '1', COOKIE_DAYS);
-          });
-        } else {
+  /* ── Auto-popup: scroll-depth (50%) + exit-intent triggers ── */
+  var autoTriggerSource = '';
+
+  function triggerAutoPopup(source){
+    if(getCookie(COOKIE_NAME)) return;
+    autoTriggerSource = source || 'unknown';
+    if(window.snAuth && typeof window.snAuth.isLoggedIn === 'function'){
+      window.snAuth.isLoggedIn().then(function(loggedIn){
+        if(!loggedIn){
           openSignupModal();
+          trackSignupEvent('signup_modal_shown', { trigger: 'auto', auto_source: autoTriggerSource });
           setCookie(COOKIE_NAME, '1', COOKIE_DAYS);
         }
-      }
-    }, AUTO_DELAY);
+      }).catch(function(){
+        openSignupModal();
+        trackSignupEvent('signup_modal_shown', { trigger: 'auto', auto_source: autoTriggerSource });
+        setCookie(COOKIE_NAME, '1', COOKIE_DAYS);
+      });
+    } else {
+      openSignupModal();
+      trackSignupEvent('signup_modal_shown', { trigger: 'auto', auto_source: autoTriggerSource });
+      setCookie(COOKIE_NAME, '1', COOKIE_DAYS);
+    }
   }
+
+  var autoTriggered = false;
+
+  // Scroll trigger: fire at ~50% page depth
+  if(!getCookie(COOKIE_NAME)){
+    window.addEventListener('scroll', function onScroll(){
+      if(autoTriggered) return;
+      var scrollPct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+      if(scrollPct >= 0.5){
+        autoTriggered = true;
+        window.removeEventListener('scroll', onScroll);
+        triggerAutoPopup('scroll_50');
+      }
+    });
+
+    // Exit-intent trigger: mouse leaves viewport at top (desktop only)
+    document.addEventListener('mouseout', function onExit(e){
+      if(autoTriggered) return;
+      if(e.clientY <= 0 && e.relatedTarget === null){
+        autoTriggered = true;
+        document.removeEventListener('mouseout', onExit);
+        triggerAutoPopup('exit_intent');
+      }
+    });
+
+    // Fallback: 30s timer in case user doesn't scroll or mouse-out
+    setTimeout(function(){
+      if(!autoTriggered && !getCookie(COOKIE_NAME)){
+        autoTriggered = true;
+        triggerAutoPopup('timer_30s');
+      }
+    }, 30000);
+  }
+
+  /* ── Track first interaction with form fields ── */
+  var formStarted = false;
+  document.addEventListener('focusin', function(e){
+    if(formStarted) return;
+    var modal = document.querySelector('.signup-modal');
+    if(modal && modal.contains(e.target) && (e.target.tagName === 'INPUT')){
+      formStarted = true;
+      trackSignupEvent('signup_form_started');
+    }
+  });
 
   /* ── Form Submit via Customer.io JS Snippet ── */
   window.handleSignup = function(e){
@@ -103,17 +164,13 @@
     var interests = [];
     for(var i = 0; i < checks.length; i++) interests.push(checks[i].value);
 
-    // Validate
+    // Validate (interests are optional)
     if(!firstName || !email){
       showError(errorEl, 'Please enter your name and email.');
       return;
     }
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
       showError(errorEl, 'Please enter a valid email address.');
-      return;
-    }
-    if(interests.length === 0){
-      showError(errorEl, 'Please select at least one interest.');
       return;
     }
 
@@ -148,6 +205,12 @@
     } catch(err) {
       console.warn('Customer.io tracking error:', err);
     }
+
+    // Track completed signup
+    trackSignupEvent('signup_completed', {
+      has_interests: interests.length > 0,
+      interest_count: interests.length
+    });
 
     // Show success (CIO calls are fire-and-forget, no need to wait)
     showSuccess(form, successEl);

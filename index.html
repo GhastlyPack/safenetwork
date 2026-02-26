@@ -85,6 +85,10 @@
   }
   .pill.gold{background:rgba(212,160,23,.12);border-color:rgba(212,160,23,.3);color:var(--gold2)}
 
+  .hero-benefits{
+    font-size:clamp(12px,1.6vw,15px);color:var(--gold2);font-weight:600;
+    letter-spacing:.5px;margin-bottom:32px;opacity:.9;
+  }
   .hero-btns{display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
   .btn-primary{
     background:linear-gradient(135deg,var(--blue),var(--blue2));
@@ -187,7 +191,7 @@
   .host-card{
     flex:1;min-width:280px;max-width:340px;
     background:rgba(255,255,255,.04);border:1px solid rgba(30,144,255,.2);
-    border-radius:24px;padding:40px 28px;
+    border-radius:24px;padding:40px 28px;cursor:pointer;
     transition:box-shadow .3s,transform .3s;
   }
   .host-card:hover{box-shadow:0 0 60px rgba(30,144,255,.15);transform:translateY(-6px)}
@@ -281,6 +285,112 @@
   }
   .email-bar button:hover{background:#161d30}
 
+  /* TRUST MODULE */
+  .trust{padding:80px 20px}
+  .trust-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:24px;max-width:1000px;margin:0 auto 48px;
+  }
+  .trust-item{
+    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+    border-radius:20px;padding:32px 24px;text-align:center;
+    transition:border-color .3s,transform .3s;
+  }
+  .trust-item:hover{border-color:rgba(30,144,255,.3);transform:translateY(-4px)}
+  .trust-icon{font-size:40px;margin-bottom:14px;display:block}
+  .trust-item h3{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1.5px;margin-bottom:8px;color:var(--white)}
+  .trust-item p{color:var(--silver);font-size:13px;line-height:1.6}
+  .trust-stats{
+    display:flex;flex-wrap:wrap;gap:32px;justify-content:center;max-width:800px;margin:0 auto;
+  }
+  .trust-stat{text-align:center}
+  .trust-stat .stat-num{
+    font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,52px);
+    letter-spacing:2px;color:var(--gold2);line-height:1;
+  }
+  .trust-stat .stat-label{
+    color:var(--silver);font-size:13px;font-weight:600;letter-spacing:.5px;margin-top:4px;
+  }
+
+  /* HOST DETAIL MODAL */
+  .host-modal-overlay{
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(10,14,26,.85);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    display:none;align-items:center;justify-content:center;
+    padding:24px;opacity:0;transition:opacity .3s ease;
+  }
+  .host-modal-overlay.active{display:flex;opacity:1}
+  .host-modal{
+    position:relative;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(30,144,255,.2);
+    border-radius:20px;padding:48px 36px 36px;
+    box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 60px rgba(30,144,255,.1);
+    animation:hostModalIn .3s ease;
+  }
+  @keyframes hostModalIn{from{transform:translateY(24px) scale(.96);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .host-modal-close{
+    position:absolute;top:16px;right:20px;
+    background:none;border:none;color:var(--silver);
+    font-size:28px;cursor:pointer;line-height:1;
+    transition:color .2s;
+  }
+  .host-modal-close:hover{color:#fff}
+  .host-modal-avatar{
+    width:120px;height:120px;border-radius:50%;margin:0 auto 24px;
+    background:linear-gradient(135deg,var(--blue),var(--blue2));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 40px rgba(30,144,255,.4);
+    overflow:hidden;
+  }
+  .host-modal-avatar img{width:100%;height:100%;object-fit:cover}
+  .host-modal h3{
+    font-family:'Bebas Neue',sans-serif;font-size:36px;
+    letter-spacing:2px;text-align:center;margin-bottom:6px;
+  }
+  .host-modal-handle{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-bottom:20px;
+  }
+  .host-modal-handle a{
+    color:var(--blue);font-weight:600;font-size:15px;
+    text-decoration:none;transition:color .2s;
+  }
+  .host-modal-handle a:hover{color:var(--gold2)}
+  .host-modal-socials{
+    display:flex;gap:10px;align-items:center;justify-content:center;
+    margin-bottom:24px;
+  }
+  .host-modal-socials a{
+    display:flex;align-items:center;justify-content:center;
+    width:36px;height:36px;border-radius:8px;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+    transition:transform .2s,border-color .2s,opacity .2s;opacity:.85;
+  }
+  .host-modal-socials a:hover{transform:scale(1.12);opacity:1;border-color:var(--blue)}
+  .host-modal-socials img{width:22px;height:22px}
+  .host-modal-bio{
+    color:var(--silver);font-size:15px;line-height:1.7;
+    text-align:center;margin-bottom:28px;
+  }
+  .host-modal-tags{
+    display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+    margin-bottom:28px;
+  }
+  .host-modal-tags .host-tag{font-size:13px;padding:7px 16px}
+  .host-modal-profile-btn{
+    display:none; /* hidden until profiles are linked */
+    width:100%;text-align:center;
+    background:linear-gradient(135deg,var(--blue),var(--blue2));
+    color:#fff;padding:14px 28px;border-radius:10px;border:none;
+    font-family:'Inter',sans-serif;font-weight:700;font-size:15px;
+    cursor:pointer;letter-spacing:.5px;
+    box-shadow:0 0 20px rgba(30,144,255,.4);
+    transition:transform .2s,box-shadow .2s;
+  }
+  .host-modal-profile-btn:hover{transform:translateY(-2px);box-shadow:0 0 36px rgba(30,144,255,.7)}
+
   @media(max-width:768px){
     .email-bar{font-size:13px;padding:8px 16px;gap:8px}
     .email-bar .bar-full{display:none}
@@ -358,49 +468,16 @@
   <h1>SAFE NETWORK</h1>
   <div class="hero-sub">COLLECT · TRADE · WIN</div>
   <p class="hero-desc">The premier live shopping network for collectors and enthusiasts. Giveaways, auctions, and fun games streamed live on Whatnot.</p>
-  <div class="hero-pills">
-    <span class="pill">🪙 Coins &amp; Bullion</span>
-    <span class="pill gold">⚡ Coming Soon: Pokemon</span>
-    <span class="pill gold">🏀 Sports Cards</span>
-    <span class="pill gold">👟 Shoes</span>
-  </div>
-  <div class="hero-btns">
-    <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="btn-primary">🔔 Follow @SafeNetwork on Whatnot</a>
-    <a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()" class="btn-gold">🎁 Get Exclusive Deals &amp; Giveaways</a>
+  <p class="hero-benefits">✓ Early access to drops &nbsp; ✓ Members-only coupons &nbsp; ✓ Giveaway alerts</p>
+  <div class="hero-btns" id="heroBtns">
+    <a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()" class="btn-gold" id="heroCTA">🎁 Get Early Access &amp; Private Deals</a>
+    <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="btn-outline" id="heroWhatnot">🔔 Follow on Whatnot</a>
   </div>
 </section>
 
 <div class="divider"></div>
 
-<!-- WHATNOT FOLLOW CTA -->
-<section class="whatnot" id="follow">
-  <div class="section-label">FOLLOW TO GET NOTIFIED</div>
-  <h2 class="section-title">Never Miss a <span style="color:var(--blue)">Drop</span></h2>
-  <p class="section-sub">Hit Follow on our Whatnot pages and get notified the moment we go live so you never miss a deal.</p>
-  <div class="whatnot-cards">
-    <div class="whatnot-card">
-      <div class="wn-icon">🔮</div>
-      <div class="wn-handle">@SafeNetwork</div>
-      <h3>The Network Page</h3>
-      <p>Your hub for all Safe Network shows. Follow to get notified when any of our hosts go live across all verticals.</p>
-      <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="btn-primary" style="display:inline-block;padding:12px 28px;font-size:14px">Follow on Whatnot</a>
-    </div>
-    <div class="whatnot-card">
-      <div class="wn-icon">🪙</div>
-      <div class="wn-handle">@djsmoltz</div>
-      <h3>Coins &amp; Bullion</h3>
-      <p>Follow DJ Smoltz directly for his Coins and Bullion shows. Surprise drops, auctions, giveaways and more every stream.</p>
-      <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="btn-gold" style="display:inline-block;padding:12px 28px;font-size:14px">Follow @djsmoltz</a>
-    </div>
-  </div>
-  <p style="margin-top:32px;color:var(--silver);font-size:13px;opacity:.6">
-    Pro tip: After following, tap the bell icon on Whatnot to get push notifications when we go live.
-  </p>
-</section>
-
-<div class="divider"></div>
-
-<!-- SHOWS -->
+<!-- SHOWS (moved above Follow) -->
 <section class="shows" id="shows">
   <div class="section-label">OUR LINEUP</div>
   <h2 class="section-title">The <span style="color:var(--gold)">Shows</span></h2>
@@ -435,6 +512,34 @@
 
 <div class="divider"></div>
 
+<!-- WHATNOT FOLLOW CTA (value reinforcement) -->
+<section class="whatnot" id="follow">
+  <div class="section-label">FOLLOW TO GET NOTIFIED</div>
+  <h2 class="section-title">Never Miss a <span style="color:var(--blue)">Drop</span></h2>
+  <p class="section-sub">Hit Follow on our Whatnot pages and get notified the moment we go live so you never miss a deal.</p>
+  <div class="whatnot-cards">
+    <div class="whatnot-card">
+      <div class="wn-icon">🔮</div>
+      <div class="wn-handle">@SafeNetwork</div>
+      <h3>The Network Page</h3>
+      <p>Your hub for all Safe Network shows. Follow to get notified when any of our hosts go live across all verticals.</p>
+      <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="btn-primary" style="display:inline-block;padding:12px 28px;font-size:14px">Follow on Whatnot</a>
+    </div>
+    <div class="whatnot-card">
+      <div class="wn-icon">🪙</div>
+      <div class="wn-handle">@djsmoltz</div>
+      <h3>Coins &amp; Bullion</h3>
+      <p>Follow DJ Smoltz directly for his Coins and Bullion shows. Surprise drops, auctions, giveaways and more every stream.</p>
+      <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="btn-gold" style="display:inline-block;padding:12px 28px;font-size:14px">Follow @djsmoltz</a>
+    </div>
+  </div>
+  <p style="margin-top:32px;color:var(--silver);font-size:13px;opacity:.6">
+    Pro tip: After following, tap the bell icon on Whatnot to get push notifications when we go live.
+  </p>
+</section>
+
+<div class="divider"></div>
+
 <!-- HOST -->
 <section class="host" id="host">
   <div class="section-label">THE TEAM</div>
@@ -442,7 +547,7 @@
   <p class="section-sub">Real collectors. Real knowledge. Real deals.</p>
   <div class="host-grid">
 
-    <div class="host-card">
+    <div class="host-card" onclick="openHostModal('djsmoltz')">
       <div class="host-avatar"><img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg" alt="DJ Smoltz"/></div>
       <h3>DJ Smoltz</h3>
       <div class="host-handle">
@@ -459,7 +564,7 @@
       </div>
     </div>
 
-    <div class="host-card">
+    <div class="host-card" onclick="openHostModal('honeybunbean')">
       <div class="host-avatar"><img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg" alt="HoneyBunBean"/></div>
       <h3>HoneyBunBean</h3>
       <div class="host-handle">
@@ -477,7 +582,7 @@
       </div>
     </div>
 
-    <div class="host-card">
+    <div class="host-card" onclick="openHostModal('maxocollects')">
       <div class="host-avatar"><img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F11960479%2F9e3bacf3-04c3-46c9-8c09-afac5cccbfad.jpeg" alt="MaxoCollects"/></div>
       <h3>MaxoCollects</h3>
       <div class="host-handle">
@@ -498,18 +603,60 @@
   </div>
 </section>
 
-<div class="divider" style="margin-bottom:80px"></div>
+<div class="divider"></div>
 
-<!-- EBAY -->
-<div class="ebay-strip" id="ebay">
-  <div>
-    <h3>🛒 Shop Our eBay Store</h3>
-    <p>Can't catch us live? Browse our eBay listings for coins, bullion and collectibles available 24/7 with the same trusted Safe Network quality.</p>
+<!-- TRUST / BUY WITH CONFIDENCE -->
+<section class="trust" id="trust">
+  <div class="section-label">WHY SAFE NETWORK</div>
+  <h2 class="section-title">Buy With <span style="color:var(--gold)">Confidence</span></h2>
+  <p class="section-sub">Every item on Safe Network is backed by marketplace protections and a team that cares about collectors.</p>
+  <div class="trust-grid">
+    <div class="trust-item">
+      <span class="trust-icon">🛡️</span>
+      <h3>Buyer Protection</h3>
+      <p>Every purchase on Whatnot is backed by their buyer protection guarantee. Shop risk-free.</p>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon">✅</span>
+      <h3>Authenticated Items</h3>
+      <p>Graded cards, certified coins, and verified sneakers. We stand behind every item we sell.</p>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon">🔴</span>
+      <h3>Live &amp; Transparent</h3>
+      <p>Watch us open, inspect, and pack every item live on camera. No hidden tricks, no bait-and-switch.</p>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon">⭐</span>
+      <h3>5-Star Rated</h3>
+      <p>Hundreds of happy collectors and counting. Check our reviews on Whatnot — we let our ratings speak.</p>
+    </div>
   </div>
-  <a href="https://www.ebay.com/usr/safenetwork.shop" target="_blank" class="btn-ebay">Visit eBay Store</a>
-</div>
+  <!-- Social proof stats — uncomment when real numbers are ready
+  <div class="trust-stats">
+    <div class="trust-stat">
+      <div class="stat-num">500+</div>
+      <div class="stat-label">Happy Collectors</div>
+    </div>
+    <div class="trust-stat">
+      <div class="stat-num">100+</div>
+      <div class="stat-label">Live Shows Hosted</div>
+    </div>
+    <div class="trust-stat">
+      <div class="stat-num">4.9★</div>
+      <div class="stat-label">Average Rating</div>
+    </div>
+    <div class="trust-stat">
+      <div class="stat-num">24/7</div>
+      <div class="stat-label">eBay Store Open</div>
+    </div>
+  </div>
+  -->
+</section>
 
-<!-- SOCIALS -->
+<div class="divider"></div>
+
+<!-- SOCIALS (moved above eBay) -->
 <section class="socials" id="socials">
   <div class="section-label">FIND US EVERYWHERE</div>
   <h2 class="section-title">Stay <span style="color:var(--blue)">Connected</span></h2>
@@ -538,6 +685,31 @@
   </div>
 </section>
 
+<div class="divider" style="margin-bottom:20px"></div>
+
+<!-- EBAY (moved to bottom, lower priority) -->
+<div class="ebay-strip" id="ebay">
+  <div>
+    <h3>🛒 24/7 Inventory</h3>
+    <p>Can't catch us live? Browse our eBay listings for coins, bullion and collectibles available around the clock with the same trusted Safe Network quality.</p>
+  </div>
+  <a href="https://www.ebay.com/usr/safenetwork.shop" target="_blank" class="btn-ebay">Visit eBay Store</a>
+</div>
+
+<!-- HOST DETAIL MODAL -->
+<div class="host-modal-overlay" id="hostModalOverlay" onclick="if(event.target===this)closeHostModal()">
+  <div class="host-modal">
+    <button class="host-modal-close" onclick="closeHostModal()">&times;</button>
+    <div class="host-modal-avatar" id="hostModalAvatar"></div>
+    <h3 id="hostModalName"></h3>
+    <div class="host-modal-handle" id="hostModalHandle"></div>
+    <div class="host-modal-socials" id="hostModalSocials"></div>
+    <p class="host-modal-bio" id="hostModalBio"></p>
+    <div class="host-modal-tags" id="hostModalTags"></div>
+    <button class="host-modal-profile-btn" id="hostModalProfileBtn">View Full Profile &rarr;</button>
+  </div>
+</div>
+
 <!-- SIGNUP MODAL -->
 <div class="signup-overlay" id="signupOverlay">
   <div class="signup-modal">
@@ -545,18 +717,18 @@
     <h2 style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:6px">Join the Collector's List</h2>
     <p style="color:var(--silver);font-size:14px;margin-bottom:24px">Sign up for exclusive coupons, deals, and giveaways.</p>
     <form onsubmit="handleSignup(event)">
-      <input type="text" name="first_name" placeholder="First name" required/>
-      <input type="email" name="email" placeholder="Email address" required/>
+      <input type="text" name="first_name" placeholder="First name *" required/>
+      <input type="email" name="email" placeholder="Email address *" required/>
       <fieldset class="interest-grid">
-        <legend>I collect…</legend>
+        <legend>I collect… <span style="font-weight:400;opacity:.5">(optional)</span></legend>
         <label><input type="checkbox" name="interests" value="coins"/> Coins</label>
         <label><input type="checkbox" name="interests" value="sports_cards"/> Sports Cards</label>
         <label><input type="checkbox" name="interests" value="pokemon"/> Pokémon</label>
-        <label><input type="checkbox" name="interests" value="other"/> Other</label>
+        <label><input type="checkbox" name="interests" value="shoes"/> Shoes</label>
       </fieldset>
       <div class="signup-error" id="signupError"></div>
       <button type="submit">Sign Up Now</button>
-      <p style="color:rgba(192,200,216,.4);font-size:11px;margin-top:12px;line-height:1.5">By signing up you agree to receive marketing emails from Safe Network. You can unsubscribe at any time.</p>
+      <p style="color:rgba(192,200,216,.5);font-size:12px;margin-top:12px;line-height:1.5">🔒 No spam. Unsubscribe anytime. We only send the good stuff.</p>
     </form>
     <div class="signup-success" id="signupSuccess">
       <h3 style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:6px">You're In! 🎉</h3>
@@ -577,6 +749,113 @@
     document.getElementById('mobileMenu').classList.toggle('open');
     document.querySelector('.hamburger').classList.toggle('open');
   }
+
+  /* ── Homepage Analytics (Customer.io events) ── */
+  (function(){
+    function trackClick(id, eventName, extra){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.addEventListener('click', function(){
+        if(window.cioanalytics){
+          cioanalytics.track(eventName, Object.assign({
+            page: window.location.pathname,
+            referrer: document.referrer || 'direct',
+            utm_source: new URLSearchParams(window.location.search).get('utm_source') || '',
+            utm_medium: new URLSearchParams(window.location.search).get('utm_medium') || '',
+            utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign') || ''
+          }, extra || {}));
+        }
+      });
+    }
+    trackClick('heroCTA', 'hero_cta_click', { cta: 'primary_signup' });
+    trackClick('heroWhatnot', 'hero_cta_click', { cta: 'whatnot_follow' });
+  })();
+</script>
+<script>
+  /* ── Host Detail Modal ── */
+  var hostData = {
+    djsmoltz: {
+      name: 'DJ Smoltz',
+      handle: 'djsmoltz',
+      avatar: 'https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg',
+      bio: 'The face of Safe Network\'s Coins and Bullion show. Energy, expertise, and incredible deals every stream. Morgan dollars to gold bars, packed with mystery lots and giveaways.',
+      socials: [
+        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/djsmoltz', icon: 'https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png' }
+      ],
+      tags: ['\u{1FA99} Coins & Bullion', '\u{1F381} Giveaways', '\u{1F528} Auctions']
+    },
+    honeybunbean: {
+      name: 'HoneyBunBean',
+      handle: 'honeybunbean',
+      avatar: 'https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg',
+      bio: 'Safe Network\'s Pokemon host. Live pack openings, graded card auctions, and Pokemon giveaways. From vintage Base Set to the latest modern hits.',
+      socials: [
+        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/honeybunbean', icon: 'https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png' },
+        { platform: 'Instagram', url: 'https://www.instagram.com/honeybunbean/', icon: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png' }
+      ],
+      tags: ['\u26A1 Pokemon', '\u{1F381} Giveaways', '\u{1F528} Auctions']
+    },
+    maxocollects: {
+      name: 'MaxoCollects',
+      handle: 'maxocollects',
+      avatar: 'https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F11960479%2F9e3bacf3-04c3-46c9-8c09-afac5cccbfad.jpeg',
+      bio: 'Safe Network\'s Sports Cards host. Rookie cards, autographs, graded slabs and mystery boxes across football, basketball, baseball and more.',
+      socials: [
+        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/maxocollects', icon: 'https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png' },
+        { platform: 'Instagram', url: 'https://www.instagram.com/maxo_collects/', icon: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png' }
+      ],
+      tags: ['\u{1F3C0} Sports Cards', '\u{1F381} Giveaways', '\u{1F528} Auctions']
+    }
+  };
+
+  function openHostModal(key) {
+    var h = hostData[key];
+    if (!h) return;
+    // Avatar
+    document.getElementById('hostModalAvatar').innerHTML = '<img src="' + h.avatar + '" alt="' + h.name + '"/>';
+    // Name
+    document.getElementById('hostModalName').textContent = h.name;
+    // Handle (linked to Whatnot)
+    document.getElementById('hostModalHandle').innerHTML =
+      '<a href="https://www.whatnot.com/user/' + h.handle + '" target="_blank" onclick="event.stopPropagation()">@' + h.handle + '</a>';
+    // Social links
+    var socialsHTML = '';
+    h.socials.forEach(function(s) {
+      socialsHTML += '<a href="' + s.url + '" target="_blank" title="' + s.platform + '" onclick="event.stopPropagation()">' +
+        '<img src="' + s.icon + '" alt="' + s.platform + '"/></a>';
+    });
+    document.getElementById('hostModalSocials').innerHTML = socialsHTML;
+    // Bio
+    document.getElementById('hostModalBio').textContent = h.bio;
+    // Tags
+    var tagsHTML = '';
+    h.tags.forEach(function(t) {
+      tagsHTML += '<span class="host-tag">' + t + '</span>';
+    });
+    document.getElementById('hostModalTags').innerHTML = tagsHTML;
+    // Profile button (hidden for now, pre-wired for future use)
+    var profileBtn = document.getElementById('hostModalProfileBtn');
+    profileBtn.onclick = function() { window.location.href = '/collector.html?u=' + h.handle; };
+    // Show overlay
+    var overlay = document.getElementById('hostModalOverlay');
+    overlay.style.display = 'flex';
+    // Trigger reflow then add active class for transition
+    void overlay.offsetWidth;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeHostModal() {
+    var overlay = document.getElementById('hostModalOverlay');
+    overlay.classList.remove('active');
+    setTimeout(function() { overlay.style.display = 'none'; }, 300);
+    document.body.style.overflow = '';
+  }
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeHostModal();
+  });
 </script>
 <script src="/js/signup.js"></script>
 <script src="/js/supabase.js"></script>

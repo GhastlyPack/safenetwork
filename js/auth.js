@@ -17,7 +17,8 @@
         clientId: AUTH0_CLIENT_ID,
         cacheLocation: 'localstorage',
         authorizationParams: {
-          redirect_uri: window.location.origin + window.location.pathname
+          redirect_uri: window.location.origin + window.location.pathname,
+          audience: 'https://safenetwork.shop/api'
         }
       });
     } catch(err){

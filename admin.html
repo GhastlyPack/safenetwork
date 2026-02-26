@@ -414,6 +414,8 @@
     document.getElementById('editUsername').textContent = '@' + (editingUser.username || '');
     document.getElementById('editEmail').textContent = editingUser.email || '';
     document.getElementById('editRole').value = editingUser.role || 'shopper';
+    document.getElementById('editHostSlug').value = editingUser.host_slug || '';
+    document.getElementById('hostPickerField').style.display = (editingUser.role === 'host') ? '' : 'none';
     document.getElementById('editTier').value = editingUser.loyalty_tier || 'bronze';
     document.getElementById('editPoints').value = editingUser.loyalty_points || 0;
     document.getElementById('adminEditStatus').textContent = '';
@@ -436,11 +438,18 @@
     btn.textContent = 'Saving...';
     statusEl.textContent = '';
 
+    var role = document.getElementById('editRole').value;
     var updates = {
-      role: document.getElementById('editRole').value,
+      role: role,
       loyalty_tier: document.getElementById('editTier').value,
       loyalty_points: parseInt(document.getElementById('editPoints').value) || 0
     };
+
+    if(role === 'host'){
+      updates.host_slug = document.getElementById('editHostSlug').value || null;
+    } else {
+      updates.host_slug = null;
+    }
 
     try {
       var token = await snAuth.getAccessToken();
@@ -560,6 +569,7 @@
   window.addEventListener('snauth:ready', function(e){
     if(e.detail && e.detail.profile && e.detail.profile.role === 'admin'){
       showSection('adminContent');
+      loadHostsList();
       loadUsers();
     }
   });

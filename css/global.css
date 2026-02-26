@@ -8,10 +8,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0}
 
 /* NAV */
 nav{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(10,14,26,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(30,144,255,.2);position:sticky;top:0;z-index:100}
-.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0;position:relative;z-index:1}
 .nav-logo img{height:48px;width:48px;object-fit:contain;border-radius:8px}
 .nav-logo span{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--white)}
-.nav-links{display:flex;gap:20px;list-style:none}
+.nav-links{display:flex;gap:20px;list-style:none;position:absolute;left:50%;transform:translateX(-50%)}
 .nav-links a{color:var(--silver);text-decoration:none;font-size:14px;font-weight:600;letter-spacing:.5px;transition:color .2s}
 .nav-links a:hover,.nav-links a.active{color:var(--blue)}
 .nav-cta{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;letter-spacing:.5px;transition:transform .2s,box-shadow .2s;box-shadow:0 0 16px rgba(30,144,255,.4);white-space:nowrap}

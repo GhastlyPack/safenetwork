@@ -154,7 +154,8 @@
     display:inline-block;padding:5px 14px;border-radius:999px;
     font-size:11px;font-weight:700;letter-spacing:1px;margin-top:16px;
   }
-  .badge-live{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+  .badge-live{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);text-decoration:none;transition:background .2s,box-shadow .2s}
+  a.badge-live:hover{background:rgba(34,197,94,.25);box-shadow:0 0 12px rgba(34,197,94,.3)}
   .badge-soon{background:rgba(212,160,23,.12);color:var(--gold2);border:1px solid rgba(212,160,23,.25)}
 
   /* HOST */
@@ -195,13 +196,13 @@
   /* SOCIALS */
   .socials{padding:80px 20px}
   .socials-grid{
-    display:flex;flex-wrap:wrap;gap:16px;justify-content:center;max-width:900px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:700px;margin:0 auto;
   }
   .social-btn{
     display:flex;align-items:center;gap:12px;
     background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
-    padding:18px 28px;border-radius:14px;text-decoration:none;color:var(--white);
-    font-weight:600;font-size:15px;min-width:200px;
+    padding:18px 24px;border-radius:14px;text-decoration:none;color:var(--white);
+    font-weight:600;font-size:15px;
     transition:transform .2s,border-color .2s,box-shadow .2s;
   }
   .social-btn:hover{transform:translateY(-4px)}
@@ -478,6 +479,39 @@
     .email-bar .bar-full{display:none}
     .email-bar .bar-short{display:inline}
     .mobile-menu.open~.email-bar{display:none}
+    .btn-gold,.btn-outline,.btn-primary{padding:12px 24px;font-size:14px}
+    .hero-btns{gap:12px}
+    /* Shows: compact 2-col grid on mobile */
+    .shows{padding:48px 16px}
+    .shows-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+    .show-card{padding:20px 14px;border-radius:14px}
+    .show-emoji{font-size:32px;margin-bottom:8px}
+    .show-card h3{font-size:18px;letter-spacing:1px;margin-bottom:4px}
+    .show-card p{display:none}
+    .show-badge{margin-top:10px;font-size:10px;padding:4px 10px}
+    /* Hosts: compact cards on mobile */
+    .host{padding:48px 16px}
+    .host-grid{display:grid;grid-template-columns:1fr;gap:12px}
+    .host-card{flex:none;min-width:0;max-width:none;padding:20px 16px;border-radius:14px;text-align:center}
+    .host-avatar{width:64px;height:64px;margin-bottom:10px;font-size:26px;box-shadow:none}
+    .host-card h3{font-size:20px;letter-spacing:1px;margin-bottom:2px}
+    .host-handle{flex-direction:column;gap:0;margin-bottom:10px}
+    .host-handle span{font-size:13px}
+    .host-socials{margin-top:6px}
+    .host-socials a{width:24px;height:24px}
+    .host-socials img{width:16px;height:16px}
+    .host-card p{font-size:13px;line-height:1.5;margin-bottom:14px}
+    .host-shows{gap:6px;flex-wrap:wrap}
+    .host-tag{font-size:10px;padding:4px 10px}
+    /* Trust: compact 2-col grid on mobile */
+    .trust{padding:48px 16px}
+    .trust-grid{grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:32px}
+    .trust-item{padding:20px 14px;border-radius:14px}
+    .trust-icon{font-size:28px;margin-bottom:8px}
+    .trust-item h3{font-size:16px;letter-spacing:1px;margin-bottom:4px}
+    .trust-item p{display:none}
+    /* Socials: single column on mobile */
+    .socials-grid{grid-template-columns:1fr}
   }
   @media(max-width:640px){
     .ebay-strip{text-align:center;flex-direction:column;align-items:center}
@@ -569,19 +603,19 @@
       <span class="show-emoji">🪙</span>
       <h3>Coins &amp; Bullion</h3>
       <p>Rare coins, silver bars, gold bullion and surprise mystery lots hosted live by @djsmoltz. Auctions, giveaways, and unboxings every show.</p>
-      <div class="show-badge badge-live">🟢 LIVE NOW</div>
+      <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" onclick="event.stopPropagation()" class="show-badge badge-live">VISIT WHATNOT</a>
     </div>
-    <div class="show-card coming-soon" onclick="openShowModal('pokemon')">
+    <div class="show-card" onclick="openShowModal('pokemon')">
       <span class="show-emoji">⚡</span>
       <h3>Pokemon</h3>
       <p>Pack openings, graded card auctions, and Pokemon lots for collectors of all levels. From vintage Base Set to modern hits.</p>
-      <div class="show-badge badge-soon">COMING SOON</div>
+      <a href="https://www.whatnot.com/user/honeybunbean" target="_blank" onclick="event.stopPropagation()" class="show-badge badge-live">VISIT WHATNOT</a>
     </div>
-    <div class="show-card coming-soon" onclick="openShowModal('sports')">
+    <div class="show-card" onclick="openShowModal('sports')">
       <span class="show-emoji">🏀</span>
       <h3>Sports Cards</h3>
       <p>Rookie cards, autographs, graded slabs and mystery boxes across football, basketball, baseball and more.</p>
-      <div class="show-badge badge-soon">COMING SOON</div>
+      <a href="https://www.whatnot.com/user/maxocollects" target="_blank" onclick="event.stopPropagation()" class="show-badge badge-live">VISIT WHATNOT</a>
     </div>
     <div class="show-card coming-soon" onclick="openShowModal('shoes')">
       <span class="show-emoji">👟</span>
@@ -607,7 +641,8 @@
       <div class="host-handle">
         <span>@djsmoltz</span>
         <div class="host-socials">
-          <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" title="Whatnot"><img src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png" alt="Whatnot"/></a>
+          <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" title="Whatnot"><img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/whatnot.png" alt="Whatnot"/></a>
+          <a href="https://www.instagram.com/djsmoltz/" target="_blank" title="Instagram"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram"/></a>
         </div>
       </div>
       <p>The face of Safe Network's Coins and Bullion show. Energy, expertise, and incredible deals every stream. Morgan dollars to gold bars, packed with mystery lots and giveaways.</p>
@@ -624,7 +659,7 @@
       <div class="host-handle">
         <span>@honeybunbean</span>
         <div class="host-socials">
-          <a href="https://www.whatnot.com/user/honeybunbean" target="_blank" title="Whatnot"><img src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png" alt="Whatnot"/></a>
+          <a href="https://www.whatnot.com/user/honeybunbean" target="_blank" title="Whatnot"><img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/whatnot.png" alt="Whatnot"/></a>
           <a href="https://www.instagram.com/honeybunbean/" target="_blank" title="Instagram"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram"/></a>
         </div>
       </div>
@@ -642,7 +677,7 @@
       <div class="host-handle">
         <span>@maxocollects</span>
         <div class="host-socials">
-          <a href="https://www.whatnot.com/user/maxocollects" target="_blank" title="Whatnot"><img src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png" alt="Whatnot"/></a>
+          <a href="https://www.whatnot.com/user/maxocollects" target="_blank" title="Whatnot"><img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/whatnot.png" alt="Whatnot"/></a>
           <a href="https://www.instagram.com/maxo_collects/" target="_blank" title="Instagram"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram"/></a>
         </div>
       </div>
@@ -683,10 +718,10 @@
     <div class="trust-item">
       <span class="trust-icon">⭐</span>
       <h3>5-Star Rated</h3>
-      <p>Hundreds of happy collectors and counting. Check our reviews on Whatnot — we let our ratings speak.</p>
+      <p>Hundreds of happy collectors and counting. Check our reviews on Whatnot. We let our ratings speak.</p>
     </div>
   </div>
-  <!-- Social proof stats — uncomment when real numbers are ready
+  <!-- Social proof stats - uncomment when real numbers are ready
   <div class="trust-stats">
     <div class="trust-stat">
       <div class="stat-num">500+</div>
@@ -717,12 +752,8 @@
   <p class="section-sub">Follow @SafeNetwork.Shop across all platforms for show alerts, behind the scenes content, and exclusive deals.</p>
   <div class="socials-grid">
     <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="social-btn whatnot-btn">
-      <div class="social-icon"><img src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png" alt="Whatnot"/></div>
-      <div class="social-info">Whatnot (Network)<span>@SafeNetwork</span></div>
-    </a>
-    <a href="https://www.whatnot.com/user/djsmoltz" target="_blank" class="social-btn whatnot-btn">
-      <div class="social-icon"><img src="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png" alt="Whatnot"/></div>
-      <div class="social-info">Whatnot (DJ Smoltz)<span>@djsmoltz</span></div>
+      <div class="social-icon"><img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/whatnot.png" alt="Whatnot"/></div>
+      <div class="social-info">Whatnot<span>@SafeNetwork</span></div>
     </a>
     <a href="https://www.instagram.com/safenetwork.shop" target="_blank" class="social-btn ig">
       <div class="social-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram"/></div>
@@ -745,7 +776,7 @@
 <div class="ebay-strip" id="store">
   <div>
     <h3>🛒 Online Store</h3>
-    <p>We're building an integrated shop so you can browse and buy collectibles anytime — not just during live shows. Stay tuned for launch.</p>
+    <p>We're building an integrated shop so you can browse and buy collectibles anytime, not just during live shows. Stay tuned for launch.</p>
   </div>
   <span class="btn-ebay" style="opacity:.5;cursor:default;pointer-events:none">Coming Soon</span>
 </div>
@@ -850,7 +881,8 @@
       avatar: 'https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F40956395%2Fddd9e762-8253-4bbd-981f-05eb96960361.jpeg',
       bio: 'The face of Safe Network\'s Coins and Bullion show. Energy, expertise, and incredible deals every stream. Morgan dollars to gold bars, packed with mystery lots and giveaways.',
       socials: [
-        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/djsmoltz', icon: 'https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png' }
+        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/djsmoltz', icon: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/whatnot.png' },
+        { platform: 'Instagram', url: 'https://www.instagram.com/djsmoltz/', icon: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png' }
       ],
       tags: ['\u{1FA99} Coins & Bullion', '\u{1F381} Giveaways', '\u{1F528} Auctions']
     },
@@ -860,7 +892,7 @@
       avatar: 'https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg',
       bio: 'Safe Network\'s Pokemon host. Live pack openings, graded card auctions, and Pokemon giveaways. From vintage Base Set to the latest modern hits.',
       socials: [
-        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/honeybunbean', icon: 'https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png' },
+        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/honeybunbean', icon: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/whatnot.png' },
         { platform: 'Instagram', url: 'https://www.instagram.com/honeybunbean/', icon: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png' }
       ],
       tags: ['\u26A1 Pokemon', '\u{1F381} Giveaways', '\u{1F528} Auctions']
@@ -871,7 +903,7 @@
       avatar: 'https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F11960479%2F9e3bacf3-04c3-46c9-8c09-afac5cccbfad.jpeg',
       bio: 'Safe Network\'s Sports Cards host. Rookie cards, autographs, graded slabs and mystery boxes across football, basketball, baseball and more.',
       socials: [
-        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/maxocollects', icon: 'https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png' },
+        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/maxocollects', icon: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/whatnot.png' },
         { platform: 'Instagram', url: 'https://www.instagram.com/maxo_collects/', icon: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png' }
       ],
       tags: ['\u{1F3C0} Sports Cards', '\u{1F381} Giveaways', '\u{1F528} Auctions']

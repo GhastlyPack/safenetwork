@@ -681,7 +681,7 @@ async function handleCollectionAdd(auth0User: { sub: string; email: string }, da
 
   if (error) throw error
 
-  // Create feed event (photos empty at creation — uploaded separately)
+  // Create feed event (photos empty at creation - uploaded separately)
   try {
     await createFeedEvent(
       auth0User.sub, 'collection', item.id, data.category,

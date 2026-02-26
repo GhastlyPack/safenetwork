@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Collector Profile | Safe Network</title>
 <link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
-<meta name="description" content="View a collector's profile on Safe Network — see what they collect and what they're looking for."/>
+<meta name="description" content="View a collector's profile on Safe Network. See what they collect and what they're looking for."/>
 <link rel="stylesheet" href="/css/global.css">
 <link rel="stylesheet" href="/css/auth.css">
 <link rel="stylesheet" href="/css/profile.css">
@@ -28,7 +28,6 @@
     <span>SAFE NETWORK</span>
   </a>
   <ul class="nav-links">
-    <li><a href="/">Home</a></li>
     <li><a href="/#shows">Shows</a></li>
     <li><a href="/#host">Hosts</a></li>
     <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
@@ -54,7 +53,6 @@
 </nav>
 
 <ul class="mobile-menu" id="mobileMenu">
-  <li><a href="/">Home</a></li>
   <li><a href="/#shows">Shows</a></li>
   <li><a href="/#host">Hosts</a></li>
   <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
@@ -510,7 +508,7 @@
 
   async function loadFollowData(profile){
     try {
-      // Get followers — this returns auth0_id of the profile owner + follower list
+      // Get followers - this returns auth0_id of the profile owner + follower list
       var followersResult = await snProfile.getFollowers(profile.username);
       collectorAuth0Id = followersResult.auth0_id || null;
 

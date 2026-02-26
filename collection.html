@@ -25,7 +25,6 @@
     <span>SAFE NETWORK</span>
   </a>
   <ul class="nav-links">
-    <li><a href="/">Home</a></li>
     <li><a href="/#shows">Shows</a></li>
     <li><a href="/#host">Hosts</a></li>
     <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
@@ -51,7 +50,6 @@
 </nav>
 
 <ul class="mobile-menu" id="mobileMenu">
-  <li><a href="/">Home</a></li>
   <li><a href="/#shows">Shows</a></li>
   <li><a href="/#host">Hosts</a></li>
   <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
@@ -107,7 +105,7 @@
     <div class="collection-description" id="collDescWrap">
       <div class="collection-field">
         <label for="collDescription">Describe this item</label>
-        <textarea id="collDescription" placeholder="Year, edition, condition, grade, colorway — anything that makes it special." maxlength="500" rows="3"></textarea>
+        <textarea id="collDescription" placeholder="Year, edition, condition, grade, colorway - anything that makes it special." maxlength="500" rows="3"></textarea>
         <div class="field-hint"><span id="collDescCount">0</span>/500 characters</div>
       </div>
     </div>
@@ -388,7 +386,7 @@
     renderPhotoPreviews();
   };
 
-  /* ── Remove existing photo (during edit — queued for deletion on save) ── */
+  /* ── Remove existing photo (during edit - queued for deletion on save) ── */
   var photosToDelete = []; // URLs to delete on save
   window.removeExistingPhoto = function(idx){
     var url = existingPhotoUrls[idx];

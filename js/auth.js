@@ -241,17 +241,17 @@
     var loginBtn = document.getElementById('authLoginBtn');
     var profileWrap = document.getElementById('authProfileWrap');
     if(loginBtn) loginBtn.style.display = 'none';
-    // Insert "My Profile" header button (before avatar)
-    if(profileWrap && !document.getElementById('authNavProfile')){
-      var navProfileBtn = document.createElement('a');
-      navProfileBtn.id = 'authNavProfile';
-      navProfileBtn.href = '/profile.html';
-      navProfileBtn.className = 'auth-nav-profile';
-      navProfileBtn.textContent = 'My Profile';
-      profileWrap.parentNode.insertBefore(navProfileBtn, profileWrap);
-      navProfileBtn.style.display = 'inline-block';
-    }
     if(profileWrap){
+      // Insert "My Profile" button inside profile wrap (next to avatar)
+      if(!document.getElementById('authNavProfile')){
+        var navProfileBtn = document.createElement('a');
+        navProfileBtn.id = 'authNavProfile';
+        navProfileBtn.href = '/profile.html';
+        navProfileBtn.className = 'auth-nav-profile';
+        navProfileBtn.textContent = 'My Profile';
+        profileWrap.insertBefore(navProfileBtn, profileWrap.firstChild);
+        navProfileBtn.style.display = 'inline-block';
+      }
       profileWrap.style.display = 'flex';
       // Avatar: picture or initials fallback
       var avatarImg = document.getElementById('authAvatarImg');

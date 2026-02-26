@@ -13,13 +13,24 @@
   transition:transform .2s,box-shadow .2s;
   box-shadow:0 0 16px rgba(30,144,255,.4);
   white-space:nowrap;
+  flex-shrink:0;
+  position:relative;z-index:1;
 }
 .auth-login-btn:hover{
   transform:translateY(-2px);
   box-shadow:0 0 28px rgba(30,144,255,.7);
 }
 
-/* ── Auth: "My Profile" Header Button (desktop nav) ── */
+/* ── Auth: Profile Wrapper (desktop nav) ── */
+.auth-profile-wrap{
+  position:relative;z-index:1;
+  display:none;
+  align-items:center;
+  gap:12px;
+  flex-shrink:0;
+}
+
+/* ── Auth: "My Profile" Header Button (inside profile wrap) ── */
 .auth-nav-profile{
   display:none;
   color:var(--silver);
@@ -33,19 +44,11 @@
   border-radius:8px;
   transition:color .2s,border-color .2s,background .2s;
   white-space:nowrap;
-  margin-right:12px;
 }
 .auth-nav-profile:hover{
   color:var(--blue);
   border-color:var(--blue);
   background:rgba(30,144,255,.08);
-}
-
-/* ── Auth: Profile Wrapper (desktop nav) ── */
-.auth-profile-wrap{
-  position:relative;
-  display:none;
-  align-items:center;
 }
 
 /* ── Auth: Avatar Circle ── */

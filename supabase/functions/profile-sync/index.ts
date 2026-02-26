@@ -261,6 +261,141 @@ async function handleAdminUpdate(auth0User: { sub: string; email: string; email_
   return { profile }
 }
 
+/* ── Action: Get Wishlist ── */
+async function handleWishlistGet(auth0User: { sub: string; email: string }) {
+  const { data: items, error } = await supabase
+    .from('wishlists')
+    .select('*')
+    .eq('auth0_id', auth0User.sub)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return { items: items || [] }
+}
+
+/* ── Action: Add Wish Item ── */
+async function handleWishlistAdd(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.description || !data.description.trim()) {
+    throw new Error('Description is required')
+  }
+
+  const validCategories = ['coins', 'pokemon', 'sports_cards', 'shoes']
+  if (!data.category || !validCategories.includes(data.category)) {
+    throw new Error('Invalid category')
+  }
+
+  // Enforce per-user limit
+  const { count, error: countError } = await supabase
+    .from('wishlists')
+    .select('id', { count: 'exact', head: true })
+    .eq('auth0_id', auth0User.sub)
+
+  if (countError) throw countError
+  if ((count || 0) >= 50) {
+    throw new Error('Wishlist limit reached (50 items max)')
+  }
+
+  const { data: item, error } = await supabase
+    .from('wishlists')
+    .insert({
+      auth0_id: auth0User.sub,
+      category: data.category,
+      details: data.details || {},
+      description: data.description.trim().slice(0, 500),
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return { item }
+}
+
+/* ── Action: Update Wish Item ── */
+async function handleWishlistUpdate(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.id) throw new Error('Item ID is required')
+
+  // Verify ownership
+  const { data: existing, error: fetchError } = await supabase
+    .from('wishlists')
+    .select('auth0_id')
+    .eq('id', data.id)
+    .single()
+
+  if (fetchError || !existing) throw new Error('Item not found')
+  if (existing.auth0_id !== auth0User.sub) throw new Error('Unauthorized')
+
+  const allowedFields = ['category', 'details', 'description']
+  const updates: Record<string, any> = {}
+  for (const key of allowedFields) {
+    if (data[key] !== undefined) {
+      updates[key] = data[key]
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    throw new Error('No valid fields to update')
+  }
+
+  // Validate
+  if (updates.category) {
+    const valid = ['coins', 'pokemon', 'sports_cards', 'shoes']
+    if (!valid.includes(updates.category)) throw new Error('Invalid category')
+  }
+  if (updates.description !== undefined) {
+    if (!updates.description.trim()) throw new Error('Description cannot be empty')
+    updates.description = updates.description.trim().slice(0, 500)
+  }
+
+  const { data: item, error } = await supabase
+    .from('wishlists')
+    .update(updates)
+    .eq('id', data.id)
+    .eq('auth0_id', auth0User.sub)
+    .select()
+    .single()
+
+  if (error) throw error
+  return { item }
+}
+
+/* ── Action: Remove Wish Item ── */
+async function handleWishlistRemove(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.id) throw new Error('Item ID is required')
+
+  const { error } = await supabase
+    .from('wishlists')
+    .delete()
+    .eq('id', data.id)
+    .eq('auth0_id', auth0User.sub)
+
+  if (error) throw error
+  return { success: true }
+}
+
+/* ── Action: Admin List Wishes ── */
+async function handleAdminWishlist(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile || callerProfile.role !== 'admin') {
+    throw new Error('Unauthorized: admin access required')
+  }
+
+  let query = supabase
+    .from('wishlists')
+    .select('*, profiles!inner(username, email, display_name)')
+    .order('created_at', { ascending: false })
+
+  if (data.category) {
+    query = query.eq('category', data.category)
+  }
+  if (data.search) {
+    query = query.ilike('description', `%${data.search}%`)
+  }
+
+  const { data: wishes, error } = await query.limit(500)
+  if (error) throw error
+  return { wishes: wishes || [] }
+}
+
 /* ── Helper: Random Suffix ── */
 function generateRandomSuffix(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -307,6 +442,21 @@ serve(async (req: Request) => {
         break
       case 'admin-update':
         result = await handleAdminUpdate(auth0User, data || {})
+        break
+      case 'wishlist-get':
+        result = await handleWishlistGet(auth0User)
+        break
+      case 'wishlist-add':
+        result = await handleWishlistAdd(auth0User, data || {})
+        break
+      case 'wishlist-update':
+        result = await handleWishlistUpdate(auth0User, data || {})
+        break
+      case 'wishlist-remove':
+        result = await handleWishlistRemove(auth0User, data || {})
+        break
+      case 'admin-wishlist':
+        result = await handleAdminWishlist(auth0User, data || {})
         break
       default:
         throw new Error('Unknown action: ' + action)

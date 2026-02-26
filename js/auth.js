@@ -112,6 +112,12 @@
           logoutBtn.before(divider);
           logoutBtn.before(profileLink);
 
+          var wishlistLink = document.createElement('a');
+          wishlistLink.href = '/wishlist.html';
+          wishlistLink.className = 'auth-dropdown-link';
+          wishlistLink.textContent = 'My Wishlist';
+          logoutBtn.before(wishlistLink);
+
           // Add admin link if admin
           if(profile.role === 'admin'){
             var adminLink = document.createElement('a');
@@ -145,6 +151,14 @@
         mobileProfLink.textContent = 'My Profile';
         mobileSignedIn.after(mobileProfLink);
 
+        var mobileWishLink = document.createElement('a');
+        mobileWishLink.href = '/wishlist.html';
+        mobileWishLink.className = 'auth-mobile-profile-link';
+        mobileWishLink.style.display = 'block';
+        mobileWishLink.style.marginBottom = '8px';
+        mobileWishLink.textContent = 'My Wishlist';
+        mobileProfLink.after(mobileWishLink);
+
         // Add admin link if admin
         if(profile.role === 'admin'){
           var mobileAdminLink = document.createElement('a');
@@ -154,7 +168,7 @@
           mobileAdminLink.style.display = 'block';
           mobileAdminLink.style.marginBottom = '8px';
           mobileAdminLink.textContent = 'Admin Panel';
-          mobileProfLink.after(mobileAdminLink);
+          mobileWishLink.after(mobileAdminLink);
         }
       }
     }

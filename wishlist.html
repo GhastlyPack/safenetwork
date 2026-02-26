@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>My Wishlist | Safe Network</title>
+<link rel="icon" href="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979447/SN_ico_remukb.png"/>
+<meta name="description" content="Tell Safe Network what you're looking for. We use your wishlist to stock items for upcoming shows."/>
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/wishlist.css">
+<link rel="stylesheet" href="/css/cookies.css">
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Customer.io CDP -->
+<script>
+  !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
+</script>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F52444196%2Fb252b0ef-b6ce-4c9f-ba86-18ffd423776f.png" alt="Safe Network"/>
+    <span>SAFE NETWORK</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/#shows">Shows</a></li>
+    <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+    <li><a href="/#socials">Links</a></li>
+    <li><a href="/blog">Blog</a></li>
+  </ul>
+  <button id="authLoginBtn" class="auth-login-btn" onclick="window.snAuth && snAuth.login()">Log In</button>
+  <div id="authProfileWrap" class="auth-profile-wrap">
+    <div class="auth-avatar" onclick="snAuth.toggleProfileDropdown()">
+      <img id="authAvatarImg" alt="Profile"/>
+      <span id="authAvatarInitials" class="auth-avatar-initials"></span>
+    </div>
+    <div id="authDropdown" class="auth-dropdown">
+      <div class="auth-dropdown-label">Signed in as</div>
+      <div id="authDropdownEmail" class="auth-dropdown-email"></div>
+      <button class="auth-logout-btn" onclick="snAuth.logout()">Log Out</button>
+    </div>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<ul class="mobile-menu" id="mobileMenu">
+  <li><a href="/">Home</a></li>
+  <li><a href="/#shows">Shows</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank">Watch Live</a></li>
+  <li><a href="/#socials">Links</a></li>
+  <li><a href="/blog">Blog</a></li>
+  <li id="authMobileLogin" class="auth-mobile-login"><a href="#" onclick="event.preventDefault();window.snAuth && snAuth.login()">Log In</a></li>
+  <li id="authMobileProfile" class="auth-mobile-profile">
+    <div class="auth-mobile-signed-in">Signed in as <span id="authMobileEmail" class="auth-mobile-email"></span></div>
+    <button class="auth-mobile-logout" onclick="snAuth.logout()">Log Out</button>
+  </li>
+</ul>
+
+<!-- Loading State -->
+<div class="wishlist-wrap" id="wishlistLoading">
+  <div class="wishlist-loading"><p>Loading your wishlist...</p></div>
+</div>
+
+<!-- Login Prompt -->
+<div class="wishlist-wrap" id="wishlistLoginPrompt" style="display:none">
+  <div class="wishlist-login-prompt">
+    <h1>My Wishlist</h1>
+    <p>Log in to create your wishlist. Tell us what you're looking for and we'll stock it for upcoming shows.</p>
+    <button class="btn-primary" onclick="window.snAuth && snAuth.login()">Log In to Continue</button>
+  </div>
+</div>
+
+<!-- Wishlist Content -->
+<div class="wishlist-wrap" id="wishlistContent" style="display:none">
+  <h1>My Wishlist</h1>
+  <p class="wishlist-intro">Tell us what you're hunting for. We use your wishlist to decide what to stock for upcoming Whatnot shows.</p>
+
+  <!-- Add / Edit Form -->
+  <form id="wishlistForm" class="wishlist-add-form" onsubmit="handleWishSubmit(event)">
+    <h3 id="wishFormTitle">Add a Wish</h3>
+
+    <!-- Step 1: Category -->
+    <div class="wishlist-field">
+      <label for="wishCategory">What category is your wish in?</label>
+      <select id="wishCategory" onchange="onCategoryChange()">
+        <option value="">-- Select a category --</option>
+        <option value="coins">Coins &amp; Bullion</option>
+        <option value="pokemon">Pokemon</option>
+        <option value="sports_cards">Sports Cards</option>
+        <option value="shoes">Shoes</option>
+      </select>
+    </div>
+
+    <!-- Step 2: Dynamic Sub-fields (shown after category is picked) -->
+    <div class="wishlist-sub-fields" id="wishSubFields"></div>
+
+    <!-- Step 3: Description (shown after category is picked) -->
+    <div class="wishlist-description" id="wishDescWrap">
+      <div class="wishlist-field">
+        <label for="wishDescription">Describe what you're looking for</label>
+        <textarea id="wishDescription" placeholder="Be as specific as you can — year, edition, condition, grade, etc." maxlength="500" rows="3"></textarea>
+        <div class="field-hint"><span id="wishDescCount">0</span>/500 characters</div>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="wishlist-form-status" id="wishFormStatus"></div>
+
+    <!-- Buttons -->
+    <button type="submit" class="wishlist-add-btn" id="wishSubmitBtn">Add to Wishlist</button>
+    <button type="button" class="wishlist-cancel-btn" id="wishCancelBtn" onclick="cancelEdit()">Cancel Editing</button>
+  </form>
+
+  <!-- Wish Items List -->
+  <div class="wishlist-items-header">
+    <h3>Your Wishes <span class="wishlist-count" id="wishlistCount">(0)</span></h3>
+  </div>
+  <div id="wishlistItems"></div>
+  <div class="wishlist-empty" id="wishlistEmpty" style="display:none">
+    <div class="wishlist-empty-icon">&#9734;</div>
+    <p>Your wishlist is empty. Add items above to tell us what you're looking for!</p>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">SAFE NETWORK</div>
+  <div><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a></div>
+  <p>2026 Safe Network · safenetwork.shop</p>
+</footer>
+
+<script>
+  function toggleMenu(){
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.querySelector('.hamburger').classList.toggle('open');
+  }
+</script>
+<script src="/js/supabase.js"></script>
+<script src="/js/cookies.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+/* ── Wishlist Page Logic ── */
+(function(){
+  var currentWishlist = [];
+  var editingId = null; // null = add mode, uuid = edit mode
+
+  /* ── Sub-field definitions per category ── */
+  var CATEGORY_FIELDS = {
+    coins: [
+      { key: 'type', label: 'Type', options: ['Coins', 'Bullion Bars', 'Bullion Rounds', 'Currency/Notes'] },
+      { key: 'metal', label: 'Metal', options: ['Gold', 'Silver', 'Platinum', 'Copper/Other'] },
+      { key: 'condition', label: 'Condition', options: ['Raw/Ungraded', 'Graded (PCGS/NGC)'] }
+    ],
+    pokemon: [
+      { key: 'product_type', label: 'Product Type', options: ['Singles', 'Booster Packs', 'Sealed Boxes/ETBs', 'Graded Cards'] },
+      { key: 'era', label: 'Era', options: ['Vintage (WOTC/Base Set)', 'Modern', 'Japanese'] },
+      { key: 'condition', label: 'Condition', options: ['Raw', 'Graded (PSA/BGS/CGC)'] }
+    ],
+    sports_cards: [
+      { key: 'sport', label: 'Sport', options: ['Baseball', 'Basketball', 'Football', 'Hockey', 'Soccer', 'Other'] },
+      { key: 'product_type', label: 'Product Type', options: ['Singles', 'Hobby Boxes', 'Retail Packs', 'Graded Cards'] },
+      { key: 'era', label: 'Era', options: ['Vintage (pre-1980)', 'Junk Wax (1980-1995)', 'Modern (1996+)'] }
+    ],
+    shoes: [
+      { key: 'brand', label: 'Brand', options: ['Nike', 'Jordan', 'Adidas', 'New Balance', 'Yeezy', 'Other'] },
+      { key: 'shoe_type', label: 'Type', options: ['Sneakers', 'Basketball', 'Running', 'Lifestyle'] },
+      { key: 'size', label: 'Size', type: 'text', placeholder: 'e.g. 10.5' },
+      { key: 'condition', label: 'Condition', options: ['New/Deadstock', 'Used/Pre-owned'] }
+    ]
+  };
+
+  var CATEGORY_LABELS = {
+    coins: 'Coins & Bullion',
+    pokemon: 'Pokemon',
+    sports_cards: 'Sports Cards',
+    shoes: 'Shoes'
+  };
+
+  /* ── Category change: render sub-fields ── */
+  window.onCategoryChange = function(){
+    var cat = document.getElementById('wishCategory').value;
+    var subWrap = document.getElementById('wishSubFields');
+    var descWrap = document.getElementById('wishDescWrap');
+
+    if(!cat){
+      subWrap.innerHTML = '';
+      subWrap.classList.remove('visible');
+      descWrap.classList.remove('visible');
+      return;
+    }
+
+    var fields = CATEGORY_FIELDS[cat] || [];
+    var cols = fields.length >= 3 ? 'wishlist-field-row-3' : 'wishlist-field-row';
+    var html = '<div class="' + cols + '">';
+    for(var i = 0; i < fields.length; i++){
+      var f = fields[i];
+      html += '<div class="wishlist-field">';
+      html += '<label>' + f.label + '</label>';
+      if(f.type === 'text'){
+        html += '<input type="text" id="wishSub_' + f.key + '" placeholder="' + (f.placeholder || '') + '" maxlength="20"/>';
+      } else {
+        html += '<select id="wishSub_' + f.key + '">';
+        html += '<option value="">-- Select --</option>';
+        for(var j = 0; j < f.options.length; j++){
+          var val = f.options[j].toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/_+$/, '');
+          html += '<option value="' + val + '">' + f.options[j] + '</option>';
+        }
+        html += '</select>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    subWrap.innerHTML = html;
+    subWrap.classList.add('visible');
+    descWrap.classList.add('visible');
+  };
+
+  /* ── Gather sub-field values into details object ── */
+  function gatherDetails(){
+    var cat = document.getElementById('wishCategory').value;
+    var fields = CATEGORY_FIELDS[cat] || [];
+    var details = {};
+    for(var i = 0; i < fields.length; i++){
+      var el = document.getElementById('wishSub_' + fields[i].key);
+      if(el && el.value.trim()){
+        details[fields[i].key] = el.value.trim();
+      }
+    }
+    return details;
+  }
+
+  /* ── Description character count ── */
+  document.addEventListener('input', function(e){
+    if(e.target.id === 'wishDescription'){
+      var el = document.getElementById('wishDescCount');
+      if(el) el.textContent = e.target.value.length;
+    }
+  });
+
+  /* ── Submit (add or edit) ── */
+  window.handleWishSubmit = async function(e){
+    e.preventDefault();
+    var statusEl = document.getElementById('wishFormStatus');
+    var submitBtn = document.getElementById('wishSubmitBtn');
+
+    var category = document.getElementById('wishCategory').value;
+    if(!category){
+      statusEl.textContent = 'Please select a category.';
+      statusEl.className = 'wishlist-form-status error';
+      return;
+    }
+
+    var description = document.getElementById('wishDescription').value.trim();
+    if(!description){
+      statusEl.textContent = 'Please describe what you\'re looking for.';
+      statusEl.className = 'wishlist-form-status error';
+      return;
+    }
+
+    var details = gatherDetails();
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = editingId ? 'Saving...' : 'Adding...';
+    statusEl.className = 'wishlist-form-status';
+    statusEl.style.display = 'none';
+
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) throw new Error('Not authenticated');
+
+      if(editingId){
+        await snProfile.updateWishItem({
+          id: editingId,
+          category: category,
+          details: details,
+          description: description
+        }, token);
+        trackWishEvent('wishlist_item_updated', category);
+      } else {
+        await snProfile.addWishItem({
+          category: category,
+          details: details,
+          description: description
+        }, token);
+        trackWishEvent('wishlist_item_added', category);
+      }
+
+      // Reload list
+      await loadWishlist();
+
+      // Reset form
+      resetForm();
+      statusEl.textContent = editingId ? 'Wish updated!' : 'Added to your wishlist!';
+      statusEl.className = 'wishlist-form-status success';
+      editingId = null;
+      document.getElementById('wishFormTitle').textContent = 'Add a Wish';
+      document.getElementById('wishSubmitBtn').textContent = 'Add to Wishlist';
+      document.getElementById('wishCancelBtn').classList.remove('visible');
+
+    } catch(err){
+      console.warn('Wish submit error:', err);
+      statusEl.textContent = err.message || 'Something went wrong. Please try again.';
+      statusEl.className = 'wishlist-form-status error';
+    }
+
+    submitBtn.disabled = false;
+    if(!editingId) submitBtn.textContent = 'Add to Wishlist';
+  };
+
+  /* ── Edit Wish ── */
+  window.editWishItem = function(id){
+    var item = null;
+    for(var i = 0; i < currentWishlist.length; i++){
+      if(currentWishlist[i].id === id){ item = currentWishlist[i]; break; }
+    }
+    if(!item) return;
+
+    editingId = id;
+
+    // Populate form
+    document.getElementById('wishCategory').value = item.category;
+    onCategoryChange(); // render sub-fields
+
+    // Fill sub-fields after render
+    var details = item.details || {};
+    var fields = CATEGORY_FIELDS[item.category] || [];
+    for(var i = 0; i < fields.length; i++){
+      var el = document.getElementById('wishSub_' + fields[i].key);
+      if(el && details[fields[i].key]){
+        el.value = details[fields[i].key];
+      }
+    }
+
+    document.getElementById('wishDescription').value = item.description || '';
+    document.getElementById('wishDescCount').textContent = (item.description || '').length;
+
+    // Update UI
+    document.getElementById('wishFormTitle').textContent = 'Edit Wish';
+    document.getElementById('wishSubmitBtn').textContent = 'Save Changes';
+    document.getElementById('wishCancelBtn').classList.add('visible');
+
+    // Clear any status
+    var statusEl = document.getElementById('wishFormStatus');
+    statusEl.className = 'wishlist-form-status';
+    statusEl.style.display = 'none';
+
+    // Scroll to form
+    document.getElementById('wishlistForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  /* ── Cancel Edit ── */
+  window.cancelEdit = function(){
+    editingId = null;
+    resetForm();
+    document.getElementById('wishFormTitle').textContent = 'Add a Wish';
+    document.getElementById('wishSubmitBtn').textContent = 'Add to Wishlist';
+    document.getElementById('wishCancelBtn').classList.remove('visible');
+    var statusEl = document.getElementById('wishFormStatus');
+    statusEl.className = 'wishlist-form-status';
+    statusEl.style.display = 'none';
+  };
+
+  /* ── Remove Wish ── */
+  window.removeWishItem = async function(id){
+    if(!confirm('Remove this item from your wishlist?')) return;
+
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) throw new Error('Not authenticated');
+      await snProfile.removeWishItem(id, token);
+      trackWishEvent('wishlist_item_removed', '');
+      await loadWishlist();
+    } catch(err){
+      console.warn('Remove error:', err);
+      alert('Error removing item: ' + (err.message || 'Please try again.'));
+    }
+  };
+
+  /* ── Reset Form ── */
+  function resetForm(){
+    document.getElementById('wishCategory').value = '';
+    document.getElementById('wishSubFields').innerHTML = '';
+    document.getElementById('wishSubFields').classList.remove('visible');
+    document.getElementById('wishDescWrap').classList.remove('visible');
+    document.getElementById('wishDescription').value = '';
+    document.getElementById('wishDescCount').textContent = '0';
+  }
+
+  /* ── Load Wishlist from Supabase ── */
+  async function loadWishlist(){
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) return;
+      currentWishlist = await snProfile.getWishlist(token);
+      renderWishlist();
+    } catch(err){
+      console.warn('Load wishlist error:', err);
+    }
+  }
+
+  /* ── Render Wish Cards ── */
+  function renderWishlist(){
+    var container = document.getElementById('wishlistItems');
+    var emptyEl = document.getElementById('wishlistEmpty');
+    var countEl = document.getElementById('wishlistCount');
+
+    countEl.textContent = '(' + currentWishlist.length + ')';
+
+    if(currentWishlist.length === 0){
+      container.innerHTML = '';
+      emptyEl.style.display = '';
+      return;
+    }
+
+    emptyEl.style.display = 'none';
+    var html = '';
+    for(var i = 0; i < currentWishlist.length; i++){
+      var w = currentWishlist[i];
+      var cat = w.category || 'other';
+      var details = w.details || {};
+
+      html += '<div class="wishlist-card">';
+      html += '<div class="wishlist-card-top">';
+      html += '<span class="wishlist-badge badge-cat-' + esc(cat) + '">' + esc(CATEGORY_LABELS[cat] || cat) + '</span>';
+
+      // Render detail tags
+      var detailKeys = Object.keys(details);
+      for(var j = 0; j < detailKeys.length; j++){
+        var val = details[detailKeys[j]];
+        if(val){
+          html += '<span class="wishlist-detail-tag">' + formatDetailValue(val) + '</span>';
+        }
+      }
+      html += '</div>';
+
+      html += '<p class="wishlist-card-desc">' + esc(w.description || '') + '</p>';
+
+      html += '<div class="wishlist-card-actions">';
+      html += '<button class="wishlist-edit-btn" onclick="editWishItem(\'' + w.id + '\')">Edit</button>';
+      html += '<button class="wishlist-remove-btn" onclick="removeWishItem(\'' + w.id + '\')">Remove</button>';
+      html += '</div>';
+      html += '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  /* ── Format detail value for display ── */
+  function formatDetailValue(val){
+    // Turn "graded_pcgs_ngc" back to "Graded (PCGS/NGC)" etc.
+    return esc(val.replace(/_/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); }));
+  }
+
+  /* ── CIO Event Tracking ── */
+  function trackWishEvent(eventName, category){
+    try {
+      if(window.cioanalytics){
+        cioanalytics.track(eventName, {
+          category: category,
+          wishlist_count: currentWishlist.length
+        });
+      }
+    } catch(err){
+      console.warn('CIO wishlist tracking error:', err);
+    }
+  }
+
+  /* ── HTML Escape ── */
+  function esc(str){
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  /* ── Show/Hide Sections ── */
+  function showSection(id){
+    document.getElementById('wishlistLoading').style.display = 'none';
+    document.getElementById('wishlistLoginPrompt').style.display = 'none';
+    document.getElementById('wishlistContent').style.display = 'none';
+    document.getElementById(id).style.display = '';
+  }
+
+  /* ── Init Page ── */
+  async function initWishlistPage(){
+    var maxWait = 50;
+    while(!window.snAuth && maxWait > 0){
+      await new Promise(function(r){ setTimeout(r, 100); });
+      maxWait--;
+    }
+
+    if(!window.snAuth){
+      showSection('wishlistLoginPrompt');
+      return;
+    }
+
+    var loggedIn = await snAuth.isLoggedIn();
+    if(!loggedIn){
+      showSection('wishlistLoginPrompt');
+      return;
+    }
+
+    showSection('wishlistContent');
+    await loadWishlist();
+  }
+
+  /* Listen for auth ready event */
+  window.addEventListener('snauth:ready', function(){
+    showSection('wishlistContent');
+    loadWishlist();
+  });
+
+  // Boot
+  initWishlistPage();
+})();
+</script>
+</body>
+</html>

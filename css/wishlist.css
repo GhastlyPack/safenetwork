@@ -1,0 +1,124 @@
+/* ── Wishlist Page ── */
+.wishlist-wrap{max-width:760px;margin:0 auto;padding:100px 24px 60px;position:relative;z-index:1}
+.wishlist-wrap h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);letter-spacing:2px;margin-bottom:4px;color:var(--white)}
+.wishlist-intro{color:var(--silver);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;margin-bottom:32px}
+
+/* ── Add / Edit Form ── */
+.wishlist-add-form{background:rgba(255,255,255,.03);border:1px solid rgba(30,144,255,.15);border-radius:20px;padding:28px;margin-bottom:36px}
+.wishlist-add-form h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--silver);text-transform:uppercase;margin-bottom:20px}
+
+.wishlist-field{margin-bottom:16px}
+.wishlist-field label{display:block;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--silver);letter-spacing:.5px;margin-bottom:8px}
+.wishlist-field input,
+.wishlist-field textarea,
+.wishlist-field select{
+  width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;padding:14px 16px;color:var(--white);font-family:'Inter',sans-serif;
+  font-size:14px;outline:none;transition:border-color .2s;box-sizing:border-box;resize:none
+}
+.wishlist-field input:focus,
+.wishlist-field textarea:focus,
+.wishlist-field select:focus{border-color:var(--blue)}
+.wishlist-field select{cursor:pointer;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23c0c8d8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+.wishlist-field select option{background:#0f1628;color:var(--white)}
+.wishlist-field .field-hint{color:rgba(192,200,216,.5);font-family:'Inter',sans-serif;font-size:12px;margin-top:6px}
+
+/* Two / Three column row for sub-dropdowns */
+.wishlist-field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.wishlist-field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* Dynamic sub-fields container */
+.wishlist-sub-fields{display:none;margin-top:4px}
+.wishlist-sub-fields.visible{display:block}
+
+/* Description area (appears after sub-fields) */
+.wishlist-description{display:none;margin-top:4px}
+.wishlist-description.visible{display:block}
+
+/* Form status message */
+.wishlist-form-status{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:10px 0;display:none}
+.wishlist-form-status.success{display:block;color:#4ade80}
+.wishlist-form-status.error{display:block;color:#ff6b6b}
+
+/* Add / Save button */
+.wishlist-add-btn{
+  display:block;width:100%;background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;border:none;padding:14px;border-radius:10px;font-family:'Inter',sans-serif;
+  font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;
+  box-shadow:0 0 16px rgba(30,144,255,.3);transition:transform .2s,box-shadow .2s;margin-top:8px
+}
+.wishlist-add-btn:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(30,144,255,.5)}
+.wishlist-add-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Cancel edit button */
+.wishlist-cancel-btn{
+  display:none;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  color:var(--silver);padding:12px;border-radius:10px;font-family:'Inter',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;transition:background .2s,color .2s;margin-top:8px
+}
+.wishlist-cancel-btn:hover{background:rgba(255,255,255,.1);color:var(--white)}
+.wishlist-cancel-btn.visible{display:block}
+
+/* ── Wish Items Section ── */
+.wishlist-items-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.wishlist-items-header h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--silver);text-transform:uppercase;margin:0}
+.wishlist-count{color:var(--blue);font-weight:600}
+
+/* Wish Card */
+.wishlist-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;margin-bottom:12px;transition:border-color .2s}
+.wishlist-card:hover{border-color:rgba(30,144,255,.2)}
+
+.wishlist-card-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+
+/* Category badge */
+.wishlist-badge{padding:4px 12px;border-radius:999px;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:inline-block}
+.badge-cat-coins{background:rgba(212,160,23,.12);color:var(--gold2);border:1px solid rgba(212,160,23,.25)}
+.badge-cat-pokemon{background:rgba(255,107,107,.12);color:#ff6b6b;border:1px solid rgba(255,107,107,.25)}
+.badge-cat-sports_cards{background:rgba(30,144,255,.12);color:var(--blue);border:1px solid rgba(30,144,255,.25)}
+.badge-cat-shoes{background:rgba(160,120,255,.12);color:#c084fc;border:1px solid rgba(160,120,255,.25)}
+
+/* Sub-detail tags */
+.wishlist-detail-tag{display:inline-block;padding:3px 10px;border-radius:999px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--silver);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+
+/* Description */
+.wishlist-card-desc{color:var(--silver);font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;margin-bottom:12px}
+
+/* Card actions */
+.wishlist-card-actions{display:flex;gap:8px}
+.wishlist-edit-btn,
+.wishlist-remove-btn{
+  background:none;border:1px solid rgba(255,255,255,.1);color:var(--silver);
+  padding:6px 14px;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;
+  font-weight:600;cursor:pointer;transition:background .2s,color .2s,border-color .2s
+}
+.wishlist-edit-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(30,144,255,.06)}
+.wishlist-remove-btn:hover{border-color:#ff6b6b;color:#ff6b6b;background:rgba(255,80,80,.06)}
+
+/* Empty state */
+.wishlist-empty{text-align:center;padding:48px 20px;color:var(--silver);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6}
+.wishlist-empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
+
+/* ── Loading / Login Prompt ── */
+.wishlist-loading{text-align:center;padding:120px 20px;color:var(--silver);font-family:'Inter',sans-serif}
+.wishlist-login-prompt{text-align:center;padding:120px 20px}
+.wishlist-login-prompt h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);letter-spacing:2px;margin-bottom:16px}
+.wishlist-login-prompt p{color:var(--silver);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;margin-bottom:24px;max-width:500px;margin-left:auto;margin-right:auto}
+.wishlist-login-prompt .btn-primary{
+  display:inline-block;background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;border:none;padding:14px 36px;border-radius:10px;font-family:'Inter',sans-serif;
+  font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 0 20px rgba(30,144,255,.4);
+  transition:transform .2s,box-shadow .2s
+}
+.wishlist-login-prompt .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(30,144,255,.7)}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .wishlist-wrap{padding:80px 16px 40px}
+  .wishlist-field-row,.wishlist-field-row-3{grid-template-columns:1fr}
+  .wishlist-add-form{padding:20px}
+  .wishlist-card{padding:16px}
+}
+@media(max-width:480px){
+  .wishlist-card-actions{flex-direction:column}
+  .wishlist-edit-btn,.wishlist-remove-btn{width:100%;text-align:center}
+}

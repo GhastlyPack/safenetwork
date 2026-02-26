@@ -136,6 +136,64 @@
     }
   }
 
+  /* ── Wishlist: Get User's Items ── */
+  async function getWishlist(accessToken){
+    try {
+      var result = await callEdge('wishlist-get', {}, accessToken);
+      return result.items || [];
+    } catch(err){
+      console.warn('Wishlist get error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Wishlist: Add Item ── */
+  async function addWishItem(data, accessToken){
+    try {
+      var result = await callEdge('wishlist-add', data, accessToken);
+      return result.item;
+    } catch(err){
+      console.warn('Wishlist add error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Wishlist: Update Item ── */
+  async function updateWishItem(data, accessToken){
+    try {
+      var result = await callEdge('wishlist-update', data, accessToken);
+      return result.item;
+    } catch(err){
+      console.warn('Wishlist update error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Wishlist: Remove Item ── */
+  async function removeWishItem(id, accessToken){
+    try {
+      var result = await callEdge('wishlist-remove', { id: id }, accessToken);
+      return result.success;
+    } catch(err){
+      console.warn('Wishlist remove error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Admin: List All Wishes ── */
+  async function adminListWishes(accessToken, category, search){
+    try {
+      var result = await callEdge('admin-wishlist', {
+        category: category || '',
+        search: search || ''
+      }, accessToken);
+      return result.wishes || [];
+    } catch(err){
+      console.warn('Admin wishlist error:', err);
+      throw err;
+    }
+  }
+
   /* ── Cache Helpers ── */
   function cacheProfile(){
     try {
@@ -163,7 +221,12 @@
     checkUsernameAvailable: checkUsernameAvailable,
     getPublicProfile: getPublicProfile,
     getCachedProfile: getCachedProfile,
-    clearCache: clearCache
+    clearCache: clearCache,
+    getWishlist: getWishlist,
+    addWishItem: addWishItem,
+    updateWishItem: updateWishItem,
+    removeWishItem: removeWishItem,
+    adminListWishes: adminListWishes
   };
 
   init();

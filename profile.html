@@ -433,11 +433,7 @@
       renderProfile();
       statusEl.textContent = 'Profile saved successfully!';
       statusEl.className = 'profile-status success';
-      // Clear success after 3s
-      setTimeout(function(){
-        statusEl.className = 'profile-status';
-        statusEl.style.display = 'none';
-      }, 3000);
+      statusEl.style.display = '';
     } catch(err){
       console.warn('Save error:', err);
       statusEl.textContent = 'Error saving profile: ' + (err.message || 'Please try again.');
@@ -447,6 +443,21 @@
     saveBtn.disabled = false;
     saveBtn.textContent = 'Save Changes';
   };
+
+  /* ── Clear success message when user edits any field ── */
+  function clearSaveStatus(){
+    var statusEl = document.getElementById('profileStatus');
+    if(statusEl && statusEl.classList.contains('success')){
+      statusEl.textContent = '';
+      statusEl.className = 'profile-status';
+      statusEl.style.display = 'none';
+    }
+  }
+  var formEl = document.getElementById('profileForm');
+  if(formEl){
+    formEl.addEventListener('input', clearSaveStatus);
+    formEl.addEventListener('change', clearSaveStatus);
+  }
 
   /* ── Listen for auth ready event ── */
   window.addEventListener('snauth:ready', function(e){

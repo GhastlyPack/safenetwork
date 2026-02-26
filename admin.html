@@ -80,7 +80,16 @@
 <!-- Admin Content -->
 <div class="admin-wrap" id="adminContent" style="display:none">
   <h1>Admin Panel</h1>
-  <p style="color:var(--silver);font-size:14px;margin-bottom:32px">Manage users, roles, and loyalty for the Safe Network.</p>
+  <p style="color:var(--silver);font-size:14px;margin-bottom:24px">Manage users, roles, loyalty, and wishlists for the Safe Network.</p>
+
+  <!-- Tab Navigation -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" id="tabUsers" onclick="switchAdminTab('users')">Users</button>
+    <button class="admin-tab" id="tabWishes" onclick="switchAdminTab('wishes')">Wishes</button>
+  </div>
+
+  <!-- ═══ Users Tab ═══ -->
+  <div id="adminTabUsers">
 
   <!-- Stats Summary -->
   <div class="admin-stats" id="adminStats">
@@ -131,6 +140,64 @@
       </tbody>
     </table>
   </div>
+
+  </div><!-- /adminTabUsers -->
+
+  <!-- ═══ Wishes Tab ═══ -->
+  <div id="adminTabWishes" style="display:none">
+
+    <!-- Wish Stats -->
+    <div class="admin-stats">
+      <div class="stat-card blue">
+        <div class="stat-number" id="wishStatTotal">-</div>
+        <div class="stat-label">Total Wishes</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-number" id="wishStatCoins">-</div>
+        <div class="stat-label">Coins</div>
+      </div>
+      <div class="stat-card" style="background:rgba(255,107,107,.06);border-color:rgba(255,107,107,.15)">
+        <div class="stat-number" id="wishStatPokemon" style="color:#ff6b6b">-</div>
+        <div class="stat-label">Pokemon</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-number" id="wishStatSports">-</div>
+        <div class="stat-label">Sports Cards</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="admin-search">
+      <input type="text" id="wishSearchInput" placeholder="Search wishes by description..." oninput="debounceWishSearch()"/>
+      <select class="admin-filter" id="wishCategoryFilter" onchange="loadWishes()">
+        <option value="">All Categories</option>
+        <option value="coins">Coins &amp; Bullion</option>
+        <option value="pokemon">Pokemon</option>
+        <option value="sports_cards">Sports Cards</option>
+        <option value="shoes">Shoes</option>
+      </select>
+    </div>
+
+    <!-- Wishes Table -->
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Details</th>
+            <th>User</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="wishTableBody">
+          <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--silver)">Loading wishes...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /adminTabWishes -->
+
 </div>
 
 <!-- Edit User Panel (slide from right) -->
@@ -361,6 +428,92 @@
 
     btn.disabled = false;
     btn.textContent = 'Save Changes';
+  };
+
+  /* ══════════════════════════════════════════
+     TAB SWITCHING + WISHES TAB
+     ══════════════════════════════════════════ */
+
+  var allWishes = [];
+  var wishesLoaded = false;
+  var wishSearchTimer = null;
+
+  var WISH_CATEGORY_LABELS = {
+    coins: 'Coins & Bullion',
+    pokemon: 'Pokemon',
+    sports_cards: 'Sports Cards',
+    shoes: 'Shoes'
+  };
+
+  window.switchAdminTab = function(tab){
+    document.getElementById('adminTabUsers').style.display = tab === 'users' ? '' : 'none';
+    document.getElementById('adminTabWishes').style.display = tab === 'wishes' ? '' : 'none';
+    document.getElementById('tabUsers').classList.toggle('active', tab === 'users');
+    document.getElementById('tabWishes').classList.toggle('active', tab === 'wishes');
+    if(tab === 'wishes' && !wishesLoaded) loadWishes();
+  };
+
+  window.loadWishes = async function(){
+    var search = document.getElementById('wishSearchInput').value.trim();
+    var category = document.getElementById('wishCategoryFilter').value;
+    try {
+      var token = await snAuth.getAccessToken();
+      allWishes = await snProfile.adminListWishes(token, category, search);
+      wishesLoaded = true;
+      renderWishes();
+      updateWishStats();
+    } catch(err){
+      console.warn('Load wishes error:', err);
+      document.getElementById('wishTableBody').innerHTML =
+        '<tr><td colspan="5" style="text-align:center;padding:40px;color:#ff6b6b">Error loading wishes.</td></tr>';
+    }
+  };
+
+  function renderWishes(){
+    var tbody = document.getElementById('wishTableBody');
+    if(!allWishes.length){
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--silver)">No wishes found.</td></tr>';
+      return;
+    }
+
+    var html = '';
+    allWishes.forEach(function(w){
+      var date = w.created_at ? new Date(w.created_at).toLocaleDateString() : '-';
+      var cat = w.category || '';
+      var user = w.profiles ? ('@' + escapeHtml(w.profiles.username || '')) : '-';
+      var details = w.details || {};
+      var detailStr = Object.values(details).map(function(v){
+        return escapeHtml(String(v).replace(/_/g, ' '));
+      }).join(', ');
+
+      html += '<tr>' +
+        '<td style="max-width:300px">' + escapeHtml(w.description || '') + '</td>' +
+        '<td><span class="profile-badge badge-' + escapeHtml(cat) + '" style="font-size:10px">' + escapeHtml(WISH_CATEGORY_LABELS[cat] || cat) + '</span></td>' +
+        '<td style="font-size:12px;color:var(--silver)">' + (detailStr || '-') + '</td>' +
+        '<td style="color:var(--blue);font-weight:600">' + user + '</td>' +
+        '<td>' + date + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  function updateWishStats(){
+    var total = allWishes.length;
+    var coins = 0, pokemon = 0, sports = 0;
+    allWishes.forEach(function(w){
+      if(w.category === 'coins') coins++;
+      else if(w.category === 'pokemon') pokemon++;
+      else if(w.category === 'sports_cards') sports++;
+    });
+    document.getElementById('wishStatTotal').textContent = total;
+    document.getElementById('wishStatCoins').textContent = coins;
+    document.getElementById('wishStatPokemon').textContent = pokemon;
+    document.getElementById('wishStatSports').textContent = sports;
+  }
+
+  window.debounceWishSearch = function(){
+    clearTimeout(wishSearchTimer);
+    wishSearchTimer = setTimeout(loadWishes, 400);
   };
 
   /* ── Helpers ── */

@@ -1,0 +1,68 @@
+/* SIGNUP MODAL OVERLAY */
+.signup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.signup-overlay.open{opacity:1;pointer-events:auto}
+
+/* MODAL CARD */
+.signup-modal{background:linear-gradient(135deg,#0f1628,#0a0e1a);border:1px solid rgba(30,144,255,.25);border-radius:20px;padding:40px;max-width:440px;width:90%;position:relative;transform:translateY(20px);transition:transform .3s;box-shadow:0 0 40px rgba(30,144,255,.15)}
+.signup-overlay.open .signup-modal{transform:translateY(0)}
+.signup-modal h3{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:6px;text-align:center}
+.signup-modal>p{color:var(--silver);font-size:14px;text-align:center;margin-bottom:24px;line-height:1.6}
+
+/* CLOSE BUTTON */
+.signup-close{position:absolute;top:14px;right:18px;background:none;border:none;color:var(--silver);font-size:28px;cursor:pointer;line-height:1;transition:color .2s;padding:4px}
+.signup-close:hover{color:var(--white)}
+
+/* FORM INPUTS */
+#signupForm input[type="text"],#signupForm input[type="email"]{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;margin-bottom:12px;outline:none;transition:border-color .2s}
+#signupForm input[type="text"]:focus,#signupForm input[type="email"]:focus{border-color:var(--blue)}
+#signupForm input[type="text"]::placeholder,#signupForm input[type="email"]::placeholder{color:rgba(192,200,216,.4)}
+
+/* CHECKBOX FIELDSET */
+#signupForm fieldset{border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:0 0 20px}
+#signupForm legend{color:var(--silver);font-size:13px;font-weight:600;padding:0 8px;letter-spacing:.5px}
+.interest-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.interest-grid label{display:flex;align-items:center;gap:8px;color:var(--silver);font-size:13px;cursor:pointer;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.06);transition:border-color .2s,background .2s}
+.interest-grid label:hover{border-color:rgba(30,144,255,.3);background:rgba(30,144,255,.05)}
+.interest-grid input[type="checkbox"]{accent-color:var(--blue);width:16px;height:16px;cursor:pointer}
+
+/* SUBMIT BUTTON */
+#signupForm button[type="submit"]{width:100%;background:linear-gradient(135deg,var(--gold),#a07010);color:#0a0e1a;padding:14px;border-radius:10px;font-weight:700;font-size:15px;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:transform .2s,box-shadow .2s;letter-spacing:.5px}
+#signupForm button[type="submit"]:hover{transform:translateY(-2px);box-shadow:0 0 20px rgba(212,160,23,.4)}
+
+/* VALIDATION ERROR */
+.signup-error{color:#ff6b6b;font-size:13px;text-align:center;margin-bottom:12px;display:none}
+
+/* SUCCESS STATE */
+.signup-success{text-align:center;padding:20px 0}
+.signup-success .success-icon{font-size:48px;margin-bottom:16px}
+.signup-success h3{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:8px}
+.signup-success p{color:var(--silver);font-size:14px;line-height:1.7}
+
+/* EMAIL CTA BOX (articles) */
+.email-cta{background:linear-gradient(135deg,rgba(212,160,23,.08),rgba(10,14,26,.5));border:1px solid rgba(212,160,23,.25)}
+.email-cta h3{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:8px}
+.email-cta p{color:var(--silver);font-size:15px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto}
+.email-cta button{display:inline-block;background:linear-gradient(135deg,var(--gold),#a07010);color:#0a0e1a;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:transform .2s;letter-spacing:.5px}
+.email-cta button:hover{transform:translateY(-2px)}
+
+/* EMAIL SECTION (homepage) */
+.email-section{text-align:center;padding:80px 20px;position:relative;z-index:1}
+.email-section h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,48px);letter-spacing:2px;margin-bottom:12px}
+.email-section h2 span{color:var(--gold2)}
+.email-section p{color:var(--silver);font-size:15px;margin-bottom:28px;max-width:480px;margin-left:auto;margin-right:auto}
+.email-section button{background:linear-gradient(135deg,var(--gold),#a07010);color:#0a0e1a;padding:14px 36px;border-radius:10px;font-weight:700;font-size:15px;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:transform .2s,box-shadow .2s;letter-spacing:.5px;box-shadow:0 0 20px rgba(212,160,23,.3)}
+.email-section button:hover{transform:translateY(-2px);box-shadow:0 0 32px rgba(212,160,23,.5)}
+
+/* EMAIL BANNER (blog index) */
+.email-banner{background:linear-gradient(135deg,rgba(212,160,23,.08),rgba(10,14,26,.5));border:1px solid rgba(212,160,23,.25);border-radius:20px;padding:36px;text-align:center;max-width:900px;margin:0 auto 48px;position:relative;z-index:1}
+.email-banner h3{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:8px}
+.email-banner p{color:var(--silver);font-size:14px;margin-bottom:20px}
+.email-banner button{background:linear-gradient(135deg,var(--gold),#a07010);color:#0a0e1a;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:transform .2s;letter-spacing:.5px}
+.email-banner button:hover{transform:translateY(-2px)}
+
+/* MOBILE */
+@media(max-width:640px){
+  .signup-modal{padding:28px 20px;width:95%;max-width:none;border-radius:16px}
+  .interest-grid{grid-template-columns:1fr}
+  .email-section{padding:60px 20px}
+}

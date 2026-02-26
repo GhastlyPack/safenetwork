@@ -20,57 +20,12 @@
 <meta name="twitter:title" content="Safe Network – Live on Whatnot"/>
 <meta name="twitter:description" content="The premier live shopping network for collectors. Coins, Pokemon, Sports Cards and Shoes. Giveaways, auctions, and fun games streamed live on Whatnot."/>
 <meta name="twitter:image" content="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979965/ChatGPT_Image_Feb_24_2026_04_39_12_PM_bvf4rt.png"/>
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/signup.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap');
-
-  *{margin:0;padding:0;box-sizing:border-box}
-  :root{
-    --navy:#0a0e1a;
-    --blue:#1e90ff;
-    --blue2:#0d5fbd;
-    --gold:#d4a017;
-    --gold2:#f0c040;
-    --silver:#c0c8d8;
-    --white:#ffffff;
-  }
-
-  html{scroll-behavior:smooth}
-  body{background:var(--navy);color:var(--white);font-family:'Inter',sans-serif;overflow-x:hidden}
-
-  body::before{
-    content:'';position:fixed;inset:0;
-    background:
-      radial-gradient(ellipse at 20% 20%, rgba(30,144,255,.15) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, rgba(212,160,23,.08) 0%, transparent 50%);
-    pointer-events:none;z-index:0;
-  }
-
+  /* Home page overrides */
+  body::before{background:radial-gradient(ellipse at 20% 20%,rgba(30,144,255,.15) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(212,160,23,.08) 0%,transparent 50%)}
   section{position:relative;z-index:1}
-
-  /* NAV */
-  nav{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:18px 40px;
-    background:rgba(10,14,26,.85);
-    backdrop-filter:blur(12px);
-    border-bottom:1px solid rgba(30,144,255,.2);
-    position:sticky;top:0;z-index:100;
-  }
-  .nav-logo{display:flex;align-items:center;gap:12px}
-  .nav-logo img{height:48px;width:48px;object-fit:contain;border-radius:8px}
-  .nav-logo span{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--white)}
-  .nav-links{display:flex;gap:28px;list-style:none}
-  .nav-links a{color:var(--silver);text-decoration:none;font-size:14px;font-weight:600;letter-spacing:.5px;transition:color .2s}
-  .nav-links a:hover{color:var(--blue)}
-  .nav-links a.active{color:var(--blue)}
-  .nav-cta{
-    background:linear-gradient(135deg,var(--blue),var(--blue2));
-    color:#fff;border:none;padding:10px 22px;border-radius:8px;
-    font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;
-    letter-spacing:.5px;transition:transform .2s,box-shadow .2s;
-    box-shadow:0 0 16px rgba(30,144,255,.4);
-  }
-  .nav-cta:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(30,144,255,.7)}
 
   /* HERO */
   .hero{
@@ -286,25 +241,13 @@
   }
   .btn-ebay:hover{transform:translateY(-3px);box-shadow:0 0 36px rgba(14,118,168,.7)}
 
-  /* FOOTER */
-  footer{
-    border-top:1px solid rgba(255,255,255,.07);
-    padding:32px 40px;display:flex;align-items:center;justify-content:space-between;
-    flex-wrap:wrap;gap:16px;
-  }
-  footer p{color:rgba(192,200,216,.5);font-size:13px}
-  .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--silver)}
-
   .divider{
     height:1px;max-width:900px;margin:0 auto;
     background:linear-gradient(90deg,transparent,rgba(30,144,255,.3),transparent);
   }
 
   @media(max-width:640px){
-    nav{padding:14px 20px}
-    .nav-links{display:none}
     .ebay-strip{text-align:center;flex-direction:column;align-items:center}
-    footer{flex-direction:column;text-align:center}
   }
 </style>
 </head>
@@ -324,7 +267,19 @@
     <li><a href="#socials">Links</a></li>
   </ul>
   <a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="nav-cta">Watch Live</a>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<ul class="mobile-menu" id="mobileMenu">
+  <li><a href="#shows" onclick="toggleMenu()">Shows</a></li>
+  <li><a href="#host" onclick="toggleMenu()">Hosts</a></li>
+  <li><a href="/blog">Blog</a></li>
+  <li><a href="#follow" onclick="toggleMenu()">Follow</a></li>
+  <li><a href="#socials" onclick="toggleMenu()">Links</a></li>
+  <li><a href="https://www.whatnot.com/user/safenetwork" target="_blank" class="mobile-cta">Watch Live</a></li>
+</ul>
 
 <!-- HERO -->
 <section class="hero">
@@ -468,6 +423,44 @@
   </div>
 </section>
 
+<!-- EMAIL SIGNUP CTA -->
+<div class="divider"></div>
+<section class="email-section" id="email">
+  <div class="section-label">EXCLUSIVE DEALS</div>
+  <h2 class="section-title">Join the <span style="color:var(--gold2)">Collector's List</span></h2>
+  <p class="section-sub">Get an exclusive coupon plus first access to new drops, shows, and deals. Free to join.</p>
+  <button onclick="openSignupModal()">Get Your Coupon</button>
+</section>
+
+<!-- EMAIL SIGNUP MODAL -->
+<div class="signup-overlay" id="signupOverlay">
+  <div class="signup-modal">
+    <button class="signup-close" onclick="closeSignupModal()">&times;</button>
+    <h3>Join the Collector's List</h3>
+    <p>Get an exclusive coupon plus first access to drops and deals.</p>
+    <div class="signup-error" id="signupError"></div>
+    <form id="signupForm" onsubmit="handleSignup(event)">
+      <input type="text" name="first_name" placeholder="First name" required>
+      <input type="email" name="email" placeholder="Email address" required>
+      <fieldset>
+        <legend>What do you collect?</legend>
+        <div class="interest-grid">
+          <label><input type="checkbox" name="interests" value="coins"> Coins &amp; Bullion</label>
+          <label><input type="checkbox" name="interests" value="pokemon"> Pokemon Cards</label>
+          <label><input type="checkbox" name="interests" value="sports"> Sports Cards</label>
+          <label><input type="checkbox" name="interests" value="shoes"> Shoes</label>
+        </div>
+      </fieldset>
+      <button type="submit">Get My Coupon</button>
+    </form>
+    <div class="signup-success" id="signupSuccess" style="display:none">
+      <div class="success-icon">✉️</div>
+      <h3>Check Your Inbox!</h3>
+      <p>We sent a verification email. Click the link to confirm and unlock your coupon.</p>
+    </div>
+  </div>
+</div>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">SAFE NETWORK</div>
@@ -475,5 +468,12 @@
   <p style="color:rgba(192,200,216,.4);font-size:12px">Your trusted live shopping network on Whatnot</p>
 </footer>
 
+<script>
+  function toggleMenu() {
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.querySelector('.hamburger').classList.toggle('open');
+  }
+</script>
+<script src="/js/signup.js"></script>
 </body>
 </html>

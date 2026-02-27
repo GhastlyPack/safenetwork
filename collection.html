@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/css/auth.css">
 <link rel="stylesheet" href="/css/collection.css">
 <link rel="stylesheet" href="/css/cookies.css">
+<script src="/js/sanitize.js"></script>
 <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <!-- Customer.io CDP -->
@@ -752,9 +753,7 @@
   }
 
   function esc(str){
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    return snSanitize.html(str);
   }
 
   /* ── Show/Hide Sections ── */

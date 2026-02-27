@@ -412,9 +412,7 @@
   }
 
   function escapeHtml(str){
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    return (window.snSanitize ? snSanitize.html(str) : String(str).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }));
   }
 
   /* ── Public API ── */

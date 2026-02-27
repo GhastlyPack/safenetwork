@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="/css/schedule.css">
 <link rel="stylesheet" href="/css/auth.css">
 <link rel="stylesheet" href="/css/cookies.css">
+<script src="/js/sanitize.js"></script>
 <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -235,13 +236,18 @@
       statusBadge = ' <span class="schedule-status status-completed">COMPLETED</span>';
     }
 
+    var esc = snSanitize.html;
+    var safeUrl = snSanitize.url;
+    var safeHandle = esc(show.host_handle || 'safenetwork');
+    var handleUrl = safeUrl('https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork'));
+
     var actionBtn = '';
     if (show.status === 'live' && show.whatnot_url) {
-      actionBtn = '<a href="' + show.whatnot_url + '" target="_blank" class="schedule-card-btn live-btn">🔴 Watch</a>';
+      actionBtn = '<a href="' + safeUrl(show.whatnot_url) + '" target="_blank" class="schedule-card-btn live-btn">🔴 Watch</a>';
     } else if (!isPast && show.whatnot_url) {
-      actionBtn = '<a href="' + show.whatnot_url + '" target="_blank" class="schedule-card-btn">Watch</a>';
+      actionBtn = '<a href="' + safeUrl(show.whatnot_url) + '" target="_blank" class="schedule-card-btn">Watch</a>';
     } else if (!isPast) {
-      actionBtn = '<a href="https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork') + '" target="_blank" class="schedule-card-btn">Follow</a>';
+      actionBtn = '<a href="' + handleUrl + '" target="_blank" class="schedule-card-btn">Follow</a>';
     }
 
     var opacity = isPast ? 'opacity:.5;' : '';
@@ -254,12 +260,12 @@
       '</div>' +
       '<div class="schedule-card-body">' +
         '<div class="schedule-card-time">' + timeStr + ' ' + tzStr + statusBadge + '</div>' +
-        '<div class="schedule-card-title">' + type.emoji + ' ' + (show.title || type.label) + '</div>' +
+        '<div class="schedule-card-title">' + type.emoji + ' ' + esc(show.title || type.label) + '</div>' +
         '<div class="schedule-card-meta">' +
-          '<span class="schedule-card-host">Hosted by <a href="https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork') + '" target="_blank">@' + (show.host_handle || 'SafeNetwork') + '</a></span>' +
+          '<span class="schedule-card-host">Hosted by <a href="' + handleUrl + '" target="_blank">@' + safeHandle + '</a></span>' +
           '<span class="schedule-card-type">' + type.label + '</span>' +
         '</div>' +
-        (show.description ? '<div class="schedule-card-desc">' + show.description + '</div>' : '') +
+        (show.description ? '<div class="schedule-card-desc">' + esc(show.description) + '</div>' : '') +
       '</div>' +
       (actionBtn ? '<div class="schedule-card-actions">' + actionBtn + '</div>' : '') +
     '</div>';
@@ -269,14 +275,16 @@
     var banner = document.getElementById('nextShowBanner');
     var type = showTypes[show.show_type] || { emoji: '🎬', label: show.show_type };
     document.getElementById('nextShowTitle').textContent = type.emoji + ' ' + (show.title || type.label);
-    document.getElementById('nextShowHost').innerHTML = 'Hosted by <a href="https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork') + '" target="_blank">@' + (show.host_handle || 'SafeNetwork') + '</a>';
+    var bannerHandle = snSanitize.html(show.host_handle || 'safenetwork');
+    var bannerHandleUrl = snSanitize.url('https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork'));
+    document.getElementById('nextShowHost').innerHTML = 'Hosted by <a href="' + bannerHandleUrl + '" target="_blank">@' + bannerHandle + '</a>';
 
     var watchBtn = document.getElementById('nextShowWatchBtn');
     if (show.whatnot_url) {
-      watchBtn.href = show.whatnot_url;
+      watchBtn.href = snSanitize.url(show.whatnot_url);
       watchBtn.style.display = '';
     } else {
-      watchBtn.href = 'https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork');
+      watchBtn.href = snSanitize.url('https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork'));
     }
 
     banner.style.display = '';

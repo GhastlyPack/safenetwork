@@ -2322,8 +2322,8 @@ async function handleAdminRefreshSpotPrices(auth0User: { sub: string; email: str
         .from('spot_prices')
         .upsert({
           symbol: metal.symbol,
-          name: metal.name,
-          price_per_oz: pricePerOz,
+          metal: metal.name.toLowerCase(),
+          price_usd: pricePerOz,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'symbol' })
     }

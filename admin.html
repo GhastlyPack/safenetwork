@@ -499,14 +499,17 @@
 
     <!-- ── Wheel Builder Sub-Tab ── -->
     <div id="invWheel" class="inv-panel" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:12px">
         <h3 style="color:var(--gold2);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin:0">Wheel Builder</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn-primary" style="font-size:12px;padding:8px 16px" onclick="wheelAddPrize()">+ Add Prize</button>
-          <button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(74,222,128,.15);color:#4ade80" onclick="wheelSaveConfig()">Save Config</button>
-          <button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(192,200,216,.1);color:var(--silver)" onclick="wheelLoadConfig()">Load Config</button>
+          <button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(74,222,128,.15);color:#4ade80" onclick="wheelSaveConfig()">Save</button>
+          <button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(192,200,216,.1);color:var(--silver)" onclick="wheelLoadConfig()">Load</button>
+          <button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(30,144,255,.15);color:var(--blue)" onclick="wheelNewConfig()">New</button>
+          <button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(255,107,107,.15);color:#ff6b6b;display:none" id="wheelDeleteBtn" onclick="wheelDeleteConfig()">Delete</button>
         </div>
       </div>
+      <div id="wheelConfigStatus" style="color:var(--silver);font-size:12px;margin-bottom:16px;font-style:italic">New Config (unsaved)</div>
 
       <!-- Spin Price -->
       <div class="inv-form-grid" style="margin-bottom:20px">
@@ -576,6 +579,27 @@
           <div class="stat-number" id="wheelBreakEven">-</div>
           <div class="stat-label">Break-Even Price</div>
         </div>
+      </div>
+
+      <!-- Revenue Tracking (persisted to DB) -->
+      <h3 style="color:var(--blue);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-top:24px;margin-bottom:16px">Revenue Tracking</h3>
+      <div class="inv-form-grid" style="margin-bottom:16px">
+        <div class="inv-form-field">
+          <label>Total Spins Tracked</label>
+          <input type="number" id="wheelTotalSpins" min="0" step="1" value="0" oninput="wheelRecalc()"/>
+        </div>
+        <div class="inv-form-field">
+          <label>Total Revenue ($)</label>
+          <input type="number" id="wheelTotalRevenue" min="0" step="0.01" value="0" oninput="wheelRecalc()"/>
+        </div>
+        <div class="inv-form-field">
+          <label>Actual Profit</label>
+          <div id="wheelActualProfit" style="color:var(--silver);font-size:20px;font-weight:700;padding:10px 0">-</div>
+        </div>
+      </div>
+      <div class="inv-form-field" style="margin-bottom:16px">
+        <label>Notes</label>
+        <textarea id="wheelConfigNotes" rows="2" placeholder="Optional notes about this wheel..." style="width:100%"></textarea>
       </div>
     </div>
 
@@ -712,6 +736,10 @@
           </select>
         </div>
         <div class="inv-form-field">
+          <label>Quantity</label>
+          <input type="number" id="invQuantity" min="1" step="1" value="1" placeholder="1"/>
+        </div>
+        <div class="inv-form-field">
           <label>Status</label>
           <select id="invStatus">
             <option value="in_stock">In Stock</option>
@@ -782,6 +810,52 @@
 
 </div>
 
+<!-- Bulk Add Panel (slide from right) -->
+<div class="admin-edit-overlay" id="bulkAddOverlay" onclick="closeBulkAddPanel(event)">
+  <div class="admin-edit-panel" style="max-width:900px" onclick="event.stopPropagation()">
+    <button class="admin-edit-close" onclick="closeBulkAddPanel()">&times;</button>
+    <h2 id="bulkAddTitle" style="color:var(--gold2)">Bulk Add Items</h2>
+    <p style="color:var(--silver);font-size:13px;margin-bottom:16px">Add multiple items at once. Fill in basic info below — you can add detailed fields later by editing each item.</p>
+
+    <div class="admin-table-wrap" style="margin-bottom:16px">
+      <table class="admin-table" id="bulkAddTable">
+        <thead>
+          <tr>
+            <th style="min-width:180px">Name *</th>
+            <th style="min-width:80px">Qty</th>
+            <th style="min-width:100px">Purchase $</th>
+            <th style="min-width:140px">Source / Seller</th>
+            <th style="min-width:120px">Notes</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="bulkAddBody"></tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+      <button class="btn-primary" style="font-size:12px;padding:8px 16px" onclick="bulkAddRow()">+ Add Row</button>
+      <button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(192,200,216,.1);color:var(--silver)" onclick="bulkAddMultipleRows(5)">+ Add 5 Rows</button>
+    </div>
+
+    <div style="display:flex;gap:12px">
+      <button class="btn-primary" style="flex:1;padding:14px" onclick="submitBulkItems()">Submit All Items</button>
+      <button class="btn-primary" style="flex:1;padding:14px;background:rgba(192,200,216,.1);color:var(--silver)" onclick="closeBulkAddPanel()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Wheel Config Picker (slide from right) -->
+<div class="admin-edit-overlay" id="wheelPickerOverlay" onclick="closeWheelPicker(event)">
+  <div class="admin-edit-panel" style="max-width:700px" onclick="event.stopPropagation()">
+    <button class="admin-edit-close" onclick="closeWheelPicker()">&times;</button>
+    <h2 style="color:var(--gold2)">Load Wheel Config</h2>
+    <div id="wheelPickerBody" style="margin-top:16px">
+      <p style="text-align:center;color:var(--silver);padding:40px 0">Loading...</p>
+    </div>
+  </div>
+</div>
+
 <!-- Price Lookup Panel (slide from right) -->
 <div class="admin-edit-overlay" id="priceLookupOverlay" onclick="closePriceLookup(event)">
   <div class="admin-edit-panel" style="max-width:800px" onclick="event.stopPropagation()">
@@ -804,6 +878,7 @@
             <th>7d</th>
             <th>30d</th>
             <th>Variant</th>
+            <th id="priceLookupActionHeader" style="display:none"></th>
           </tr>
         </thead>
         <tbody id="priceLookupBody">
@@ -1776,6 +1851,7 @@
       '<h3 style="color:var(--gold2);font-family:\'Bebas Neue\',sans-serif;font-size:22px;letter-spacing:1px;margin:0">' + escapeHtml(catLabel) + ' (' + items.length + ')</h3>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
       (isPriceableCard ? '<button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(212,160,23,.15);color:var(--gold2)" onclick="openPriceLookup(\'' + escapeHtml(category) + '\')">&#x1F50D; Price Lookup</button>' : '') +
+      '<button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(192,200,216,.1);color:var(--silver)" onclick="openBulkAddPanel(\'' + escapeHtml(category) + '\')">Bulk Add</button>' +
       '<button class="btn-primary" style="font-size:12px;padding:8px 16px" onclick="openInvAddPanel(\'' + escapeHtml(category) + '\')">+ Add Item</button>' +
       '</div></div>';
 
@@ -1808,22 +1884,66 @@
   }
 
   function buildInvRow(item){
-    var cost = (parseFloat(item.purchase_price) || 0) + (parseFloat(item.buyers_premium) || 0);
-    var salePrice = parseFloat(item.final_sale_price) || 0;
-    var fees = parseFloat(item.sale_fees) || 0;
-    var pl = item.status === 'sold' ? (salePrice - fees - cost) : 0;
-    var statusClass = item.status === 'sold' ? 'color:#4ade80' : item.status === 'listed' ? 'color:var(--gold2)' : 'color:var(--blue)';
+    var qty = parseInt(item.quantity) || 1;
+    var qtySold = parseInt(item.quantity_sold) || 0;
+    var inStock = qty - qtySold;
+    var unitCost = (parseFloat(item.purchase_price) || 0) + (parseFloat(item.buyers_premium) || 0);
+    var totalCost = unitCost * qty;
+
+    // Calculate P&L from sales array in details
+    var totalSaleRevenue = 0;
+    var totalSaleFees = 0;
+    var sales = (item.details && Array.isArray(item.details.sales)) ? item.details.sales : [];
+    if(sales.length){
+      sales.forEach(function(s){
+        if(s.total_sale_price) totalSaleRevenue += parseFloat(s.total_sale_price) || 0;
+        else if(s.price_per_unit) totalSaleRevenue += (parseFloat(s.price_per_unit) || 0) * (parseInt(s.qty) || 1);
+        if(s.sale_fees) totalSaleFees += parseFloat(s.sale_fees) || 0;
+      });
+    } else {
+      // Legacy: single sale fields
+      totalSaleRevenue = parseFloat(item.final_sale_price) || 0;
+      totalSaleFees = parseFloat(item.sale_fees) || 0;
+    }
+    var soldCost = unitCost * qtySold;
+    var pl = qtySold > 0 ? (totalSaleRevenue - totalSaleFees - soldCost) : 0;
+    var hasSales = qtySold > 0;
+
+    // Status display
+    var statusText = '';
+    var statusClass = '';
+    if(qty > 1){
+      if(inStock > 0 && qtySold > 0){
+        statusText = inStock + ' in stock &middot; ' + qtySold + ' sold';
+        statusClass = 'color:var(--blue)';
+      } else if(inStock <= 0){
+        statusText = 'All ' + qty + ' sold';
+        statusClass = 'color:#4ade80';
+      } else {
+        statusText = inStock + ' in stock';
+        statusClass = 'color:var(--blue)';
+      }
+    } else {
+      statusText = escapeHtml(INV_STATUS_LABELS[item.status] || item.status);
+      statusClass = item.status === 'sold' ? 'color:#4ade80' : item.status === 'listed' ? 'color:var(--gold2)' : 'color:var(--blue)';
+    }
+
+    // Name with quantity badge
+    var nameHtml = escapeHtml(item.name);
+    if(qty > 1) nameHtml += ' <span style="font-size:11px;font-weight:700;color:var(--blue);background:rgba(30,144,255,.15);padding:2px 6px;border-radius:4px;margin-left:6px">&times;' + qty + '</span>';
+
+    var showMarkSold = (qty > 1) ? (inStock > 0) : (item.status !== 'sold');
 
     return '<tr class="user-row inv-item-row" data-inv-id="' + escapeHtml(item.id) + '">' +
-      '<td class="username-cell">' + escapeHtml(item.name) + '</td>' +
-      '<td><span style="font-size:11px;font-weight:600;' + statusClass + '">' + escapeHtml(INV_STATUS_LABELS[item.status] || item.status) + '</span></td>' +
-      '<td>$' + cost.toLocaleString('en-US',{minimumFractionDigits:2}) + '</td>' +
+      '<td class="username-cell">' + nameHtml + '</td>' +
+      '<td><span style="font-size:11px;font-weight:600;' + statusClass + '">' + statusText + '</span></td>' +
+      '<td>$' + totalCost.toLocaleString('en-US',{minimumFractionDigits:2}) + '</td>' +
       '<td>' + (item.market_value ? '$' + parseFloat(item.market_value).toLocaleString('en-US',{minimumFractionDigits:2}) : '-') + '</td>' +
-      '<td>' + (salePrice > 0 ? '$' + salePrice.toLocaleString('en-US',{minimumFractionDigits:2}) : '-') + '</td>' +
-      '<td style="color:' + (item.status === 'sold' ? (pl >= 0 ? '#4ade80' : '#ff6b6b') : 'var(--silver)') + '">' +
-        (item.status === 'sold' ? ((pl >= 0 ? '+' : '-') + '$' + Math.abs(pl).toLocaleString('en-US',{minimumFractionDigits:2})) : '-') + '</td>' +
+      '<td>' + (totalSaleRevenue > 0 ? '$' + totalSaleRevenue.toLocaleString('en-US',{minimumFractionDigits:2}) : '-') + '</td>' +
+      '<td style="color:' + (hasSales ? (pl >= 0 ? '#4ade80' : '#ff6b6b') : 'var(--silver)') + '">' +
+        (hasSales ? ((pl >= 0 ? '+' : '-') + '$' + Math.abs(pl).toLocaleString('en-US',{minimumFractionDigits:2})) : '-') + '</td>' +
       '<td>' +
-        (item.status !== 'sold' ? '<button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(74,222,128,.15);color:#4ade80;margin-right:4px" onclick="event.stopPropagation();markSold(\'' + escapeHtml(item.id) + '\')">Mark Sold</button>' : '') +
+        (showMarkSold ? '<button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(74,222,128,.15);color:#4ade80;margin-right:4px" onclick="event.stopPropagation();markSold(\'' + escapeHtml(item.id) + '\')">Mark Sold</button>' : '') +
         '<button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(255,107,107,.15);color:#ff6b6b" onclick="event.stopPropagation();deleteInvItem(\'' + escapeHtml(item.id) + '\')">Delete</button>' +
       '</td></tr>';
   }
@@ -1867,6 +1987,7 @@
     editingInvItem = null;
     document.getElementById('invEditTitle').textContent = 'Add Item';
     document.getElementById('invCategory').value = category || 'coins';
+    document.getElementById('invQuantity').value = '1';
     document.getElementById('invStatus').value = 'in_stock';
     document.getElementById('invName').value = '';
     document.getElementById('invPurchaseDate').value = '';
@@ -1888,6 +2009,7 @@
     editingInvItem = item;
     document.getElementById('invEditTitle').textContent = 'Edit Item';
     document.getElementById('invCategory').value = item.category || 'coins';
+    document.getElementById('invQuantity').value = item.quantity || 1;
     document.getElementById('invStatus').value = item.status || 'in_stock';
     document.getElementById('invName').value = item.name || '';
     document.getElementById('invPurchaseDate').value = item.purchase_date || '';
@@ -1912,32 +2034,61 @@
   };
 
   /* ── Dynamic Detail Fields ── */
+  var linkedJusttcgData = null; // stores linked card data while form is open
+
   window.updateInvDetailFields = function(existingDetails){
     var cat = document.getElementById('invCategory').value;
     var fields = INV_DETAIL_FIELDS[cat] || [];
     var container = document.getElementById('invDetailFields');
     var details = existingDetails || {};
 
+    // Track linked card data
+    if(details.justtcg_id) linkedJusttcgData = {id: details.justtcg_id, set_id: details.justtcg_set_id, image: details.justtcg_image, last_price: details.justtcg_last_price};
+    else linkedJusttcgData = null;
+
     if(!fields.length){
       container.innerHTML = '';
       return;
     }
 
-    var html = '<h4 style="color:var(--blue);font-size:14px;font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">' + escapeHtml(INV_CATEGORY_LABELS[cat] || cat) + ' Details</h4><div class="inv-form-grid">';
+    var isCard = (cat === 'pokemon_cards' || cat === 'sports_cards');
+    var html = '';
+
+    // JustTCG link section for card categories
+    if(isCard){
+      var linked = details.justtcg_id;
+      html += '<div style="margin-bottom:16px;padding:12px;border-radius:8px;background:rgba(30,144,255,.08);border:1px solid rgba(30,144,255,.2)">';
+      if(linked){
+        html += '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">';
+        if(details.justtcg_image) html += '<img src="' + escapeHtml(details.justtcg_image) + '" style="width:48px;height:auto;border-radius:4px" onerror="this.style.display=\'none\'"/>';
+        html += '<div style="flex:1"><span style="color:#4ade80;font-size:12px;font-weight:600">LINKED TO JUSTTCG</span>';
+        if(details.justtcg_last_price) html += '<span style="color:var(--gold2);margin-left:8px;font-size:12px">$' + parseFloat(details.justtcg_last_price).toFixed(2) + '</span>';
+        html += '</div>';
+        html += '<button class="btn-primary" style="font-size:11px;padding:6px 12px;background:rgba(255,107,107,.15);color:#ff6b6b" onclick="unlinkJusttcg()">Unlink</button>';
+        html += '</div>';
+      } else {
+        html += '<button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(30,144,255,.15);color:var(--blue)" onclick="openJusttcgLinkSearch()">&#x1F50D; Link to JustTCG Card</button>';
+        html += '<span style="color:var(--silver);font-size:12px;margin-left:8px">Standardize card data for price tracking</span>';
+      }
+      html += '</div>';
+    }
+
+    html += '<h4 style="color:var(--blue);font-size:14px;font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">' + escapeHtml(INV_CATEGORY_LABELS[cat] || cat) + ' Details</h4><div class="inv-form-grid">';
     fields.forEach(function(f){
-      html += '<div class="inv-form-field"><label>' + escapeHtml(f.label) + '</label>';
+      var isLinkedField = isCard && linkedJusttcgData && (f.key === 'card_name' || f.key === 'set' || f.key === 'card_number');
+      html += '<div class="inv-form-field"><label>' + escapeHtml(f.label) + (isLinkedField ? ' <span style="color:#4ade80;font-size:10px">LINKED</span>' : '') + '</label>';
       var val = details[f.key] || '';
       if(f.type === 'select'){
-        html += '<select id="invDetail_' + f.key + '">';
+        html += '<select id="invDetail_' + f.key + '"' + (isLinkedField ? ' disabled' : '') + '>';
         html += '<option value="">--</option>';
         (f.opts || []).forEach(function(opt){
           html += '<option value="' + escapeHtml(opt) + '"' + (val === opt ? ' selected' : '') + '>' + escapeHtml(opt) + '</option>';
         });
         html += '</select>';
       } else if(f.type === 'number'){
-        html += '<input type="number" id="invDetail_' + f.key + '" step="any" value="' + escapeHtml(String(val)) + '"/>';
+        html += '<input type="number" id="invDetail_' + f.key + '" step="any" value="' + escapeHtml(String(val)) + '"' + (isLinkedField ? ' readonly style="opacity:.7"' : '') + '/>';
       } else {
-        html += '<input type="text" id="invDetail_' + f.key + '" value="' + escapeHtml(String(val)) + '"/>';
+        html += '<input type="text" id="invDetail_' + f.key + '" value="' + escapeHtml(String(val)) + '"' + (isLinkedField ? ' readonly style="opacity:.7"' : '') + '/>';
       }
       html += '</div>';
     });
@@ -1956,10 +2107,23 @@
       var el = document.getElementById('invDetail_' + f.key);
       if(el && el.value) details[f.key] = el.value;
     });
+    // Preserve JustTCG link data
+    if(linkedJusttcgData){
+      details.justtcg_id = linkedJusttcgData.id;
+      details.justtcg_set_id = linkedJusttcgData.set_id;
+      details.justtcg_image = linkedJusttcgData.image;
+      details.justtcg_last_price = linkedJusttcgData.last_price;
+      details.justtcg_price_updated = new Date().toISOString();
+    }
+    // Preserve existing sales array from editing
+    if(editingInvItem && editingInvItem.details && Array.isArray(editingInvItem.details.sales)){
+      details.sales = editingInvItem.details.sales;
+    }
 
     var payload = {
       name: name,
       category: cat,
+      quantity: Math.max(1, parseInt(document.getElementById('invQuantity').value) || 1),
       status: document.getElementById('invStatus').value,
       purchase_date: document.getElementById('invPurchaseDate').value || null,
       purchase_price: parseFloat(document.getElementById('invPurchasePrice').value) || null,
@@ -1978,7 +2142,8 @@
     try {
       var token = await snAuth.getAccessToken();
       if(editingInvItem){
-        await snProfile.adminInventoryUpdate(editingInvItem.id, payload, token);
+        payload.id = editingInvItem.id;
+        await snProfile.adminInventoryUpdate(payload, token);
       } else {
         await snProfile.adminInventoryAdd(payload, token);
       }
@@ -1996,12 +2161,47 @@
 
   /* ── Mark Sold ── */
   window.markSold = async function(itemId){
-    var price = prompt('Enter final sale price ($):');
+    var item = allInventory.find(function(i){ return i.id === itemId; });
+    if(!item) return;
+    var qty = parseInt(item.quantity) || 1;
+    var qtySold = parseInt(item.quantity_sold) || 0;
+    var remaining = qty - qtySold;
+
+    var qtyToSell = 1;
+    if(remaining > 1){
+      var input = prompt('How many to mark sold? (' + remaining + ' in stock)');
+      if(input === null) return;
+      qtyToSell = parseInt(input) || 1;
+      if(qtyToSell < 1 || qtyToSell > remaining){
+        alert('Must be between 1 and ' + remaining);
+        return;
+      }
+    }
+
+    var priceLabel = qtyToSell > 1 ? 'Enter total sale price for ' + qtyToSell + ' units ($):' : 'Enter sale price ($):';
+    var price = prompt(priceLabel);
     if(price === null) return;
     var fees = prompt('Enter sale fees ($):') || '0';
+    var streamDate = prompt('Stream date (YYYY-MM-DD) or leave blank:') || '';
+
+    var data = {
+      id: itemId,
+      quantity_to_sell: qtyToSell,
+      total_sale_price: parseFloat(price) || 0,
+      sale_fees: parseFloat(fees) || 0
+    };
+    if(qtyToSell > 0){
+      data.price_per_unit = (parseFloat(price) || 0) / qtyToSell;
+    }
+    if(streamDate) data.stream_date = streamDate;
+    // Legacy fields for fully sold single items
+    if(qty === 1){
+      data.final_sale_price = parseFloat(price) || 0;
+    }
+
     try {
       var token = await snAuth.getAccessToken();
-      await snProfile.adminInventoryMarkSold(itemId, parseFloat(price), parseFloat(fees), token);
+      await snProfile.adminInventoryMarkSold(data, token);
       allInventory = await snProfile.adminInventoryList(token, '', '', '');
       renderDashboard();
       var catMap = {coins:'coins',bullion:'bullion',pokemon:'pokemon_cards',sports:'sports_cards'};
@@ -2026,12 +2226,114 @@
     }
   };
 
+  /* ── Bulk Add Panel ── */
+  var bulkAddCategory = 'coins';
+  var bulkRows = [];
+
+  window.openBulkAddPanel = function(category){
+    bulkAddCategory = category || 'coins';
+    bulkRows = [];
+    var catLabel = INV_CATEGORY_LABELS[bulkAddCategory] || bulkAddCategory;
+    document.getElementById('bulkAddTitle').textContent = 'Bulk Add — ' + catLabel;
+    // Start with 3 empty rows
+    for(var i = 0; i < 3; i++) bulkRows.push({name:'', quantity:1, purchase_price:'', source_seller:'', notes:''});
+    renderBulkAddTable();
+    document.getElementById('bulkAddOverlay').classList.add('open');
+  };
+
+  window.closeBulkAddPanel = function(e){
+    if(e && e.target !== e.currentTarget) return;
+    document.getElementById('bulkAddOverlay').classList.remove('open');
+  };
+
+  window.bulkAddRow = function(){
+    bulkRows.push({name:'', quantity:1, purchase_price:'', source_seller:'', notes:''});
+    renderBulkAddTable();
+  };
+
+  window.bulkAddMultipleRows = function(n){
+    for(var i = 0; i < n; i++) bulkRows.push({name:'', quantity:1, purchase_price:'', source_seller:'', notes:''});
+    renderBulkAddTable();
+  };
+
+  window.bulkRemoveRow = function(idx){
+    bulkRows.splice(idx, 1);
+    renderBulkAddTable();
+  };
+
+  function renderBulkAddTable(){
+    var tbody = document.getElementById('bulkAddBody');
+    if(!bulkRows.length){
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--silver)">No rows. Click "+ Add Row" to begin.</td></tr>';
+      return;
+    }
+    var inputStyle = 'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 10px;color:var(--white);font-size:13px;width:100%';
+    var html = '';
+    bulkRows.forEach(function(row, idx){
+      html += '<tr>' +
+        '<td><input type="text" value="' + escapeHtml(row.name) + '" style="' + inputStyle + '" onchange="bulkRows['+idx+'].name=this.value" placeholder="Item name"/></td>' +
+        '<td><input type="number" value="' + (row.quantity || 1) + '" min="1" step="1" style="' + inputStyle + ';width:60px" onchange="bulkRows['+idx+'].quantity=parseInt(this.value)||1"/></td>' +
+        '<td><input type="number" value="' + (row.purchase_price || '') + '" min="0" step="0.01" style="' + inputStyle + ';width:90px" onchange="bulkRows['+idx+'].purchase_price=this.value" placeholder="0.00"/></td>' +
+        '<td><input type="text" value="' + escapeHtml(row.source_seller || '') + '" style="' + inputStyle + '" onchange="bulkRows['+idx+'].source_seller=this.value" placeholder="Source"/></td>' +
+        '<td><input type="text" value="' + escapeHtml(row.notes || '') + '" style="' + inputStyle + '" onchange="bulkRows['+idx+'].notes=this.value" placeholder="Notes"/></td>' +
+        '<td><button class="btn-primary" style="font-size:10px;padding:4px 8px;background:rgba(255,107,107,.15);color:#ff6b6b" onclick="bulkRemoveRow('+idx+')">X</button></td></tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  window.submitBulkItems = async function(){
+    // Filter to rows with names
+    var validRows = bulkRows.filter(function(r){ return r.name && r.name.trim(); });
+    if(!validRows.length){
+      alert('Enter at least one item name.');
+      return;
+    }
+    var items = validRows.map(function(r){
+      return {
+        name: r.name.trim(),
+        category: bulkAddCategory,
+        quantity: Math.max(1, parseInt(r.quantity) || 1),
+        purchase_price: parseFloat(r.purchase_price) || null,
+        source_seller: r.source_seller || null,
+        notes: r.notes || null,
+        status: 'in_stock'
+      };
+    });
+    try {
+      var token = await snAuth.getAccessToken();
+      await snProfile.adminInventoryBulkAdd(items, token);
+      closeBulkAddPanel();
+      allInventory = await snProfile.adminInventoryList(token, '', '', '');
+      renderDashboard();
+      var catMap = {coins:'coins',bullion:'bullion',pokemon:'pokemon_cards',sports:'sports_cards'};
+      if(catMap[currentInvTab]) renderCategoryTab(catMap[currentInvTab], 'inv' + currentInvTab.charAt(0).toUpperCase() + currentInvTab.slice(1));
+      alert(items.length + ' item(s) added successfully!');
+    } catch(err){
+      alert('Bulk add error: ' + (err.message || 'Try again'));
+    }
+  };
+
   /* ── JustTCG Price Lookup ── */
+  var priceLookupMode = 'browse'; // 'browse' = view only, 'link' = select card for inventory form
+  var priceLookupCards = []; // cached results for selection
+
   window.openPriceLookup = function(category){
+    priceLookupMode = 'browse';
+    document.getElementById('priceLookupActionHeader').style.display = 'none';
     var game = (category === 'sports_cards') ? '' : 'pokemon';
     var query = prompt('Search JustTCG for card prices:\n\nEnter card name (e.g. "Charizard ex"):');
     if(!query) return;
     searchJustTCG(query, game);
+  };
+
+  window.openJusttcgLinkSearch = function(){
+    priceLookupMode = 'link';
+    document.getElementById('priceLookupActionHeader').style.display = '';
+    document.getElementById('priceLookupActionHeader').textContent = 'Action';
+    document.getElementById('priceLookupInput').value = '';
+    document.getElementById('priceLookupBody').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--silver)">Search for a card to link to this inventory item.</td></tr>';
+    document.getElementById('priceLookupMeta').textContent = '';
+    document.getElementById('priceLookupOverlay').classList.add('open');
   };
 
   async function searchJustTCG(query, game){
@@ -2043,6 +2345,7 @@
         alert('No results found for "' + query + '"');
         return;
       }
+      priceLookupCards = cards;
       showPriceLookupResults(cards, result.meta);
     } catch(err){
       alert('Price lookup error: ' + (err.message || 'Try again'));
@@ -2052,8 +2355,10 @@
   function showPriceLookupResults(cards, meta){
     var overlay = document.getElementById('priceLookupOverlay');
     var body = document.getElementById('priceLookupBody');
+    var isLink = priceLookupMode === 'link';
+    var colSpan = isLink ? 8 : 7;
     var html = '';
-    cards.forEach(function(card){
+    cards.forEach(function(card, cardIdx){
       var variants = card.variants || [];
       var mainVariant = variants[0] || {};
       var price = mainVariant.price ? '$' + Number(mainVariant.price).toFixed(2) : 'N/A';
@@ -2070,6 +2375,7 @@
         '<td style="color:' + color7d + '">' + change7d + '</td>' +
         '<td style="color:' + color30d + '">' + change30d + '</td>' +
         '<td>' + escapeHtml(mainVariant.condition || '') + ' ' + escapeHtml(mainVariant.printing || '') + '</td>' +
+        (isLink ? '<td><button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(30,144,255,.15);color:var(--blue)" onclick="selectJusttcgCard(' + cardIdx + ')">Select</button></td>' : '') +
         '</tr>';
       // Show additional variants
       if(variants.length > 1){
@@ -2082,6 +2388,7 @@
             '<td style="color:var(--gold2);font-size:12px">' + vPrice + '</td>' +
             '<td></td><td></td>' +
             '<td style="font-size:12px">' + escapeHtml(v.condition || '') + ' ' + escapeHtml(v.printing || '') + '</td>' +
+            (isLink ? '<td></td>' : '') +
             '</tr>';
         });
       }
@@ -2093,17 +2400,93 @@
     overlay.classList.add('open');
   }
 
+  window.selectJusttcgCard = function(cardIdx){
+    var card = priceLookupCards[cardIdx];
+    if(!card) return;
+    var mainVariant = (card.variants || [])[0] || {};
+    var priceVal = mainVariant.price ? parseFloat(mainVariant.price) : null;
+
+    // Store link data
+    linkedJusttcgData = {
+      id: card.id || card.slug || card.name,
+      set_id: card.set_id || card.set || '',
+      image: card.image || card.images && card.images.small || '',
+      last_price: priceVal
+    };
+
+    // Auto-fill form fields
+    var cardNameEl = document.getElementById('invDetail_card_name');
+    var setEl = document.getElementById('invDetail_set');
+    var cardNumEl = document.getElementById('invDetail_card_number');
+    if(cardNameEl){ cardNameEl.value = card.name || ''; cardNameEl.readOnly = true; cardNameEl.style.opacity = '.7'; }
+    if(setEl){ setEl.value = card.set_name || card.set || ''; setEl.readOnly = true; setEl.style.opacity = '.7'; }
+    if(cardNumEl){ cardNumEl.value = card.number || ''; cardNumEl.readOnly = true; cardNumEl.style.opacity = '.7'; }
+
+    // Also set market value if we have a price
+    if(priceVal){
+      document.getElementById('invMarketValue').value = priceVal;
+    }
+
+    // Update the item name if empty
+    var nameEl = document.getElementById('invName');
+    if(!nameEl.value.trim()){
+      var setLabel = card.set_name || card.set || '';
+      nameEl.value = (card.name || '') + (setLabel ? ' — ' + setLabel : '') + (card.number ? ' #' + card.number : '');
+    }
+
+    // Close price lookup and show linked indicator
+    closePriceLookup();
+
+    // Re-render detail fields to show "LINKED" state
+    var cat = document.getElementById('invCategory').value;
+    var fields = INV_DETAIL_FIELDS[cat] || [];
+    var currentDetails = {};
+    fields.forEach(function(f){
+      var el = document.getElementById('invDetail_' + f.key);
+      if(el) currentDetails[f.key] = el.value || '';
+    });
+    currentDetails.justtcg_id = linkedJusttcgData.id;
+    currentDetails.justtcg_set_id = linkedJusttcgData.set_id;
+    currentDetails.justtcg_image = linkedJusttcgData.image;
+    currentDetails.justtcg_last_price = linkedJusttcgData.last_price;
+    currentDetails.justtcg_price_updated = new Date().toISOString();
+    updateInvDetailFields(currentDetails);
+  };
+
+  window.unlinkJusttcg = function(){
+    linkedJusttcgData = null;
+    // Re-render detail fields without link data
+    var cat = document.getElementById('invCategory').value;
+    var fields = INV_DETAIL_FIELDS[cat] || [];
+    var currentDetails = {};
+    fields.forEach(function(f){
+      var el = document.getElementById('invDetail_' + f.key);
+      if(el) currentDetails[f.key] = el.value || '';
+    });
+    // Remove JustTCG keys
+    delete currentDetails.justtcg_id;
+    delete currentDetails.justtcg_set_id;
+    delete currentDetails.justtcg_image;
+    delete currentDetails.justtcg_last_price;
+    delete currentDetails.justtcg_price_updated;
+    updateInvDetailFields(currentDetails);
+  };
+
   window.closePriceLookup = function(e){
     if(e && e.target !== e.currentTarget) return;
     document.getElementById('priceLookupOverlay').classList.remove('open');
+    priceLookupMode = 'browse';
+    document.getElementById('priceLookupActionHeader').style.display = 'none';
   };
 
   window.searchJustTCGFromPanel = function(){
     var input = document.getElementById('priceLookupInput');
     var query = input ? input.value.trim() : '';
     if(!query){ alert('Enter a card name to search.'); return; }
-    var game = (currentInvTab === 'sports') ? '' : 'pokemon';
-    document.getElementById('priceLookupBody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--silver)">Searching...</td></tr>';
+    var cat = document.getElementById('invCategory') ? document.getElementById('invCategory').value : '';
+    var game = (currentInvTab === 'sports' || cat === 'sports_cards') ? '' : 'pokemon';
+    var colSpan = priceLookupMode === 'link' ? 8 : 7;
+    document.getElementById('priceLookupBody').innerHTML = '<tr><td colspan="' + colSpan + '" style="text-align:center;padding:40px;color:var(--silver)">Searching...</td></tr>';
     searchJustTCG(query, game);
   };
 
@@ -2112,6 +2495,20 @@
      ═══════════════════════════════════════════════════════ */
 
   var wheelPrizes = []; // [{name, value, slots}]
+  var currentWheelConfigId = null;
+  var currentWheelConfigName = '';
+
+  function wheelUpdateStatus(){
+    var statusEl = document.getElementById('wheelConfigStatus');
+    var deleteBtn = document.getElementById('wheelDeleteBtn');
+    if(currentWheelConfigId){
+      statusEl.innerHTML = 'Editing: <strong style="color:var(--gold2)">' + escapeHtml(currentWheelConfigName) + '</strong>';
+      deleteBtn.style.display = '';
+    } else {
+      statusEl.textContent = 'New Config (unsaved)';
+      deleteBtn.style.display = 'none';
+    }
+  }
 
   window.wheelAddPrize = function(){
     wheelPrizes.push({name:'Prize ' + (wheelPrizes.length + 1), value:0, slots:1});
@@ -2172,32 +2569,149 @@
     document.getElementById('wheelHouseEdge').textContent = houseEdge.toFixed(1) + '%';
     document.getElementById('wheelBreakEven').textContent = '$' + breakEven.toFixed(2);
 
+    // Revenue tracking: actual profit = total_revenue - (total_spins * avg_prize_cost_per_spin)
+    var totalRevenue = parseFloat(document.getElementById('wheelTotalRevenue').value) || 0;
+    var totalSpins = parseInt(document.getElementById('wheelTotalSpins').value) || 0;
+    var avgCostPerSpin = totalSlots > 0 ? (totalCost / totalSlots) : 0;
+    var actualProfit = totalRevenue - (totalSpins * avgCostPerSpin);
+    var profitEl = document.getElementById('wheelActualProfit');
+    if(totalRevenue > 0 || totalSpins > 0){
+      profitEl.textContent = (actualProfit >= 0 ? '' : '-') + '$' + Math.abs(actualProfit).toFixed(2);
+      profitEl.style.color = actualProfit >= 0 ? '#4ade80' : '#ff6b6b';
+    } else {
+      profitEl.textContent = '-';
+      profitEl.style.color = 'var(--silver)';
+    }
+
     // Re-render probability table
     wheelRender();
   };
 
-  window.wheelSaveConfig = function(){
-    var name = prompt('Config name:');
-    if(!name) return;
-    var configs = JSON.parse(localStorage.getItem('sn_wheel_configs') || '{}');
-    configs[name] = {
-      spinPrice: parseFloat(document.getElementById('wheelSpinPrice').value) || 0,
-      prizes: JSON.parse(JSON.stringify(wheelPrizes))
-    };
-    localStorage.setItem('sn_wheel_configs', JSON.stringify(configs));
-    alert('Config "' + name + '" saved!');
+  /* ── Wheel Config: Save to DB ── */
+  window.wheelSaveConfig = async function(){
+    var spinPrice = parseFloat(document.getElementById('wheelSpinPrice').value) || 0;
+    var totalSpins = parseInt(document.getElementById('wheelTotalSpins').value) || 0;
+    var totalRevenue = parseFloat(document.getElementById('wheelTotalRevenue').value) || 0;
+    var notes = document.getElementById('wheelConfigNotes').value.trim() || null;
+
+    try {
+      var token = await snAuth.getAccessToken();
+      if(currentWheelConfigId){
+        // Update existing
+        await snProfile.wheelConfigUpdate(currentWheelConfigId, {
+          spin_price: spinPrice,
+          prizes: JSON.parse(JSON.stringify(wheelPrizes)),
+          total_spins: totalSpins,
+          total_revenue: totalRevenue,
+          notes: notes
+        }, token);
+        alert('Config "' + currentWheelConfigName + '" saved!');
+      } else {
+        // Create new
+        var name = prompt('Config name:');
+        if(!name) return;
+        var config = await snProfile.wheelConfigSave({
+          name: name.trim(),
+          spin_price: spinPrice,
+          prizes: JSON.parse(JSON.stringify(wheelPrizes)),
+          total_spins: totalSpins,
+          total_revenue: totalRevenue,
+          notes: notes
+        }, token);
+        currentWheelConfigId = config.id;
+        currentWheelConfigName = config.name;
+        wheelUpdateStatus();
+        alert('Config "' + name + '" created!');
+      }
+    } catch(err){
+      alert('Save error: ' + (err.message || 'Try again'));
+    }
   };
 
-  window.wheelLoadConfig = function(){
-    var configs = JSON.parse(localStorage.getItem('sn_wheel_configs') || '{}');
-    var names = Object.keys(configs);
-    if(!names.length){ alert('No saved configs.'); return; }
-    var name = prompt('Available configs:\\n' + names.join('\\n') + '\\n\\nEnter name to load:');
-    if(!name || !configs[name]) return;
-    wheelPrizes = configs[name].prizes || [];
-    document.getElementById('wheelSpinPrice').value = configs[name].spinPrice || 10;
+  /* ── Wheel Config: Load from DB ── */
+  window.wheelLoadConfig = async function(){
+    try {
+      var token = await snAuth.getAccessToken();
+      var configs = await snProfile.wheelConfigList(token);
+      if(!configs.length){
+        alert('No saved wheel configs yet.');
+        return;
+      }
+      // Show picker overlay
+      var body = document.getElementById('wheelPickerBody');
+      var html = '<div style="display:flex;flex-direction:column;gap:8px">';
+      configs.forEach(function(cfg){
+        var totalSlots = (cfg.prizes || []).reduce(function(s,p){ return s + (parseInt(p.slots)||0); }, 0);
+        var rev = parseFloat(cfg.total_revenue) || 0;
+        var updated = cfg.updated_at ? new Date(cfg.updated_at).toLocaleDateString() : '';
+        html += '<div class="user-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;border-radius:8px;background:rgba(255,255,255,.03)" onclick="wheelLoadConfigById(\'' + escapeHtml(cfg.id) + '\')">' +
+          '<div><strong style="color:var(--white)">' + escapeHtml(cfg.name) + '</strong>' +
+          '<div style="color:var(--silver);font-size:12px;margin-top:2px">$' + (parseFloat(cfg.spin_price)||0).toFixed(2) + '/spin &middot; ' + totalSlots + ' slots' +
+          (rev > 0 ? ' &middot; $' + rev.toFixed(2) + ' revenue' : '') + '</div></div>' +
+          '<span style="color:var(--silver);font-size:11px">' + updated + '</span></div>';
+      });
+      html += '</div>';
+      body.innerHTML = html;
+      document.getElementById('wheelPickerOverlay').classList.add('open');
+    } catch(err){
+      alert('Load error: ' + (err.message || 'Try again'));
+    }
+  };
+
+  window.wheelLoadConfigById = async function(configId){
+    try {
+      var token = await snAuth.getAccessToken();
+      var configs = await snProfile.wheelConfigList(token);
+      var cfg = configs.find(function(c){ return c.id === configId; });
+      if(!cfg){ alert('Config not found.'); return; }
+
+      currentWheelConfigId = cfg.id;
+      currentWheelConfigName = cfg.name;
+      wheelPrizes = cfg.prizes || [];
+      document.getElementById('wheelSpinPrice').value = cfg.spin_price || 10;
+      document.getElementById('wheelTotalSpins').value = cfg.total_spins || 0;
+      document.getElementById('wheelTotalRevenue').value = cfg.total_revenue || 0;
+      document.getElementById('wheelConfigNotes').value = cfg.notes || '';
+      wheelUpdateStatus();
+      wheelRender();
+      wheelRecalc();
+      closeWheelPicker();
+    } catch(err){
+      alert('Load error: ' + (err.message || 'Try again'));
+    }
+  };
+
+  window.closeWheelPicker = function(e){
+    if(e && e.target !== e.currentTarget) return;
+    document.getElementById('wheelPickerOverlay').classList.remove('open');
+  };
+
+  /* ── Wheel Config: New ── */
+  window.wheelNewConfig = function(){
+    currentWheelConfigId = null;
+    currentWheelConfigName = '';
+    wheelPrizes = [];
+    document.getElementById('wheelSpinPrice').value = '10';
+    document.getElementById('wheelTotalSpins').value = '0';
+    document.getElementById('wheelTotalRevenue').value = '0';
+    document.getElementById('wheelConfigNotes').value = '';
+    wheelUpdateStatus();
     wheelRender();
     wheelRecalc();
+  };
+
+  /* ── Wheel Config: Delete ── */
+  window.wheelDeleteConfig = async function(){
+    if(!currentWheelConfigId) return;
+    if(!confirm('Delete wheel config "' + currentWheelConfigName + '"? This cannot be undone.')) return;
+    try {
+      var token = await snAuth.getAccessToken();
+      await snProfile.wheelConfigDelete(currentWheelConfigId, token);
+      alert('Config deleted.');
+      wheelNewConfig();
+    } catch(err){
+      alert('Delete error: ' + (err.message || 'Try again'));
+    }
   };
 
   /* ═══════════════════════════════════════════════════════

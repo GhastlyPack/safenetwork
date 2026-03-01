@@ -609,6 +609,62 @@
     }
   }
 
+  /* ── Admin Inventory: Bulk Add ── */
+  async function adminInventoryBulkAdd(items, accessToken){
+    try {
+      var result = await callEdge('admin-inventory-bulk-add', { items: items }, accessToken);
+      return result.items || [];
+    } catch(err){
+      console.warn('Admin inventory bulk add error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Wheel Config: List ── */
+  async function wheelConfigList(accessToken){
+    try {
+      var result = await callEdge('wheel-config-list', {}, accessToken);
+      return result.configs || [];
+    } catch(err){
+      console.warn('Wheel config list error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Wheel Config: Save ── */
+  async function wheelConfigSave(config, accessToken){
+    try {
+      var result = await callEdge('wheel-config-save', config, accessToken);
+      return result.config;
+    } catch(err){
+      console.warn('Wheel config save error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Wheel Config: Update ── */
+  async function wheelConfigUpdate(id, updates, accessToken){
+    try {
+      updates.id = id;
+      var result = await callEdge('wheel-config-update', updates, accessToken);
+      return result.config;
+    } catch(err){
+      console.warn('Wheel config update error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Wheel Config: Delete ── */
+  async function wheelConfigDelete(id, accessToken){
+    try {
+      var result = await callEdge('wheel-config-delete', { id: id }, accessToken);
+      return result.success;
+    } catch(err){
+      console.warn('Wheel config delete error:', err);
+      throw err;
+    }
+  }
+
   /* ── Admin: Refresh Spot Prices ── */
   async function adminRefreshSpotPrices(accessToken){
     try {
@@ -850,6 +906,11 @@
     adminInventoryUpdate: adminInventoryUpdate,
     adminInventoryRemove: adminInventoryRemove,
     adminInventoryMarkSold: adminInventoryMarkSold,
+    adminInventoryBulkAdd: adminInventoryBulkAdd,
+    wheelConfigList: wheelConfigList,
+    wheelConfigSave: wheelConfigSave,
+    wheelConfigUpdate: wheelConfigUpdate,
+    wheelConfigDelete: wheelConfigDelete,
     adminRefreshSpotPrices: adminRefreshSpotPrices,
     justtcgSearch: justtcgSearch,
     justtcgBatch: justtcgBatch,

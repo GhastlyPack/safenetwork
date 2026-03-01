@@ -1976,6 +1976,8 @@ async function handleAdminInventoryAdd(auth0User: { sub: string; email: string }
       name: data.name.trim().slice(0, 300),
       category: data.category,
       status: status,
+      quantity: Math.max(1, parseInt(data.quantity) || 1),
+      quantity_sold: 0,
       purchase_date: data.purchase_date || null,
       purchase_price: data.purchase_price || null,
       buyers_premium: data.buyers_premium || null,
@@ -2020,7 +2022,7 @@ async function handleAdminInventoryUpdate(auth0User: { sub: string; email: strin
     'name', 'category', 'status', 'purchase_date', 'purchase_price',
     'buyers_premium', 'source_seller', 'market_value', 'listed_on_whatnot',
     'stream_date', 'starting_bid', 'final_sale_price', 'sale_fees',
-    'details', 'notes'
+    'details', 'notes', 'quantity', 'quantity_sold'
   ]
 
   const updates: Record<string, any> = {}
@@ -2102,19 +2104,56 @@ async function handleAdminInventoryMarkSold(auth0User: { sub: string; email: str
 
   if (!data.id) throw new Error('Item ID is required')
 
+  // Fetch the full item to check quantity
+  const { data: existing, error: fetchErr } = await supabase
+    .from('admin_inventory')
+    .select('*')
+    .eq('id', data.id)
+    .single()
+  if (fetchErr || !existing) throw new Error('Item not found')
+
   // If host, verify they own this item's category
-  if (access.allowedCategories) {
-    const { data: existing } = await supabase.from('admin_inventory').select('category').eq('id', data.id).single()
-    if (!existing || !access.allowedCategories.includes(existing.category)) {
-      throw new Error('Unauthorized: no access to this item')
-    }
+  if (access.allowedCategories && !access.allowedCategories.includes(existing.category)) {
+    throw new Error('Unauthorized: no access to this item')
   }
 
+  const qty = existing.quantity || 1
+  const qtySold = existing.quantity_sold || 0
+  const remaining = qty - qtySold
+  const qtyToSell = Math.max(1, parseInt(data.quantity_to_sell) || 1)
+
+  if (qtyToSell > remaining) {
+    throw new Error('Cannot sell ' + qtyToSell + ' — only ' + remaining + ' remaining in stock')
+  }
+
+  // Build sale entry for the details.sales[] array
+  const saleEntry: Record<string, any> = {
+    qty: qtyToSell,
+    date: new Date().toISOString(),
+  }
+  if (data.price_per_unit !== undefined) saleEntry.price_per_unit = data.price_per_unit
+  if (data.total_sale_price !== undefined) saleEntry.total_sale_price = data.total_sale_price
+  if (data.sale_fees !== undefined) saleEntry.sale_fees = data.sale_fees
+  if (data.stream_date !== undefined) saleEntry.stream_date = data.stream_date
+
+  // Append sale to details.sales array
+  const details = existing.details || {}
+  if (!Array.isArray(details.sales)) details.sales = []
+  details.sales.push(saleEntry)
+
+  const newQtySold = qtySold + qtyToSell
+  const fullyDepleted = newQtySold >= qty
+
   const updates: Record<string, any> = {
-    status: 'sold',
+    quantity_sold: newQtySold,
+    details: details,
     updated_at: new Date().toISOString(),
   }
 
+  // For single-quantity items or fully sold, also set legacy sale fields + status
+  if (fullyDepleted) {
+    updates.status = 'sold'
+  }
   if (data.final_sale_price !== undefined) updates.final_sale_price = data.final_sale_price
   if (data.sale_fees !== undefined) updates.sale_fees = data.sale_fees
   if (data.stream_date !== undefined) updates.stream_date = data.stream_date
@@ -2128,6 +2167,66 @@ async function handleAdminInventoryMarkSold(auth0User: { sub: string; email: str
 
   if (error) throw error
   return { item }
+}
+
+/* ── Action: Admin Inventory Bulk Add ── */
+async function handleAdminInventoryBulkAdd(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  if (!Array.isArray(data.items) || !data.items.length) {
+    throw new Error('items array is required')
+  }
+  if (data.items.length > 50) {
+    throw new Error('Maximum 50 items per bulk add')
+  }
+
+  const validCategories = ['coins', 'bullion', 'pokemon_cards', 'pokemon_sealed', 'sports_cards']
+  const validStatuses = ['in_stock', 'listed', 'sold', 'returned', 'held']
+
+  const rows = data.items.map((item: any, idx: number) => {
+    if (!item.name || !item.name.trim()) throw new Error('Item ' + (idx + 1) + ': name is required')
+    if (item.name.trim().length > 300) throw new Error('Item ' + (idx + 1) + ': name must be 300 chars or less')
+    if (!item.category || !validCategories.includes(item.category)) throw new Error('Item ' + (idx + 1) + ': invalid category')
+    if (access.allowedCategories && !access.allowedCategories.includes(item.category)) {
+      throw new Error('Item ' + (idx + 1) + ': unauthorized category ' + item.category)
+    }
+    const status = item.status || 'in_stock'
+    if (!validStatuses.includes(status)) throw new Error('Item ' + (idx + 1) + ': invalid status')
+
+    return {
+      name: item.name.trim().slice(0, 300),
+      category: item.category,
+      status: status,
+      quantity: Math.max(1, parseInt(item.quantity) || 1),
+      quantity_sold: 0,
+      purchase_date: item.purchase_date || null,
+      purchase_price: item.purchase_price || null,
+      buyers_premium: item.buyers_premium || null,
+      source_seller: item.source_seller || null,
+      market_value: item.market_value || null,
+      listed_on_whatnot: item.listed_on_whatnot || false,
+      stream_date: item.stream_date || null,
+      starting_bid: item.starting_bid || null,
+      final_sale_price: item.final_sale_price || null,
+      sale_fees: item.sale_fees || null,
+      details: item.details || null,
+      notes: item.notes || null,
+      created_by: auth0User.sub,
+    }
+  })
+
+  const { data: items, error } = await supabase
+    .from('admin_inventory')
+    .insert(rows)
+    .select()
+
+  if (error) throw error
+  return { items: items || [] }
 }
 
 /* ── Action: Admin Refresh Spot Prices ── */
@@ -2186,6 +2285,101 @@ async function handleAdminRefreshSpotPrices(auth0User: { sub: string; email: str
 
   if (error) throw error
   return { prices: prices || [] }
+}
+
+// ── Wheel Config CRUD ──
+
+async function handleWheelConfigList(auth0User: { sub: string; email: string }) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  const { data: configs, error } = await supabase
+    .from('wheel_configs')
+    .select('*')
+    .order('updated_at', { ascending: false })
+
+  if (error) throw error
+  return { configs: configs || [] }
+}
+
+async function handleWheelConfigSave(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  if (!data.name || !data.name.trim()) throw new Error('Config name is required')
+
+  const { data: config, error } = await supabase
+    .from('wheel_configs')
+    .insert({
+      name: data.name.trim().slice(0, 200),
+      spin_price: parseFloat(data.spin_price) || 0,
+      prizes: data.prizes || [],
+      total_spins: parseInt(data.total_spins) || 0,
+      total_revenue: parseFloat(data.total_revenue) || 0,
+      notes: data.notes || null,
+      created_by: auth0User.sub,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return { config }
+}
+
+async function handleWheelConfigUpdate(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  if (!data.id) throw new Error('Config ID is required')
+
+  const allowedFields = ['name', 'spin_price', 'prizes', 'total_spins', 'total_revenue', 'notes']
+  const updates: Record<string, any> = {}
+  for (const key of allowedFields) {
+    if (data[key] !== undefined) updates[key] = data[key]
+  }
+  if (Object.keys(updates).length === 0) throw new Error('No valid fields to update')
+  updates.updated_at = new Date().toISOString()
+
+  const { data: config, error } = await supabase
+    .from('wheel_configs')
+    .update(updates)
+    .eq('id', data.id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return { config }
+}
+
+async function handleWheelConfigDelete(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  if (!data.id) throw new Error('Config ID is required')
+
+  const { error } = await supabase
+    .from('wheel_configs')
+    .delete()
+    .eq('id', data.id)
+
+  if (error) throw error
+  return { success: true }
 }
 
 // ── JustTCG Card Price Lookup ──
@@ -2647,6 +2841,21 @@ serve(async (req: Request) => {
         break
       case 'admin-inventory-mark-sold':
         result = await handleAdminInventoryMarkSold(auth0User, data || {})
+        break
+      case 'admin-inventory-bulk-add':
+        result = await handleAdminInventoryBulkAdd(auth0User, data || {})
+        break
+      case 'wheel-config-list':
+        result = await handleWheelConfigList(auth0User)
+        break
+      case 'wheel-config-save':
+        result = await handleWheelConfigSave(auth0User, data || {})
+        break
+      case 'wheel-config-update':
+        result = await handleWheelConfigUpdate(auth0User, data || {})
+        break
+      case 'wheel-config-delete':
+        result = await handleWheelConfigDelete(auth0User, data || {})
         break
       case 'admin-refresh-spot-prices':
         result = await handleAdminRefreshSpotPrices(auth0User)

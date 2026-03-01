@@ -2283,9 +2283,8 @@ async function handleAdminInventoryBulkAdd(auth0User: { sub: string; email: stri
 async function handleAdminRefreshSpotPrices(auth0User: { sub: string; email: string }) {
   const callerProfile = await getProfileByAuth0Id(auth0User.sub)
   if (!callerProfile) throw new Error('Unauthorized')
-  const access = getInventoryAccess(callerProfile)
-  if (access.allowedCategories && access.allowedCategories.length === 0) {
-    throw new Error('Unauthorized: no inventory access')
+  if (callerProfile.role !== 'admin' && callerProfile.role !== 'host') {
+    throw new Error('Unauthorized: admin or host access required')
   }
 
   const apiKey = Deno.env.get('METALS_API_KEY')

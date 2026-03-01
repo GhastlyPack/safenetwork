@@ -1862,7 +1862,7 @@
   function renderDashboard(){
     var total = allInventory.length;
     var inStock = 0, listed = 0, sold = 0;
-    var totalCost = 0, totalRevenue = 0, totalFees = 0;
+    var totalCost = 0, soldCost = 0, totalRevenue = 0, totalFees = 0;
     var catData = {};
 
     allInventory.forEach(function(item){
@@ -1874,24 +1874,26 @@
       totalCost += cost;
 
       if(item.status === 'sold'){
+        soldCost += cost;
         totalRevenue += parseFloat(item.final_sale_price) || 0;
         totalFees += parseFloat(item.sale_fees) || 0;
       }
 
       var cat = item.category || 'other';
-      if(!catData[cat]) catData[cat] = {count:0, inStock:0, sold:0, cost:0, revenue:0, fees:0};
+      if(!catData[cat]) catData[cat] = {count:0, inStock:0, sold:0, cost:0, soldCost:0, revenue:0, fees:0};
       catData[cat].count++;
       if(item.status === 'in_stock') catData[cat].inStock++;
       if(item.status === 'sold'){
         catData[cat].sold++;
+        catData[cat].soldCost += cost;
         catData[cat].revenue += parseFloat(item.final_sale_price) || 0;
         catData[cat].fees += parseFloat(item.sale_fees) || 0;
       }
       catData[cat].cost += cost;
     });
 
-    var netProfit = totalRevenue - totalFees - totalCost;
-    var margin = totalRevenue > 0 ? ((totalRevenue - totalFees - totalCost) / totalRevenue * 100) : 0;
+    var netProfit = totalRevenue - totalFees - soldCost;
+    var margin = totalRevenue > 0 ? ((totalRevenue - totalFees - soldCost) / totalRevenue * 100) : 0;
 
     document.getElementById('invStatTotal').textContent = total;
     document.getElementById('invStatInStock').textContent = inStock;
@@ -1914,7 +1916,7 @@
     var html = '';
     cats.forEach(function(cat){
       var d = catData[cat];
-      var catProfit = d.revenue - d.fees - d.cost;
+      var catProfit = d.revenue - d.fees - d.soldCost;
       html += '<tr>' +
         '<td><span class="profile-badge" style="font-size:10px;background:rgba(30,144,255,.12);color:var(--blue)">' + escapeHtml(INV_CATEGORY_LABELS[cat] || cat) + '</span></td>' +
         '<td>' + d.count + '</td>' +

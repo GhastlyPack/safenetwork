@@ -2301,8 +2301,10 @@ async function handleAdminRefreshSpotPrices(auth0User: { sub: string; email: str
   }
 
   const json = await res.json()
+  console.log('Metals API response:', JSON.stringify(json).slice(0, 500))
+
   if (!json.success || !json.rates) {
-    throw new Error('Invalid response from metals-api')
+    throw new Error('Invalid response from metals-api: ' + JSON.stringify({ success: json.success, error: json.error }).slice(0, 200))
   }
 
   // metals-api returns inverted rates: price per oz = 1 / rate
@@ -2314,10 +2316,13 @@ async function handleAdminRefreshSpotPrices(auth0User: { sub: string; email: str
   ]
 
   for (const metal of metals) {
-    if (json.rates[metal.symbol]) {
-      const pricePerOz = 1 / json.rates[metal.symbol]
+    const rate = json.rates[metal.symbol]
+    console.log(`Metal ${metal.symbol}: rate=${rate}`)
+    if (rate) {
+      const pricePerOz = 1 / rate
+      console.log(`Metal ${metal.symbol}: price=$${pricePerOz.toFixed(2)}`)
 
-      await supabase
+      const { error: upsertErr } = await supabase
         .from('spot_prices')
         .upsert({
           symbol: metal.symbol,
@@ -2325,6 +2330,8 @@ async function handleAdminRefreshSpotPrices(auth0User: { sub: string; email: str
           price_usd: pricePerOz,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'symbol' })
+
+      if (upsertErr) console.log(`Upsert error for ${metal.symbol}:`, upsertErr)
     }
   }
 
@@ -2332,6 +2339,7 @@ async function handleAdminRefreshSpotPrices(auth0User: { sub: string; email: str
     .from('spot_prices')
     .select('*')
 
+  console.log('Spot prices after upsert:', JSON.stringify(prices))
   if (error) throw error
   return { prices: prices || [] }
 }

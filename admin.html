@@ -737,100 +737,100 @@
 
   </div><!-- /adminTabInventory -->
 
-  <!-- Inventory Add/Edit Panel (slide from right) -->
-  <div class="admin-edit-overlay" id="invEditOverlay" onclick="closeInvEditPanel(event)">
-    <div class="admin-edit-panel" onclick="event.stopPropagation()">
-      <button class="admin-edit-close" onclick="closeInvEditPanel()">&times;</button>
-      <h2 id="invEditTitle">Add Item</h2>
+</div><!-- /adminContent -->
 
-      <div class="inv-form-grid">
-        <div class="inv-form-field full">
-          <label>Name *</label>
-          <input type="text" id="invName" placeholder="Item name or description"/>
-        </div>
-        <div class="inv-form-field">
-          <label>Category</label>
-          <select id="invCategory" onchange="updateInvDetailFields()">
-            <option value="coins">Coins</option>
-            <option value="bullion">Bullion</option>
-            <option value="pokemon_cards">Pokemon Cards</option>
-            <option value="pokemon_sealed">Pokemon Sealed</option>
-            <option value="sports_cards">Sports Cards</option>
-          </select>
-        </div>
-        <div class="inv-form-field">
-          <label>Quantity</label>
-          <input type="number" id="invQuantity" min="1" step="1" value="1" placeholder="1"/>
-        </div>
-        <div class="inv-form-field">
-          <label>Status</label>
-          <select id="invStatus">
-            <option value="in_stock">In Stock</option>
-            <option value="listed">Listed</option>
-            <option value="sold">Sold</option>
-            <option value="returned">Returned</option>
-            <option value="held">Held</option>
-          </select>
-        </div>
-        <div class="inv-form-field">
-          <label>Purchase Date</label>
-          <input type="date" id="invPurchaseDate"/>
-        </div>
-        <div class="inv-form-field">
-          <label>Purchase Price ($)</label>
-          <input type="number" id="invPurchasePrice" min="0" step="0.01"/>
-        </div>
-        <div class="inv-form-field">
-          <label>Buyer's Premium ($)</label>
-          <input type="number" id="invBuyersPremium" min="0" step="0.01" value="0"/>
-        </div>
-        <div class="inv-form-field">
-          <label>Source / Seller</label>
-          <input type="text" id="invSource" placeholder="Auction house, dealer, etc."/>
-        </div>
-        <div class="inv-form-field">
-          <label>Market Value ($)</label>
-          <input type="number" id="invMarketValue" min="0" step="0.01"/>
-        </div>
-        <div class="inv-form-field">
-          <label>Listed on Whatnot?</label>
-          <select id="invListedWhatnot">
-            <option value="false">No</option>
-            <option value="true">Yes</option>
-          </select>
-        </div>
-        <div class="inv-form-field">
-          <label>Stream Date</label>
-          <input type="date" id="invStreamDate"/>
-        </div>
-        <div class="inv-form-field">
-          <label>Starting Bid ($)</label>
-          <input type="number" id="invStartingBid" min="0" step="0.01"/>
-        </div>
-        <div class="inv-form-field">
-          <label>Final Sale Price ($)</label>
-          <input type="number" id="invFinalSalePrice" min="0" step="0.01"/>
-        </div>
-        <div class="inv-form-field">
-          <label>Sale Fees ($)</label>
-          <input type="number" id="invSaleFees" min="0" step="0.01"/>
-        </div>
-        <div class="inv-form-field full">
-          <label>Notes</label>
-          <textarea id="invNotes" rows="3" placeholder="Additional notes..."></textarea>
-        </div>
+<!-- Inventory Add/Edit Panel (slide from right) -->
+<div class="admin-edit-overlay" id="invEditOverlay" onclick="closeInvEditPanel(event)">
+  <div class="admin-edit-panel" onclick="event.stopPropagation()">
+    <button class="admin-edit-close" onclick="closeInvEditPanel()">&times;</button>
+    <h2 id="invEditTitle">Add Item</h2>
+
+    <div class="inv-form-grid">
+      <div class="inv-form-field full">
+        <label>Name *</label>
+        <input type="text" id="invName" placeholder="Item name or description"/>
       </div>
-
-      <!-- Dynamic Category-Specific Fields -->
-      <div id="invDetailFields" style="margin-top:16px"></div>
-
-      <div class="admin-panel-actions" style="display:flex;gap:12px">
-        <button class="btn-primary" style="flex:1;padding:14px" onclick="saveInventoryItem()">Save Item</button>
-        <button class="btn-primary" style="flex:1;padding:14px;background:rgba(192,200,216,.1);color:var(--silver)" onclick="closeInvEditPanel()">Cancel</button>
+      <div class="inv-form-field">
+        <label>Category</label>
+        <select id="invCategory" onchange="updateInvDetailFields()">
+          <option value="coins">Coins</option>
+          <option value="bullion">Bullion</option>
+          <option value="pokemon_cards">Pokemon Cards</option>
+          <option value="pokemon_sealed">Pokemon Sealed</option>
+          <option value="sports_cards">Sports Cards</option>
+        </select>
+      </div>
+      <div class="inv-form-field">
+        <label>Quantity</label>
+        <input type="number" id="invQuantity" min="1" step="1" value="1" placeholder="1"/>
+      </div>
+      <div class="inv-form-field">
+        <label>Status</label>
+        <select id="invStatus">
+          <option value="in_stock">In Stock</option>
+          <option value="listed">Listed</option>
+          <option value="sold">Sold</option>
+          <option value="returned">Returned</option>
+          <option value="held">Held</option>
+        </select>
+      </div>
+      <div class="inv-form-field">
+        <label>Purchase Date</label>
+        <input type="date" id="invPurchaseDate"/>
+      </div>
+      <div class="inv-form-field">
+        <label>Purchase Price ($)</label>
+        <input type="number" id="invPurchasePrice" min="0" step="0.01"/>
+      </div>
+      <div class="inv-form-field">
+        <label>Buyer's Premium ($)</label>
+        <input type="number" id="invBuyersPremium" min="0" step="0.01" value="0"/>
+      </div>
+      <div class="inv-form-field">
+        <label>Source / Seller</label>
+        <input type="text" id="invSource" placeholder="Auction house, dealer, etc."/>
+      </div>
+      <div class="inv-form-field">
+        <label>Market Value ($)</label>
+        <input type="number" id="invMarketValue" min="0" step="0.01"/>
+      </div>
+      <div class="inv-form-field">
+        <label>Listed on Whatnot?</label>
+        <select id="invListedWhatnot">
+          <option value="false">No</option>
+          <option value="true">Yes</option>
+        </select>
+      </div>
+      <div class="inv-form-field">
+        <label>Stream Date</label>
+        <input type="date" id="invStreamDate"/>
+      </div>
+      <div class="inv-form-field">
+        <label>Starting Bid ($)</label>
+        <input type="number" id="invStartingBid" min="0" step="0.01"/>
+      </div>
+      <div class="inv-form-field">
+        <label>Final Sale Price ($)</label>
+        <input type="number" id="invFinalSalePrice" min="0" step="0.01"/>
+      </div>
+      <div class="inv-form-field">
+        <label>Sale Fees ($)</label>
+        <input type="number" id="invSaleFees" min="0" step="0.01"/>
+      </div>
+      <div class="inv-form-field full">
+        <label>Notes</label>
+        <textarea id="invNotes" rows="3" placeholder="Additional notes..."></textarea>
       </div>
     </div>
-  </div>
 
+    <!-- Dynamic Category-Specific Fields -->
+    <div id="invDetailFields" style="margin-top:16px"></div>
+
+    <div class="admin-panel-actions" style="display:flex;gap:12px">
+      <button class="btn-primary" style="flex:1;padding:14px" onclick="saveInventoryItem()">Save Item</button>
+      <button class="btn-primary" style="flex:1;padding:14px;background:rgba(192,200,216,.1);color:var(--silver)" onclick="closeInvEditPanel()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <!-- Bulk Add Panel (slide from right) -->

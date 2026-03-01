@@ -457,6 +457,8 @@ async function handleListScheduledShows(data: any) {
     duration_minutes: s.duration_minutes,
     status: s.status,
     whatnot_url: s.whatnot_url,
+    thumbnail_url: s.thumbnail_url || null,
+    is_special: s.is_special || false,
     created_at: s.created_at,
   }))
 
@@ -501,6 +503,8 @@ async function handleCreateScheduledShow(auth0User: { sub: string; email: string
     duration_minutes: data.duration_minutes || 60,
     status: 'scheduled',
     whatnot_url: data.whatnot_url || null,
+    thumbnail_url: data.thumbnail_url || null,
+    is_special: data.is_special === true,
     created_by: auth0User.sub,
   }
 
@@ -542,7 +546,7 @@ async function handleUpdateScheduledShow(auth0User: { sub: string; email: string
     throw new Error('Unauthorized: you can only update your own shows')
   }
 
-  const allowedFields = ['title', 'description', 'scheduled_at', 'duration_minutes', 'status', 'whatnot_url', 'show_type']
+  const allowedFields = ['title', 'description', 'scheduled_at', 'duration_minutes', 'status', 'whatnot_url', 'show_type', 'thumbnail_url', 'is_special']
   // Admins can also reassign host
   if (isAdmin) allowedFields.push('host_slug')
 
@@ -2287,6 +2291,61 @@ async function handleAdminRefreshSpotPrices(auth0User: { sub: string; email: str
   return { prices: prices || [] }
 }
 
+/* ── Action: Admin Inventory Bulk Price Update ── */
+async function handleAdminInventoryBulkPriceUpdate(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  const updates = data.updates
+  if (!Array.isArray(updates) || !updates.length) {
+    throw new Error('updates array is required')
+  }
+  if (updates.length > 500) {
+    throw new Error('Maximum 500 items per bulk price update')
+  }
+
+  let updatedCount = 0
+  for (const upd of updates) {
+    if (!upd.id) continue
+    const marketValue = parseFloat(upd.market_value)
+    if (isNaN(marketValue)) continue
+
+    // Fetch existing item to merge details
+    const { data: existing } = await supabase
+      .from('admin_inventory')
+      .select('details, category')
+      .eq('id', upd.id)
+      .single()
+
+    if (!existing) continue
+
+    // Host category access check
+    if (access.allowedCategories && access.allowedCategories.indexOf(existing.category) === -1) continue
+
+    const mergedDetails = { ...(existing.details || {}) }
+    if (upd.details_patch && typeof upd.details_patch === 'object') {
+      Object.assign(mergedDetails, upd.details_patch)
+    }
+
+    const { error } = await supabase
+      .from('admin_inventory')
+      .update({
+        market_value: marketValue,
+        details: mergedDetails,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', upd.id)
+
+    if (!error) updatedCount++
+  }
+
+  return { updated: updatedCount }
+}
+
 // ── Wheel Config CRUD ──
 
 async function handleWheelConfigList(auth0User: { sub: string; email: string }) {
@@ -2325,6 +2384,7 @@ async function handleWheelConfigSave(auth0User: { sub: string; email: string }, 
       total_spins: parseInt(data.total_spins) || 0,
       total_revenue: parseFloat(data.total_revenue) || 0,
       notes: data.notes || null,
+      status: data.status || 'pre_game',
       created_by: auth0User.sub,
     })
     .select()
@@ -2344,12 +2404,16 @@ async function handleWheelConfigUpdate(auth0User: { sub: string; email: string }
 
   if (!data.id) throw new Error('Config ID is required')
 
-  const allowedFields = ['name', 'spin_price', 'prizes', 'total_spins', 'total_revenue', 'notes']
+  const allowedFields = ['name', 'spin_price', 'prizes', 'total_spins', 'total_revenue', 'notes', 'status']
   const updates: Record<string, any> = {}
   for (const key of allowedFields) {
     if (data[key] !== undefined) updates[key] = data[key]
   }
   if (Object.keys(updates).length === 0) throw new Error('No valid fields to update')
+  if (updates.status) {
+    const validStatuses = ['pre_game', 'game_live', 'post_game']
+    if (!validStatuses.includes(updates.status)) throw new Error('Invalid wheel config status')
+  }
   updates.updated_at = new Date().toISOString()
 
   const { data: config, error } = await supabase
@@ -2844,6 +2908,9 @@ serve(async (req: Request) => {
         break
       case 'admin-inventory-bulk-add':
         result = await handleAdminInventoryBulkAdd(auth0User, data || {})
+        break
+      case 'admin-inventory-bulk-price-update':
+        result = await handleAdminInventoryBulkPriceUpdate(auth0User, data || {})
         break
       case 'wheel-config-list':
         result = await handleWheelConfigList(auth0User)

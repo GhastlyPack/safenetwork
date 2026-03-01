@@ -620,6 +620,17 @@
     }
   }
 
+  /* ── Admin Inventory: Bulk Price Update ── */
+  async function adminInventoryBulkPriceUpdate(updates, accessToken){
+    try {
+      var result = await callEdge('admin-inventory-bulk-price-update', { updates: updates }, accessToken);
+      return result;
+    } catch(err){
+      console.warn('Admin inventory bulk price update error:', err);
+      throw err;
+    }
+  }
+
   /* ── Wheel Config: List ── */
   async function wheelConfigList(accessToken){
     try {
@@ -907,6 +918,7 @@
     adminInventoryRemove: adminInventoryRemove,
     adminInventoryMarkSold: adminInventoryMarkSold,
     adminInventoryBulkAdd: adminInventoryBulkAdd,
+    adminInventoryBulkPriceUpdate: adminInventoryBulkPriceUpdate,
     wheelConfigList: wheelConfigList,
     wheelConfigSave: wheelConfigSave,
     wheelConfigUpdate: wheelConfigUpdate,

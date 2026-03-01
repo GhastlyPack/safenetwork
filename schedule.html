@@ -249,12 +249,16 @@
 
     var opacity = isPast ? 'opacity:.5;' : '';
 
+    var thumbHtml = show.thumbnail_url ?
+      '<div class="schedule-card-thumb-wrap"><img src="' + safeUrl(show.thumbnail_url) + '" class="schedule-card-thumb" alt=""/></div>' : '';
+
     return '<div class="schedule-card" style="' + opacity + '">' +
       '<div class="schedule-card-date">' +
         '<div class="schedule-card-month">' + months[d.getMonth()] + '</div>' +
         '<div class="schedule-card-day">' + d.getDate() + '</div>' +
         '<div class="schedule-card-dow">' + days[d.getDay()] + '</div>' +
       '</div>' +
+      thumbHtml +
       '<div class="schedule-card-body">' +
         '<div class="schedule-card-time">' + timeStr + ' ' + tzStr + statusBadge + '</div>' +
         '<div class="schedule-card-title">' + type.emoji + ' ' + esc(show.title || type.label) + '</div>' +

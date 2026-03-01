@@ -226,7 +226,7 @@
         <label>Title</label>
         <input type="text" id="schedTitle" placeholder="e.g. Coins &amp; Bullion Live Auction" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none"/>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
         <div class="admin-edit-field" style="margin:0">
           <label>Date &amp; Time</label>
           <input type="datetime-local" id="schedDateTime" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none;color-scheme:dark"/>
@@ -235,14 +235,27 @@
           <label>Duration (min)</label>
           <input type="number" id="schedDuration" value="60" min="15" max="480" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none"/>
         </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
         <div class="admin-edit-field" style="margin:0">
           <label>Whatnot URL (optional)</label>
           <input type="url" id="schedWhatnotUrl" placeholder="https://www.whatnot.com/..." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none"/>
+        </div>
+        <div class="admin-edit-field" style="margin:0">
+          <label>Thumbnail URL (optional)</label>
+          <input type="url" id="schedThumbnailUrl" placeholder="https://..." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none"/>
         </div>
       </div>
       <div class="admin-edit-field" style="margin:0 0 16px">
         <label>Description (optional)</label>
         <input type="text" id="schedDesc" placeholder="Brief description of this show..." style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none"/>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--silver)">
+          <input type="checkbox" id="schedIsSpecial" style="width:18px;height:18px;accent-color:var(--gold2)"/>
+          <span>⭐ Special / Featured Show</span>
+          <span style="font-size:11px;color:var(--silver);opacity:.6">(Breaks, collabs, events — highlighted on homepage)</span>
+        </label>
       </div>
       <button class="admin-save-btn" id="schedCreateBtn" onclick="createShow()" style="margin:0">Create Show</button>
       <span id="schedCreateStatus" style="margin-left:12px;font-size:13px"></span>
@@ -509,7 +522,17 @@
           <button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(255,107,107,.15);color:#ff6b6b;display:none" id="wheelDeleteBtn" onclick="wheelDeleteConfig()">Delete</button>
         </div>
       </div>
-      <div id="wheelConfigStatus" style="color:var(--silver);font-size:12px;margin-bottom:16px;font-style:italic">New Config (unsaved)</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+        <div id="wheelConfigStatus" style="color:var(--silver);font-size:12px;font-style:italic">New Config (unsaved)</div>
+        <div class="inv-form-field" style="margin:0;min-width:140px" id="wheelStatusWrap">
+          <label style="font-size:11px;margin-bottom:2px">Game Status</label>
+          <select id="wheelConfigStatusSelect" style="font-size:12px;padding:6px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:var(--white)">
+            <option value="pre_game">Pre Game</option>
+            <option value="game_live">Live</option>
+            <option value="post_game">Completed</option>
+          </select>
+        </div>
+      </div>
 
       <!-- Spin Price -->
       <div class="inv-form-grid" style="margin-bottom:20px">
@@ -856,6 +879,18 @@
   </div>
 </div>
 
+<!-- Add to Game Picker (slide from right) -->
+<div class="admin-edit-overlay" id="addToGameOverlay" onclick="closeAddToGame(event)">
+  <div class="admin-edit-panel" style="max-width:700px" onclick="event.stopPropagation()">
+    <button class="admin-edit-close" onclick="closeAddToGame()">&times;</button>
+    <h2 style="color:var(--gold2)">Add to Game</h2>
+    <p id="addToGameItemLabel" style="color:var(--silver);font-size:13px;margin-bottom:16px"></p>
+    <div id="addToGameBody" style="margin-top:16px">
+      <p style="text-align:center;color:var(--silver);padding:40px 0">Loading...</p>
+    </div>
+  </div>
+</div>
+
 <!-- Price Lookup Panel (slide from right) -->
 <div class="admin-edit-overlay" id="priceLookupOverlay" onclick="closePriceLookup(event)">
   <div class="admin-edit-panel" style="max-width:800px" onclick="event.stopPropagation()">
@@ -969,16 +1004,19 @@
     maxocollects: {tabs: ['sports'], cats: ['sports_cards']}
   };
 
+  var currentHostProfile = null; // Set when host panel is active
+
   function setupHostPanel(profile){
+    currentHostProfile = profile;
     // Rebrand
     document.title = 'Host Panel | Safe Network';
     var h1 = document.querySelector('.admin-wrap h1');
     if(h1) h1.textContent = 'Host Panel';
     var sub = document.querySelector('.admin-wrap > p');
-    if(sub) sub.textContent = 'Manage your inventory, wheel builds, and break pricing.';
+    if(sub) sub.textContent = 'Manage your inventory, show schedule, wheel builds, and break pricing.';
 
     // Hide non-inventory admin tabs
-    ['tabUsers','tabWishes','tabSchedule','tabCollections','tabFeed'].forEach(function(id){
+    ['tabUsers','tabWishes','tabCollections','tabFeed'].forEach(function(id){
       var el = document.getElementById(id);
       if(el) el.style.display = 'none';
     });
@@ -1360,6 +1398,13 @@
         });
       }
 
+      // Lock host selector for hosts (they can only schedule their own shows)
+      if(currentHostProfile && currentHostProfile.host_slug){
+        hostSelect.value = currentHostProfile.host_slug;
+        hostSelect.disabled = true;
+        hostSelect.style.opacity = '.6';
+      }
+
       var result = await snProfile.listScheduledShows({ include_all: true });
       scheduledShows = result.shows || [];
       scheduledShowsLoaded = true;
@@ -1403,7 +1448,7 @@
 
       html += '<tr>' +
         '<td style="white-space:nowrap"><div style="font-weight:600">' + dateStr + '</div><div style="font-size:11px;color:var(--silver)">' + timeStr + '</div></td>' +
-        '<td style="font-weight:600">' + escapeHtml(s.title || '') + '</td>' +
+        '<td style="font-weight:600">' + (s.thumbnail_url ? '<img src="' + snSanitize.url(s.thumbnail_url) + '" style="width:36px;height:36px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-right:8px"/>' : '') + escapeHtml(s.title || '') + (s.is_special ? ' <span style="color:var(--gold2);font-size:11px" title="Featured Show">⭐</span>' : '') + '</td>' +
         '<td style="color:var(--blue);font-weight:600">@' + escapeHtml(s.host_handle || '') + '</td>' +
         '<td style="font-size:12px">' + typeLabel + '</td>' +
         '<td><span class="profile-badge ' + statusClass + '" style="font-size:10px">' + statusLabel + '</span></td>' +
@@ -1437,7 +1482,9 @@
       description: document.getElementById('schedDesc').value.trim() || null,
       scheduled_at: new Date(dateVal).toISOString(),
       duration_minutes: parseInt(document.getElementById('schedDuration').value) || 60,
-      whatnot_url: document.getElementById('schedWhatnotUrl').value.trim() || null
+      whatnot_url: document.getElementById('schedWhatnotUrl').value.trim() || null,
+      thumbnail_url: document.getElementById('schedThumbnailUrl').value.trim() || null,
+      is_special: document.getElementById('schedIsSpecial').checked
     };
 
     try {
@@ -1450,6 +1497,8 @@
       document.getElementById('schedDesc').value = '';
       document.getElementById('schedDateTime').value = '';
       document.getElementById('schedWhatnotUrl').value = '';
+      document.getElementById('schedThumbnailUrl').value = '';
+      document.getElementById('schedIsSpecial').checked = false;
       // Reload list
       loadScheduledShows();
     } catch(err){
@@ -1892,7 +1941,8 @@
     var html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">' +
       '<h3 style="color:var(--gold2);font-family:\'Bebas Neue\',sans-serif;font-size:22px;letter-spacing:1px;margin:0">' + escapeHtml(catLabel) + ' (' + items.length + ')</h3>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
-      (isPriceableCard ? '<button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(212,160,23,.15);color:var(--gold2)" onclick="openPriceLookup(\'' + escapeHtml(category) + '\')">&#x1F50D; Price Lookup</button>' : '') +
+      (isPriceableCard ? '<button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(212,160,23,.15);color:var(--gold2)" onclick="openPriceLookup(\'' + escapeHtml(category) + '\')">&#x1F50D; Price Lookup</button>' +
+      '<button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(74,222,128,.15);color:#4ade80" onclick="bulkUpdatePrices(\'' + escapeHtml(category) + '\',\'' + escapeHtml(containerId) + '\')">&#x1F4CA; Update Prices</button>' : '') +
       '<button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(192,200,216,.1);color:var(--silver)" onclick="openBulkAddPanel(\'' + escapeHtml(category) + '\')">Bulk Add</button>' +
       '<button class="btn-primary" style="font-size:12px;padding:8px 16px" onclick="openInvAddPanel(\'' + escapeHtml(category) + '\')">+ Add Item</button>' +
       '</div></div>';
@@ -1975,16 +2025,39 @@
     if(qty > 1) nameHtml += ' <span style="font-size:11px;font-weight:700;color:var(--blue);background:rgba(30,144,255,.15);padding:2px 6px;border-radius:4px;margin-left:6px">&times;' + qty + '</span>';
 
     var showMarkSold = (qty > 1) ? (inStock > 0) : (item.status !== 'sold');
+    var showAddToGame = (qty > 1) ? (inStock > 0) : (item.status !== 'sold');
+
+    // Price refresh/link button for card categories
+    var isCardCat = ['pokemon_cards','pokemon_sealed','sports_cards'].indexOf(item.category) !== -1;
+    var isLinked = item.details && item.details.justtcg_id;
+    var priceBtn = '';
+    if(isCardCat && isLinked){
+      priceBtn = '<button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(212,160,23,.15);color:var(--gold2);margin-right:4px" onclick="event.stopPropagation();refreshItemPrice(\'' + escapeHtml(item.id) + '\')" title="Refresh price">&#x1F504;</button>';
+    } else if(isCardCat && !isLinked){
+      priceBtn = '<button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(30,144,255,.15);color:var(--blue);margin-right:4px" onclick="event.stopPropagation();linkAndPriceItem(\'' + escapeHtml(item.id) + '\')" title="Link to JustTCG">&#x1F50D;</button>';
+    }
+
+    // Add to Game button
+    var addToGameBtn = showAddToGame ?
+      '<button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(138,43,226,.15);color:#c084fc;margin-right:4px" onclick="event.stopPropagation();openAddToGame(\'' + escapeHtml(item.id) + '\')">+ Game</button>' : '';
+
+    // Purchase price: show per-unit, hover for total
+    var unitFmt = '$' + unitCost.toLocaleString('en-US',{minimumFractionDigits:2});
+    var purchaseTd = (qty > 1) ?
+      '<td title="Total: $' + totalCost.toLocaleString('en-US',{minimumFractionDigits:2}) + ' (' + qty + ' &times; ' + unitFmt + ')" style="cursor:help">' + unitFmt + '</td>' :
+      '<td>' + unitFmt + '</td>';
 
     return '<tr class="user-row inv-item-row" data-inv-id="' + escapeHtml(item.id) + '">' +
       '<td class="username-cell">' + nameHtml + '</td>' +
       '<td><span style="font-size:11px;font-weight:600;' + statusClass + '">' + statusText + '</span></td>' +
-      '<td>$' + totalCost.toLocaleString('en-US',{minimumFractionDigits:2}) + '</td>' +
+      purchaseTd +
       '<td>' + (item.market_value ? '$' + parseFloat(item.market_value).toLocaleString('en-US',{minimumFractionDigits:2}) : '-') + '</td>' +
       '<td>' + (totalSaleRevenue > 0 ? '$' + totalSaleRevenue.toLocaleString('en-US',{minimumFractionDigits:2}) : '-') + '</td>' +
       '<td style="color:' + (hasSales ? (pl >= 0 ? '#4ade80' : '#ff6b6b') : 'var(--silver)') + '">' +
         (hasSales ? ((pl >= 0 ? '+' : '-') + '$' + Math.abs(pl).toLocaleString('en-US',{minimumFractionDigits:2})) : '-') + '</td>' +
       '<td>' +
+        priceBtn +
+        addToGameBtn +
         (showMarkSold ? '<button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(74,222,128,.15);color:#4ade80;margin-right:4px" onclick="event.stopPropagation();markSold(\'' + escapeHtml(item.id) + '\')">Mark Sold</button>' : '') +
         '<button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(255,107,107,.15);color:#ff6b6b" onclick="event.stopPropagation();deleteInvItem(\'' + escapeHtml(item.id) + '\')">Delete</button>' +
       '</td></tr>';
@@ -2532,11 +2605,178 @@
     searchJustTCG(query, game);
   };
 
+  /* ── Refresh Price for Linked Card Items ── */
+  window.refreshItemPrice = async function(itemId){
+    var item = allInventory.find(function(i){ return i.id === itemId; });
+    if(!item || !item.details || !item.details.justtcg_id) return;
+
+    var btn = event && event.target;
+    if(btn){ btn.disabled = true; btn.textContent = '...'; }
+
+    try {
+      var token = await snAuth.getAccessToken();
+      var game = (item.category === 'sports_cards') ? '' : 'pokemon';
+      var result = await snProfile.justtcgSearch(item.details.justtcg_id, game, {
+        include_price_history: true,
+        priceHistoryDuration: '30d'
+      }, token);
+
+      var cards = result.cards || [];
+      if(!cards.length){ alert('Card not found in JustTCG. Try relinking.'); return; }
+
+      var card = cards[0];
+      var mainVariant = (card.variants || [])[0] || {};
+      var newPrice = mainVariant.price ? parseFloat(mainVariant.price) : null;
+      if(!newPrice){ alert('No price data available for this card.'); return; }
+
+      // Merge details
+      var updatedDetails = Object.assign({}, item.details || {}, {
+        justtcg_last_price: newPrice,
+        justtcg_price_updated: new Date().toISOString(),
+        justtcg_image: card.image || (card.images && card.images.small) || item.details.justtcg_image || ''
+      });
+
+      // Preserve sales array
+      if(item.details.sales) updatedDetails.sales = item.details.sales;
+
+      await snProfile.adminInventoryUpdate({
+        id: itemId,
+        market_value: newPrice,
+        details: updatedDetails
+      }, token);
+
+      // Update in-memory
+      item.market_value = newPrice;
+      item.details = updatedDetails;
+
+      // Re-render current tab
+      var container = document.getElementById('invCatBody_' + item.category);
+      if(!container){
+        // Try pokemon combined tab
+        container = document.getElementById('invCatBody_pokemon_cards');
+      }
+      if(container){
+        var row = container.querySelector('tr[data-inv-id="' + itemId + '"]');
+        if(row){
+          var tempDiv = document.createElement('tbody');
+          tempDiv.innerHTML = buildInvRow(item);
+          row.replaceWith(tempDiv.firstChild);
+          attachInvRowListeners(container.closest('.admin-table-wrap') || container.parentNode);
+        }
+      }
+
+      alert('Price updated: $' + newPrice.toFixed(2));
+    } catch(err){
+      alert('Price refresh error: ' + (err.message || 'Try again'));
+    } finally {
+      if(btn){ btn.disabled = false; btn.textContent = '\u{1F504}'; }
+    }
+  };
+
+  /* ── Link & Price: Open Edit + Auto-trigger JustTCG Search ── */
+  window.linkAndPriceItem = function(itemId){
+    var item = allInventory.find(function(i){ return i.id === itemId; });
+    if(!item) return;
+    openInvEditPanel(item);
+    setTimeout(function(){ openJusttcgLinkSearch(); }, 300);
+  };
+
+  /* ── Bulk Update Prices for All Linked Items in Category ── */
+  window.bulkUpdatePrices = async function(category, containerId){
+    // Get all linked items in this category
+    var filterCats = category === 'pokemon_cards' ? ['pokemon_cards','pokemon_sealed'] : [category];
+    if(containerId === 'invPokemon') filterCats = ['pokemon_cards','pokemon_sealed'];
+    var linkedItems = allInventory.filter(function(i){
+      return filterCats.indexOf(i.category) !== -1 && i.details && i.details.justtcg_id;
+    });
+
+    if(!linkedItems.length){
+      alert('No linked items found in this category. Link items to JustTCG first by clicking the \uD83D\uDD0D icon on each row.');
+      return;
+    }
+
+    if(!confirm('Update market prices for ' + linkedItems.length + ' linked item(s)?\n\nThis will fetch latest prices from JustTCG.')){
+      return;
+    }
+
+    try {
+      var token = await snAuth.getAccessToken();
+
+      // Chunk into groups of 200 for batch API
+      var chunks = [];
+      for(var i = 0; i < linkedItems.length; i += 200){
+        chunks.push(linkedItems.slice(i, i + 200));
+      }
+
+      var allUpdates = [];
+      for(var c = 0; c < chunks.length; c++){
+        var chunk = chunks[c];
+        var batchCards = chunk.map(function(item){
+          return {
+            id: item.details.justtcg_id,
+            name: item.details.card_name || item.name,
+            set: item.details.justtcg_set_id || item.details.set || ''
+          };
+        });
+
+        var result = await snProfile.justtcgBatch(batchCards, token);
+        var returnedCards = result.cards || [];
+
+        // Build ID→card lookup
+        var cardMap = {};
+        returnedCards.forEach(function(card){
+          var cid = card.id || card.slug || card.name;
+          cardMap[cid] = card;
+        });
+
+        // Match returned cards to inventory items
+        chunk.forEach(function(item){
+          var card = cardMap[item.details.justtcg_id];
+          if(!card) return;
+          var mainVariant = (card.variants || [])[0] || {};
+          var newPrice = mainVariant.price ? parseFloat(mainVariant.price) : null;
+          if(!newPrice) return;
+
+          allUpdates.push({
+            id: item.id,
+            market_value: newPrice,
+            details_patch: {
+              justtcg_last_price: newPrice,
+              justtcg_price_updated: new Date().toISOString(),
+              justtcg_image: card.image || (card.images && card.images.small) || item.details.justtcg_image || ''
+            }
+          });
+
+          // Update in-memory
+          item.market_value = newPrice;
+          item.details.justtcg_last_price = newPrice;
+          item.details.justtcg_price_updated = new Date().toISOString();
+        });
+      }
+
+      if(!allUpdates.length){
+        alert('No price updates found from JustTCG.');
+        return;
+      }
+
+      // Save all updates via bulk endpoint
+      await snProfile.adminInventoryBulkPriceUpdate(allUpdates, token);
+
+      // Re-render category tab
+      var container = document.getElementById(containerId);
+      if(container) renderCategoryTab(category === 'pokemon_cards' ? 'pokemon_cards' : category, containerId);
+
+      alert(allUpdates.length + ' of ' + linkedItems.length + ' item(s) updated successfully!');
+    } catch(err){
+      alert('Bulk price update error: ' + (err.message || 'Try again'));
+    }
+  };
+
   /* ═══════════════════════════════════════════════════════
      WHEEL BUILDER CALCULATOR
      ═══════════════════════════════════════════════════════ */
 
-  var wheelPrizes = []; // [{name, value, slots}]
+  window.wheelPrizes = []; // [{name, value, slots}]
   var currentWheelConfigId = null;
   var currentWheelConfigName = '';
 
@@ -2635,6 +2875,7 @@
     var totalSpins = parseInt(document.getElementById('wheelTotalSpins').value) || 0;
     var totalRevenue = parseFloat(document.getElementById('wheelTotalRevenue').value) || 0;
     var notes = document.getElementById('wheelConfigNotes').value.trim() || null;
+    var status = document.getElementById('wheelConfigStatusSelect').value || 'pre_game';
 
     try {
       var token = await snAuth.getAccessToken();
@@ -2645,7 +2886,8 @@
           prizes: JSON.parse(JSON.stringify(wheelPrizes)),
           total_spins: totalSpins,
           total_revenue: totalRevenue,
-          notes: notes
+          notes: notes,
+          status: status
         }, token);
         alert('Config "' + currentWheelConfigName + '" saved!');
       } else {
@@ -2658,7 +2900,8 @@
           prizes: JSON.parse(JSON.stringify(wheelPrizes)),
           total_spins: totalSpins,
           total_revenue: totalRevenue,
-          notes: notes
+          notes: notes,
+          status: status
         }, token);
         currentWheelConfigId = config.id;
         currentWheelConfigName = config.name;
@@ -2686,8 +2929,13 @@
         var totalSlots = (cfg.prizes || []).reduce(function(s,p){ return s + (parseInt(p.slots)||0); }, 0);
         var rev = parseFloat(cfg.total_revenue) || 0;
         var updated = cfg.updated_at ? new Date(cfg.updated_at).toLocaleDateString() : '';
+        var st = cfg.status || 'pre_game';
+        var statusBadge = '';
+        if(st === 'pre_game') statusBadge = '<span style="font-size:10px;font-weight:600;color:var(--gold2);background:rgba(212,160,23,.15);padding:2px 8px;border-radius:4px;margin-left:8px">Pre Game</span>';
+        else if(st === 'game_live') statusBadge = '<span style="font-size:10px;font-weight:600;color:#4ade80;background:rgba(74,222,128,.15);padding:2px 8px;border-radius:4px;margin-left:8px">Live</span>';
+        else if(st === 'post_game') statusBadge = '<span style="font-size:10px;font-weight:600;color:var(--silver);background:rgba(192,200,216,.1);padding:2px 8px;border-radius:4px;margin-left:8px">Completed</span>';
         html += '<div class="user-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;border-radius:8px;background:rgba(255,255,255,.03)" onclick="wheelLoadConfigById(\'' + escapeHtml(cfg.id) + '\')">' +
-          '<div><strong style="color:var(--white)">' + escapeHtml(cfg.name) + '</strong>' +
+          '<div><strong style="color:var(--white)">' + escapeHtml(cfg.name) + '</strong>' + statusBadge +
           '<div style="color:var(--silver);font-size:12px;margin-top:2px">$' + (parseFloat(cfg.spin_price)||0).toFixed(2) + '/spin &middot; ' + totalSlots + ' slots' +
           (rev > 0 ? ' &middot; $' + rev.toFixed(2) + ' revenue' : '') + '</div></div>' +
           '<span style="color:var(--silver);font-size:11px">' + updated + '</span></div>';
@@ -2714,6 +2962,7 @@
       document.getElementById('wheelTotalSpins').value = cfg.total_spins || 0;
       document.getElementById('wheelTotalRevenue').value = cfg.total_revenue || 0;
       document.getElementById('wheelConfigNotes').value = cfg.notes || '';
+      document.getElementById('wheelConfigStatusSelect').value = cfg.status || 'pre_game';
       wheelUpdateStatus();
       wheelRender();
       wheelRecalc();
@@ -2728,6 +2977,134 @@
     document.getElementById('wheelPickerOverlay').classList.remove('open');
   };
 
+  /* ═══════════════════════════════════════════════════════
+     ADD TO GAME
+     ═══════════════════════════════════════════════════════ */
+
+  var addToGameItemId = null;
+  var addToGameConfigs = [];
+
+  window.openAddToGame = async function(itemId){
+    addToGameItemId = itemId;
+    var item = allInventory.find(function(i){ return i.id === itemId; });
+    if(!item) return;
+
+    var label = document.getElementById('addToGameItemLabel');
+    label.textContent = 'Adding: ' + item.name + (item.market_value ? ' ($' + parseFloat(item.market_value).toFixed(2) + ')' : '');
+
+    var body = document.getElementById('addToGameBody');
+    body.innerHTML = '<p style="text-align:center;color:var(--silver);padding:40px 0">Loading games...</p>';
+    document.getElementById('addToGameOverlay').classList.add('open');
+
+    try {
+      var token = await snAuth.getAccessToken();
+      var configs = await snProfile.wheelConfigList(token);
+      addToGameConfigs = configs;
+
+      // Filter to pre_game and game_live only
+      var eligible = configs.filter(function(cfg){ return cfg.status === 'pre_game' || cfg.status === 'game_live'; });
+
+      var html = '<div style="display:flex;flex-direction:column;gap:8px">';
+
+      // New Game option
+      html += '<div class="user-row" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;border-radius:8px;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2)" onclick="addItemToNewGame()">' +
+        '<div><strong style="color:#4ade80">&#x1F195; New Game</strong>' +
+        '<div style="color:var(--silver);font-size:12px;margin-top:2px">Create a new wheel config with this item</div></div>' +
+        '<span style="color:#4ade80;font-size:18px">&rarr;</span></div>';
+
+      if(eligible.length){
+        html += '<div style="color:var(--silver);font-size:12px;margin:8px 0 4px;text-transform:uppercase;letter-spacing:1px">Existing Games</div>';
+        eligible.forEach(function(cfg){
+          var totalSlots = (cfg.prizes || []).reduce(function(s,p){ return s + (parseInt(p.slots)||0); }, 0);
+          var prizeCount = (cfg.prizes || []).length;
+          var st = cfg.status || 'pre_game';
+          var statusBadge = '';
+          if(st === 'pre_game') statusBadge = '<span style="font-size:10px;font-weight:600;color:var(--gold2);background:rgba(212,160,23,.15);padding:2px 8px;border-radius:4px;margin-left:8px">Pre Game</span>';
+          else if(st === 'game_live') statusBadge = '<span style="font-size:10px;font-weight:600;color:#4ade80;background:rgba(74,222,128,.15);padding:2px 8px;border-radius:4px;margin-left:8px">Live</span>';
+
+          html += '<div class="user-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;border-radius:8px;background:rgba(255,255,255,.03)" onclick="addItemToExistingGame(\'' + escapeHtml(cfg.id) + '\')">' +
+            '<div><strong style="color:var(--white)">' + escapeHtml(cfg.name) + '</strong>' + statusBadge +
+            '<div style="color:var(--silver);font-size:12px;margin-top:2px">$' + (parseFloat(cfg.spin_price)||0).toFixed(2) + '/spin &middot; ' + prizeCount + ' prizes &middot; ' + totalSlots + ' slots</div></div>' +
+            '<span style="color:var(--silver);font-size:18px">&rarr;</span></div>';
+        });
+      } else {
+        html += '<p style="color:var(--silver);text-align:center;padding:20px 0">No active games. Create a new one above.</p>';
+      }
+
+      html += '</div>';
+      body.innerHTML = html;
+    } catch(err){
+      body.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:40px 0">Error loading games: ' + escapeHtml(err.message || 'Try again') + '</p>';
+    }
+  };
+
+  window.addItemToNewGame = async function(){
+    var item = allInventory.find(function(i){ return i.id === addToGameItemId; });
+    if(!item) return;
+
+    var name = prompt('Game name:');
+    if(!name || !name.trim()) return;
+
+    var prizeEntry = {
+      name: item.name,
+      value: parseFloat(item.market_value) || parseFloat(item.purchase_price) || 0,
+      slots: 1,
+      inventory_item_id: item.id
+    };
+
+    try {
+      var token = await snAuth.getAccessToken();
+      var config = await snProfile.wheelConfigSave({
+        name: name.trim(),
+        spin_price: 10,
+        status: 'pre_game',
+        prizes: [prizeEntry],
+        total_spins: 0,
+        total_revenue: 0,
+        notes: ''
+      }, token);
+
+      closeAddToGame();
+      alert('Created game "' + name.trim() + '" with ' + item.name + ' as first prize!');
+    } catch(err){
+      alert('Error creating game: ' + (err.message || 'Try again'));
+    }
+  };
+
+  window.addItemToExistingGame = async function(configId){
+    var item = allInventory.find(function(i){ return i.id === addToGameItemId; });
+    if(!item) return;
+
+    var cfg = addToGameConfigs.find(function(c){ return c.id === configId; });
+    if(!cfg) return;
+
+    var prizeEntry = {
+      name: item.name,
+      value: parseFloat(item.market_value) || parseFloat(item.purchase_price) || 0,
+      slots: 1,
+      inventory_item_id: item.id
+    };
+
+    var updatedPrizes = (cfg.prizes || []).slice();
+    updatedPrizes.push(prizeEntry);
+
+    try {
+      var token = await snAuth.getAccessToken();
+      await snProfile.wheelConfigUpdate(configId, { prizes: updatedPrizes }, token);
+
+      closeAddToGame();
+      alert('Added ' + item.name + ' to "' + cfg.name + '"!');
+    } catch(err){
+      alert('Error adding to game: ' + (err.message || 'Try again'));
+    }
+  };
+
+  window.closeAddToGame = function(e){
+    if(e && e.target !== e.currentTarget) return;
+    document.getElementById('addToGameOverlay').classList.remove('open');
+    addToGameItemId = null;
+  };
+
   /* ── Wheel Config: New ── */
   window.wheelNewConfig = function(){
     currentWheelConfigId = null;
@@ -2737,6 +3114,7 @@
     document.getElementById('wheelTotalSpins').value = '0';
     document.getElementById('wheelTotalRevenue').value = '0';
     document.getElementById('wheelConfigNotes').value = '';
+    document.getElementById('wheelConfigStatusSelect').value = 'pre_game';
     wheelUpdateStatus();
     wheelRender();
     wheelRecalc();

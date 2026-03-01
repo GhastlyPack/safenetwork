@@ -189,8 +189,9 @@
 
     // Render upcoming shows
     if (upcoming.length > 0) {
-      // Update countdown to next show
-      updateNextShowBanner(upcoming[0]);
+      // Prefer next special show for the banner, fall back to soonest show
+      var featuredShow = upcoming.find(function(s){ return s.is_special; }) || upcoming[0];
+      updateNextShowBanner(featuredShow);
 
       upcoming.forEach(function(show) {
         html += renderShowCard(show, false);
@@ -275,6 +276,7 @@
   function updateNextShowBanner(show) {
     var banner = document.getElementById('nextShowBanner');
     var type = showTypes[show.show_type] || { emoji: '🎬', label: show.show_type };
+    document.querySelector('.next-show-label').textContent = show.is_special ? 'Featured Show' : 'Next Show';
     document.getElementById('nextShowTitle').textContent = type.emoji + ' ' + (show.title || type.label);
     var bannerHandle = snSanitize.html(show.host_handle || 'safenetwork');
     var bannerHandleUrl = snSanitize.url('https://www.whatnot.com/user/' + (show.host_handle || 'safenetwork'));

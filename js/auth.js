@@ -198,9 +198,9 @@
     window.dispatchEvent(new CustomEvent('snauth:ready', { detail: { profile: profile } }));
   }
 
-  /* ── Sync Profile Data to Customer.io ── */
+  /* ── Sync Profile Data to Customer.io (server-side) ── */
   function syncProfileToCIO(profile){
-    if(!profile || !window.cioanalytics) return;
+    if(!profile || !window.snProfile) return;
 
     // Build a version string to avoid redundant calls on every page load
     var profileVersion = [
@@ -212,27 +212,21 @@
     var CIO_PROFILE_SYNCED = 'sn_cio_profile_version';
     if(localStorage.getItem(CIO_PROFILE_SYNCED) === profileVersion) return;
 
-    try {
-      cioanalytics.identify(profile.email, {
-        // Profile attributes for segmentation
-        role: profile.role || 'shopper',
-        loyalty_tier: profile.loyalty_tier || 'bronze',
-        loyalty_points: profile.loyalty_points || 0,
-        username: profile.username || '',
-        whatnot_username: profile.whatnot_username || '',
-        interests: (profile.interests || []).join(', '),
-        interest_coins: (profile.interests || []).indexOf('coins') !== -1,
-        interest_pokemon: (profile.interests || []).indexOf('pokemon') !== -1,
-        interest_sports_cards: (profile.interests || []).indexOf('sports_cards') !== -1,
-        interest_shoes: (profile.interests || []).indexOf('shoes') !== -1,
-        profile_public: profile.profile_public !== false,
-        bio: profile.bio || ''
-      });
-
-      localStorage.setItem(CIO_PROFILE_SYNCED, profileVersion);
-    } catch(err){
-      console.warn('CIO profile sync error:', err);
-    }
+    (async function(){
+      try {
+        var token = await auth0Client.getTokenSilently();
+        await snProfile.cioIdentify(profile.email, {
+          role: profile.role || 'shopper',
+          loyalty_tier: profile.loyalty_tier || 'bronze',
+          loyalty_points: profile.loyalty_points || 0,
+          username: profile.username || '',
+          interests: (profile.interests || []).join(', ')
+        }, token);
+        localStorage.setItem(CIO_PROFILE_SYNCED, profileVersion);
+      } catch(err){
+        console.warn('CIO profile sync error:', err);
+      }
+    })();
   }
 
   /* ── Nav UI: Logged-In State ── */
@@ -353,7 +347,7 @@
   }
 
   /* ── CIO Auto-Enroll on Login ── */
-  function identifyWithCIO(user){
+  async function identifyWithCIO(user){
     // Only identify once per email to avoid duplicate calls on every page load
     if(localStorage.getItem(CIO_IDENTIFIED_KEY) === user.email) return;
 
@@ -365,21 +359,20 @@
     }
 
     try {
-      if(window.cioanalytics){
-        cioanalytics.identify(user.email, {
-          email: user.email,
+      if(window.snProfile){
+        var token = await auth0Client.getTokenSilently();
+        await snProfile.cioIdentify(user.email, {
           first_name: user.given_name || user.name || '',
           source: 'auth0_login',
           auth_method: authMethod,
           auth0_id: user.sub,
           coupon_eligible: true,
           signed_up_at: new Date().toISOString()
-        });
-        cioanalytics.track('user_login', {
+        }, token);
+        await snProfile.cioTrack(user.email, 'user_login', {
           auth_method: authMethod,
-          login_page: window.location.pathname,
-          email: user.email
-        });
+          login_page: window.location.pathname
+        }, token);
       }
     } catch(err){
       console.warn('CIO auth tracking error:', err);

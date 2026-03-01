@@ -1879,6 +1879,546 @@ function generateRandomSuffix(): string {
   return result
 }
 
+/* ══════════════════════════════════════════════
+   ADMIN INVENTORY HANDLERS
+   ══════════════════════════════════════════════ */
+
+/* ── Action: Admin Inventory List ── */
+// Host-to-category mapping for inventory permissions
+const HOST_CATEGORY_MAP: Record<string, string[]> = {
+  'djsmoltz': ['coins', 'bullion'],
+  'honeybunbean': ['pokemon_cards', 'pokemon_sealed'],
+  'maxocollects': ['sports_cards'],
+}
+
+function getInventoryAccess(profile: any): { isAdmin: boolean; allowedCategories: string[] | null } {
+  if (profile.role === 'admin') return { isAdmin: true, allowedCategories: null } // null = all
+  if (profile.role === 'host' && profile.host_slug) {
+    const cats = HOST_CATEGORY_MAP[profile.host_slug]
+    if (cats) return { isAdmin: false, allowedCategories: cats }
+  }
+  return { isAdmin: false, allowedCategories: [] } // empty = no access
+}
+
+async function handleAdminInventoryList(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  let query = supabase
+    .from('admin_inventory')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  // Hosts can only see their categories
+  if (access.allowedCategories) {
+    query = query.in('category', access.allowedCategories)
+  }
+
+  if (data.category) {
+    // Verify host has access to requested category
+    if (access.allowedCategories && !access.allowedCategories.includes(data.category)) {
+      throw new Error('Unauthorized: no access to this category')
+    }
+    query = query.eq('category', data.category)
+  }
+  if (data.status) {
+    query = query.eq('status', data.status)
+  }
+  if (data.search) {
+    query = query.ilike('name', `%${data.search}%`)
+  }
+
+  const { data: items, error } = await query.limit(1000)
+  if (error) throw error
+
+  return { items: items || [] }
+}
+
+/* ── Action: Admin Inventory Add ── */
+async function handleAdminInventoryAdd(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  if (!data.name || !data.name.trim()) {
+    throw new Error('Name is required')
+  }
+  if (data.name.trim().length > 300) {
+    throw new Error('Name must be 300 characters or less')
+  }
+
+  const validCategories = ['coins', 'bullion', 'pokemon_cards', 'pokemon_sealed', 'sports_cards']
+  if (!data.category || !validCategories.includes(data.category)) {
+    throw new Error('Invalid category')
+  }
+
+  // Verify host has access to this category
+  if (access.allowedCategories && !access.allowedCategories.includes(data.category)) {
+    throw new Error('Unauthorized: no access to category ' + data.category)
+  }
+
+  const validStatuses = ['in_stock', 'listed', 'sold', 'returned', 'held']
+  const status = data.status || 'in_stock'
+  if (!validStatuses.includes(status)) {
+    throw new Error('Invalid status')
+  }
+
+  const { data: item, error } = await supabase
+    .from('admin_inventory')
+    .insert({
+      name: data.name.trim().slice(0, 300),
+      category: data.category,
+      status: status,
+      purchase_date: data.purchase_date || null,
+      purchase_price: data.purchase_price || null,
+      buyers_premium: data.buyers_premium || null,
+      source_seller: data.source_seller || null,
+      market_value: data.market_value || null,
+      listed_on_whatnot: data.listed_on_whatnot || false,
+      stream_date: data.stream_date || null,
+      starting_bid: data.starting_bid || null,
+      final_sale_price: data.final_sale_price || null,
+      sale_fees: data.sale_fees || null,
+      details: data.details || null,
+      notes: data.notes || null,
+      created_by: auth0User.sub,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return { item }
+}
+
+/* ── Action: Admin Inventory Update ── */
+async function handleAdminInventoryUpdate(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  if (!data.id) throw new Error('Item ID is required')
+
+  // If host, verify they own this item's category
+  if (access.allowedCategories) {
+    const { data: existing } = await supabase.from('admin_inventory').select('category').eq('id', data.id).single()
+    if (!existing || !access.allowedCategories.includes(existing.category)) {
+      throw new Error('Unauthorized: no access to this item')
+    }
+  }
+
+  const allowedFields = [
+    'name', 'category', 'status', 'purchase_date', 'purchase_price',
+    'buyers_premium', 'source_seller', 'market_value', 'listed_on_whatnot',
+    'stream_date', 'starting_bid', 'final_sale_price', 'sale_fees',
+    'details', 'notes'
+  ]
+
+  const updates: Record<string, any> = {}
+  for (const key of allowedFields) {
+    if (data[key] !== undefined) {
+      updates[key] = data[key]
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    throw new Error('No valid fields to update')
+  }
+
+  // Validate category if provided
+  if (updates.category) {
+    const validCategories = ['coins', 'bullion', 'pokemon_cards', 'pokemon_sealed', 'sports_cards']
+    if (!validCategories.includes(updates.category)) throw new Error('Invalid category')
+    // Hosts cannot change to a category they don't own
+    if (access.allowedCategories && !access.allowedCategories.includes(updates.category)) {
+      throw new Error('Unauthorized: cannot move item to that category')
+    }
+  }
+
+  // Validate status if provided
+  if (updates.status) {
+    const validStatuses = ['in_stock', 'listed', 'sold', 'returned', 'held']
+    if (!validStatuses.includes(updates.status)) throw new Error('Invalid status')
+  }
+
+  updates.updated_at = new Date().toISOString()
+
+  const { data: item, error } = await supabase
+    .from('admin_inventory')
+    .update(updates)
+    .eq('id', data.id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return { item }
+}
+
+/* ── Action: Admin Inventory Remove ── */
+async function handleAdminInventoryRemove(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  if (!data.id) throw new Error('Item ID is required')
+
+  // If host, verify they own this item's category
+  if (access.allowedCategories) {
+    const { data: existing } = await supabase.from('admin_inventory').select('category').eq('id', data.id).single()
+    if (!existing || !access.allowedCategories.includes(existing.category)) {
+      throw new Error('Unauthorized: no access to this item')
+    }
+  }
+
+  const { error } = await supabase
+    .from('admin_inventory')
+    .delete()
+    .eq('id', data.id)
+
+  if (error) throw error
+  return { success: true }
+}
+
+/* ── Action: Admin Inventory Mark Sold ── */
+async function handleAdminInventoryMarkSold(auth0User: { sub: string; email: string }, data: any) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  if (!data.id) throw new Error('Item ID is required')
+
+  // If host, verify they own this item's category
+  if (access.allowedCategories) {
+    const { data: existing } = await supabase.from('admin_inventory').select('category').eq('id', data.id).single()
+    if (!existing || !access.allowedCategories.includes(existing.category)) {
+      throw new Error('Unauthorized: no access to this item')
+    }
+  }
+
+  const updates: Record<string, any> = {
+    status: 'sold',
+    updated_at: new Date().toISOString(),
+  }
+
+  if (data.final_sale_price !== undefined) updates.final_sale_price = data.final_sale_price
+  if (data.sale_fees !== undefined) updates.sale_fees = data.sale_fees
+  if (data.stream_date !== undefined) updates.stream_date = data.stream_date
+
+  const { data: item, error } = await supabase
+    .from('admin_inventory')
+    .update(updates)
+    .eq('id', data.id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return { item }
+}
+
+/* ── Action: Admin Refresh Spot Prices ── */
+async function handleAdminRefreshSpotPrices(auth0User: { sub: string; email: string }) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  const apiKey = Deno.env.get('METALS_API_KEY')
+  if (!apiKey) {
+    throw new Error('METALS_API_KEY not configured')
+  }
+
+  const res = await fetch(
+    `https://metals-api.com/api/latest?access_key=${apiKey}&base=USD&symbols=XAU,XAG,XPT,XPD`
+  )
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch spot prices from metals-api')
+  }
+
+  const json = await res.json()
+  if (!json.success || !json.rates) {
+    throw new Error('Invalid response from metals-api')
+  }
+
+  // metals-api returns inverted rates: price per oz = 1 / rate
+  const metals = [
+    { symbol: 'XAU', name: 'Gold' },
+    { symbol: 'XAG', name: 'Silver' },
+    { symbol: 'XPT', name: 'Platinum' },
+    { symbol: 'XPD', name: 'Palladium' },
+  ]
+
+  for (const metal of metals) {
+    if (json.rates[metal.symbol]) {
+      const pricePerOz = 1 / json.rates[metal.symbol]
+
+      await supabase
+        .from('spot_prices')
+        .upsert({
+          symbol: metal.symbol,
+          name: metal.name,
+          price_per_oz: pricePerOz,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'symbol' })
+    }
+  }
+
+  const { data: prices, error } = await supabase
+    .from('spot_prices')
+    .select('*')
+
+  if (error) throw error
+  return { prices: prices || [] }
+}
+
+// ── JustTCG Card Price Lookup ──
+
+async function handleJusttcgSearch(auth0User: { sub: string; email: string }, data: Record<string, any>) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  const apiKey = Deno.env.get('JUSTTCG_API_KEY')
+  if (!apiKey) {
+    throw new Error('JUSTTCG_API_KEY not configured')
+  }
+
+  const query = (data.query || '').trim()
+  const game = (data.game || 'pokemon').trim()
+  if (!query) {
+    throw new Error('Search query is required')
+  }
+
+  const params = new URLSearchParams({ q: query, game })
+  if (data.set) params.set('set', data.set)
+  if (data.include_price_history) params.set('include_price_history', 'true')
+  if (data.priceHistoryDuration) params.set('priceHistoryDuration', data.priceHistoryDuration)
+
+  const res = await fetch(`https://api.justtcg.com/v1/cards?${params.toString()}`, {
+    headers: { 'x-api-key': apiKey }
+  })
+
+  if (!res.ok) {
+    const errBody = await res.text()
+    throw new Error('JustTCG API error: ' + res.status + ' ' + errBody)
+  }
+
+  const json = await res.json()
+  return { cards: json.data || [], meta: json._metadata || {} }
+}
+
+async function handleJusttcgBatchLookup(auth0User: { sub: string; email: string }, data: Record<string, any>) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  const apiKey = Deno.env.get('JUSTTCG_API_KEY')
+  if (!apiKey) {
+    throw new Error('JUSTTCG_API_KEY not configured')
+  }
+
+  const cards = data.cards
+  if (!Array.isArray(cards) || !cards.length) {
+    throw new Error('cards array is required')
+  }
+  if (cards.length > 200) {
+    throw new Error('Maximum 200 cards per batch')
+  }
+
+  const res = await fetch('https://api.justtcg.com/v1/cards', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ cards })
+  })
+
+  if (!res.ok) {
+    const errBody = await res.text()
+    throw new Error('JustTCG batch error: ' + res.status + ' ' + errBody)
+  }
+
+  const json = await res.json()
+  return { cards: json.data || [], meta: json._metadata || {} }
+}
+
+async function handleJusttcgSets(auth0User: { sub: string; email: string }, data: Record<string, any>) {
+  const callerProfile = await getProfileByAuth0Id(auth0User.sub)
+  if (!callerProfile) throw new Error('Unauthorized')
+  const access = getInventoryAccess(callerProfile)
+  if (access.allowedCategories && access.allowedCategories.length === 0) {
+    throw new Error('Unauthorized: no inventory access')
+  }
+
+  const apiKey = Deno.env.get('JUSTTCG_API_KEY')
+  if (!apiKey) {
+    throw new Error('JUSTTCG_API_KEY not configured')
+  }
+
+  const game = (data.game || 'pokemon').trim()
+  const params = new URLSearchParams({ game })
+  if (data.q) params.set('q', data.q)
+
+  const res = await fetch(`https://api.justtcg.com/v1/sets?${params.toString()}`, {
+    headers: { 'x-api-key': apiKey }
+  })
+
+  if (!res.ok) {
+    const errBody = await res.text()
+    throw new Error('JustTCG sets error: ' + res.status + ' ' + errBody)
+  }
+
+  const json = await res.json()
+  return { sets: json.data || [], meta: json._metadata || {} }
+}
+
+// ── Customer.io Server-Side Tracking ──
+
+function getCioAuth(): string {
+  const siteId = Deno.env.get('CIO_SITE_ID')
+  const apiKey = Deno.env.get('CIO_API_KEY')
+  if (!siteId || !apiKey) throw new Error('Customer.io credentials not configured')
+  return btoa(siteId + ':' + apiKey)
+}
+
+async function handleCioIdentify(_auth0User: { sub: string; email: string }, data: Record<string, any>) {
+  // No role check - any authenticated user can be identified
+  const email = data.email
+  if (!email) throw new Error('email is required')
+
+  const attributes: Record<string, any> = {}
+  const allowed = ['first_name', 'role', 'loyalty_tier', 'loyalty_points', 'username',
+    'interests', 'source', 'auth_method', 'auth0_id', 'coupon_eligible', 'signed_up_at',
+    'signup_page', 'host_slug']
+  for (const key of allowed) {
+    if (data[key] !== undefined) attributes[key] = data[key]
+  }
+
+  const res = await fetch(`https://track.customer.io/api/v1/customers/${encodeURIComponent(email)}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'Basic ' + getCioAuth(),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, ...attributes })
+  })
+
+  if (!res.ok) {
+    const errBody = await res.text()
+    throw new Error('CIO identify error: ' + res.status + ' ' + errBody)
+  }
+
+  return { success: true }
+}
+
+async function handleCioTrack(_auth0User: { sub: string; email: string }, data: Record<string, any>) {
+  // No role check - any authenticated user can track events
+  const email = data.email
+  const eventName = data.event
+  if (!email || !eventName) throw new Error('email and event are required')
+
+  // Sanitize event data - only allow known safe properties
+  const eventData: Record<string, any> = {}
+  const allowed = ['page', 'referrer', 'utm_source', 'utm_medium', 'utm_campaign',
+    'cta', 'auth_method', 'login_page', 'category', 'collection_count',
+    'first_name', 'interests', 'source', 'signup_page']
+  for (const key of allowed) {
+    if (data.data && data.data[key] !== undefined) eventData[key] = data.data[key]
+  }
+
+  const res = await fetch(`https://track.customer.io/api/v1/customers/${encodeURIComponent(email)}/events`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Basic ' + getCioAuth(),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ name: eventName, data: eventData })
+  })
+
+  if (!res.ok) {
+    const errBody = await res.text()
+    throw new Error('CIO track error: ' + res.status + ' ' + errBody)
+  }
+
+  return { success: true }
+}
+
+async function handleCioTrackAnon(data: Record<string, any>) {
+  // For anonymous tracking (signup form, page clicks before login)
+  const email = data.email
+  const eventName = data.event
+
+  if (email && eventName) {
+    // If we have an email, identify + track
+    const attributes: Record<string, any> = {}
+    const identifyAllowed = ['first_name', 'interests', 'source', 'signup_page', 'coupon_eligible', 'signed_up_at']
+    for (const key of identifyAllowed) {
+      if (data[key] !== undefined) attributes[key] = data[key]
+    }
+
+    // Identify
+    const idRes = await fetch(`https://track.customer.io/api/v1/customers/${encodeURIComponent(email)}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Basic ' + getCioAuth(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, ...attributes })
+    })
+    if (!idRes.ok) {
+      const errBody = await idRes.text()
+      throw new Error('CIO anon identify error: ' + idRes.status + ' ' + errBody)
+    }
+
+    // Track event
+    const eventData: Record<string, any> = {}
+    const trackAllowed = ['first_name', 'interests', 'source', 'signup_page', 'page',
+      'referrer', 'utm_source', 'utm_medium', 'utm_campaign', 'cta']
+    for (const key of trackAllowed) {
+      if (data.data && data.data[key] !== undefined) eventData[key] = data.data[key]
+    }
+
+    const tRes = await fetch(`https://track.customer.io/api/v1/customers/${encodeURIComponent(email)}/events`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + getCioAuth(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name: eventName, data: eventData })
+    })
+    if (!tRes.ok) {
+      const errBody = await tRes.text()
+      throw new Error('CIO anon track error: ' + tRes.status + ' ' + errBody)
+    }
+  }
+
+  return { success: true }
+}
+
 /* ── Main Handler ── */
 serve(async (req: Request) => {
   // CORS preflight
@@ -1968,6 +2508,15 @@ serve(async (req: Request) => {
       } else {
         result = await handleFeedEventDetail(data || {}, auth0User)
       }
+      return new Response(
+        JSON.stringify(result),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // ── Customer.io anonymous tracking (no auth - for signup forms) ──
+    if (action === 'cio-track-anon') {
+      result = await handleCioTrackAnon(data || {})
       return new Response(
         JSON.stringify(result),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -2083,6 +2632,39 @@ serve(async (req: Request) => {
         break
       case 'toggle-reaction':
         result = await handleToggleReaction(auth0User, data || {})
+        break
+      case 'admin-inventory-list':
+        result = await handleAdminInventoryList(auth0User, data || {})
+        break
+      case 'admin-inventory-add':
+        result = await handleAdminInventoryAdd(auth0User, data || {})
+        break
+      case 'admin-inventory-update':
+        result = await handleAdminInventoryUpdate(auth0User, data || {})
+        break
+      case 'admin-inventory-remove':
+        result = await handleAdminInventoryRemove(auth0User, data || {})
+        break
+      case 'admin-inventory-mark-sold':
+        result = await handleAdminInventoryMarkSold(auth0User, data || {})
+        break
+      case 'admin-refresh-spot-prices':
+        result = await handleAdminRefreshSpotPrices(auth0User)
+        break
+      case 'justtcg-search':
+        result = await handleJusttcgSearch(auth0User, data || {})
+        break
+      case 'justtcg-batch':
+        result = await handleJusttcgBatchLookup(auth0User, data || {})
+        break
+      case 'justtcg-sets':
+        result = await handleJusttcgSets(auth0User, data || {})
+        break
+      case 'cio-identify':
+        result = await handleCioIdentify(auth0User, data || {})
+        break
+      case 'cio-track':
+        result = await handleCioTrack(auth0User, data || {})
         break
       default:
         throw new Error('Unknown action: ' + action)

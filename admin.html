@@ -13,10 +13,6 @@
 <script src="/js/sanitize.js"></script>
 <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<!-- Customer.io CDP -->
-<script>
-  !function(){var i="cioanalytics",analytics=(window[i]=window[i]||[]);if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-customerio-analytics-key",i);t.src="https://cdp.customer.io/v1/analytics-js/snippet/"+key+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._writeKey=key;analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";analytics.load("fff0a491b3c7bc207df6");analytics.page()}}();
-</script>
 </head>
 <body>
 
@@ -75,7 +71,7 @@
 <div class="admin-wrap" id="adminDenied" style="display:none">
   <div class="admin-denied">
     <h1>Access Denied</h1>
-    <p>You don't have permission to view this page. This area is restricted to Safe Network administrators.</p>
+    <p>You don't have permission to view this page. This area is restricted to Safe Network team members.</p>
     <a href="/" class="btn-primary" style="display:inline-block;text-decoration:none;padding:14px 36px;border-radius:10px">Back to Home</a>
   </div>
 </div>
@@ -92,6 +88,7 @@
     <button class="admin-tab" id="tabSchedule" onclick="switchAdminTab('schedule')">Schedule</button>
     <button class="admin-tab" id="tabCollections" onclick="switchAdminTab('collections')">Collections</button>
     <button class="admin-tab" id="tabFeed" onclick="switchAdminTab('feed')">Feed</button>
+    <button class="admin-tab" id="tabInventory" onclick="switchAdminTab('inventory')">Inventory</button>
   </div>
 
   <!-- ═══ Users Tab ═══ -->
@@ -391,6 +388,431 @@
 
   </div><!-- /adminTabFeed -->
 
+  <!-- ═══ Inventory Tab ═══ -->
+  <div id="adminTabInventory" style="display:none">
+
+    <!-- Sub-Tab Navigation -->
+    <div class="inv-subtabs">
+      <button class="inv-subtab active" data-inv-tab="dashboard" onclick="switchInvTab('dashboard')">Dashboard</button>
+      <button class="inv-subtab" data-inv-tab="coins" onclick="switchInvTab('coins')">Coins</button>
+      <button class="inv-subtab" data-inv-tab="bullion" onclick="switchInvTab('bullion')">Bullion</button>
+      <button class="inv-subtab" data-inv-tab="pokemon" onclick="switchInvTab('pokemon')">Pokemon</button>
+      <button class="inv-subtab" data-inv-tab="sports" onclick="switchInvTab('sports')">Sports</button>
+      <button class="inv-subtab" data-inv-tab="wheel" onclick="switchInvTab('wheel')">Wheel Builder</button>
+      <button class="inv-subtab" data-inv-tab="breaks" onclick="switchInvTab('breaks')">Break Calc</button>
+    </div>
+
+    <!-- ── Dashboard Sub-Tab ── -->
+    <div id="invDashboard" class="inv-panel">
+
+      <!-- Spot Prices -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h3 style="color:var(--gold2);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin:0">Spot Prices</h3>
+        <button class="btn-primary" style="font-size:12px;padding:8px 16px" onclick="refreshSpotPrices()">&#x21bb; Refresh Prices</button>
+      </div>
+      <div class="admin-stats" id="invSpotPrices">
+        <div class="stat-card gold">
+          <div class="stat-number" id="spotGold">-</div>
+          <div class="stat-label">Gold / oz</div>
+        </div>
+        <div class="stat-card" style="background:rgba(192,200,216,.06);border-color:rgba(192,200,216,.15)">
+          <div class="stat-number" id="spotSilver" style="color:var(--silver)">-</div>
+          <div class="stat-label">Silver / oz</div>
+        </div>
+        <div class="stat-card" style="background:rgba(192,200,216,.06);border-color:rgba(192,200,216,.15)">
+          <div class="stat-number" id="spotPlatinum" style="color:#e5e7eb">-</div>
+          <div class="stat-label">Platinum / oz</div>
+        </div>
+        <div class="stat-card" style="background:rgba(192,200,216,.06);border-color:rgba(192,200,216,.15)">
+          <div class="stat-number" id="spotPalladium" style="color:#e5e7eb">-</div>
+          <div class="stat-label">Palladium / oz</div>
+        </div>
+      </div>
+      <div id="spotUpdatedAt" style="color:var(--silver);font-size:11px;margin-bottom:24px;text-align:right"></div>
+
+      <!-- Combined P&L Stats -->
+      <h3 style="color:var(--blue);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:16px">Inventory Overview</h3>
+      <div class="admin-stats" id="invOverviewStats">
+        <div class="stat-card blue">
+          <div class="stat-number" id="invStatTotal">-</div>
+          <div class="stat-label">Total Items</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-number" id="invStatInStock">-</div>
+          <div class="stat-label">In Stock</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-number" id="invStatListed">-</div>
+          <div class="stat-label">Listed</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-number" id="invStatSold">-</div>
+          <div class="stat-label">Sold</div>
+        </div>
+      </div>
+      <div class="admin-stats">
+        <div class="stat-card green">
+          <div class="stat-number" id="invStatTotalCost">-</div>
+          <div class="stat-label">Total Cost</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-number" id="invStatTotalRevenue">-</div>
+          <div class="stat-label">Total Revenue</div>
+        </div>
+        <div class="stat-card" style="background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.15)">
+          <div class="stat-number" id="invStatNetProfit" style="color:#4ade80">-</div>
+          <div class="stat-label">Net Profit</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-number" id="invStatMargin">-</div>
+          <div class="stat-label">Margin %</div>
+        </div>
+      </div>
+
+      <!-- Per-Category Breakdown -->
+      <h3 style="color:var(--blue);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin:24px 0 16px">Category Breakdown</h3>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Items</th>
+              <th>In Stock</th>
+              <th>Sold</th>
+              <th>Total Cost</th>
+              <th>Revenue</th>
+              <th>Net Profit</th>
+            </tr>
+          </thead>
+          <tbody id="invBreakdownBody">
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--silver)">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Category Sub-Tabs (Coins, Bullion, Pokemon, Sports) ── -->
+    <div id="invCoins" class="inv-panel" style="display:none"></div>
+    <div id="invBullion" class="inv-panel" style="display:none"></div>
+    <div id="invPokemon" class="inv-panel" style="display:none"></div>
+    <div id="invSports" class="inv-panel" style="display:none"></div>
+
+    <!-- ── Wheel Builder Sub-Tab ── -->
+    <div id="invWheel" class="inv-panel" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <h3 style="color:var(--gold2);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin:0">Wheel Builder</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-primary" style="font-size:12px;padding:8px 16px" onclick="wheelAddPrize()">+ Add Prize</button>
+          <button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(74,222,128,.15);color:#4ade80" onclick="wheelSaveConfig()">Save Config</button>
+          <button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(192,200,216,.1);color:var(--silver)" onclick="wheelLoadConfig()">Load Config</button>
+        </div>
+      </div>
+
+      <!-- Spin Price -->
+      <div class="inv-form-grid" style="margin-bottom:20px">
+        <div class="inv-form-field">
+          <label>Spin Price ($)</label>
+          <input type="number" id="wheelSpinPrice" min="0" step="0.01" value="10" oninput="wheelRecalc()"/>
+        </div>
+        <div class="inv-form-field">
+          <label>Total Slots</label>
+          <div id="wheelTotalSlots" style="color:var(--blue);font-size:20px;font-weight:700;padding:10px 0">0</div>
+        </div>
+        <div class="inv-form-field">
+          <label>Total Prize Cost</label>
+          <div id="wheelTotalCost" style="color:var(--gold2);font-size:20px;font-weight:700;padding:10px 0">$0.00</div>
+        </div>
+      </div>
+
+      <!-- Prize Table -->
+      <div class="admin-table-wrap" style="margin-bottom:20px">
+        <table class="admin-table" id="wheelPrizeTable">
+          <thead>
+            <tr>
+              <th>Prize Name</th>
+              <th>Value ($)</th>
+              <th>Slots</th>
+              <th>Probability</th>
+              <th>EV Contribution</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="wheelPrizeBody">
+            <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--silver)">No prizes added yet. Click "+ Add Prize" to begin.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Profitability Analysis -->
+      <h3 style="color:var(--blue);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:16px">Profitability Analysis</h3>
+      <div class="admin-stats">
+        <div class="stat-card blue">
+          <div class="stat-number" id="wheelRevPerCycle">-</div>
+          <div class="stat-label">Revenue / Cycle</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-number" id="wheelCostPerCycle">-</div>
+          <div class="stat-label">Cost / Cycle</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-number" id="wheelProfitPerCycle">-</div>
+          <div class="stat-label">Profit / Cycle</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-number" id="wheelMargin">-</div>
+          <div class="stat-label">Margin %</div>
+        </div>
+      </div>
+      <div class="admin-stats" style="margin-top:16px">
+        <div class="stat-card blue">
+          <div class="stat-number" id="wheelEV">-</div>
+          <div class="stat-label">Expected Value</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-number" id="wheelHouseEdge">-</div>
+          <div class="stat-label">House Edge</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-number" id="wheelBreakEven">-</div>
+          <div class="stat-label">Break-Even Price</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Break Calculator Sub-Tab ── -->
+    <div id="invBreaks" class="inv-panel" style="display:none">
+      <div class="inv-subtabs" style="margin-bottom:20px">
+        <button class="inv-subtab active" data-break-tab="random" onclick="switchBreakTab('random')">Random Pack Break</button>
+        <button class="inv-subtab" data-break-tab="pickteam" onclick="switchBreakTab('pickteam')">Pick Your Team</button>
+      </div>
+
+      <!-- Random Pack Break -->
+      <div id="breakRandom" class="inv-panel">
+        <h3 style="color:var(--gold2);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:16px">Random Pack Break</h3>
+        <div class="inv-form-grid" style="margin-bottom:20px">
+          <div class="inv-form-field">
+            <label>Box/Product Cost ($)</label>
+            <input type="number" id="breakBoxCost" min="0" step="0.01" value="200" oninput="calcRandomBreak()"/>
+          </div>
+          <div class="inv-form-field">
+            <label>Number of Slots</label>
+            <input type="number" id="breakSlots" min="1" step="1" value="10" oninput="calcRandomBreak()"/>
+          </div>
+          <div class="inv-form-field">
+            <label>Margin Preset</label>
+            <select id="breakMarginPreset" onchange="calcRandomBreak()">
+              <option value="0">Break Even (0%)</option>
+              <option value="10">Low (10%)</option>
+              <option value="20" selected>Standard (20%)</option>
+              <option value="30">High (30%)</option>
+              <option value="50">Premium (50%)</option>
+              <option value="custom">Custom...</option>
+            </select>
+          </div>
+          <div class="inv-form-field" id="breakCustomMarginWrap" style="display:none">
+            <label>Custom Margin %</label>
+            <input type="number" id="breakCustomMargin" min="0" max="200" step="1" value="25" oninput="calcRandomBreak()"/>
+          </div>
+        </div>
+        <div class="admin-stats">
+          <div class="stat-card blue">
+            <div class="stat-number" id="breakCostPerSlot">-</div>
+            <div class="stat-label">Cost / Slot</div>
+          </div>
+          <div class="stat-card gold">
+            <div class="stat-number" id="breakPricePerSlot">-</div>
+            <div class="stat-label">Price / Slot</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-number" id="breakTotalRevenue">-</div>
+            <div class="stat-label">Total Revenue</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-number" id="breakTotalProfit">-</div>
+            <div class="stat-label">Profit</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pick Your Team Break -->
+      <div id="breakPickTeam" class="inv-panel" style="display:none">
+        <h3 style="color:var(--gold2);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:16px">Pick Your Team Break</h3>
+        <div class="inv-form-grid" style="margin-bottom:16px">
+          <div class="inv-form-field">
+            <label>Box/Product Cost ($)</label>
+            <input type="number" id="pytBoxCost" min="0" step="0.01" value="500" oninput="calcPYTBreak()"/>
+          </div>
+          <div class="inv-form-field">
+            <label>Target Margin %</label>
+            <input type="number" id="pytMargin" min="0" max="200" step="1" value="20" oninput="calcPYTBreak()"/>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <span style="color:var(--silver);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px">Teams / Slots</span>
+          <button class="btn-primary" style="font-size:12px;padding:6px 14px" onclick="pytAddTeam()">+ Add Team</button>
+        </div>
+        <div class="admin-table-wrap" style="margin-bottom:20px">
+          <table class="admin-table" id="pytTeamTable">
+            <thead>
+              <tr>
+                <th>Team Name</th>
+                <th>Weight</th>
+                <th>Auto Price</th>
+                <th>Override ($)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="pytTeamBody">
+              <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--silver)">No teams added yet. Click "+ Add Team" to begin.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="admin-stats">
+          <div class="stat-card blue">
+            <div class="stat-number" id="pytTotalWeight">-</div>
+            <div class="stat-label">Total Weight</div>
+          </div>
+          <div class="stat-card gold">
+            <div class="stat-number" id="pytTargetRevenue">-</div>
+            <div class="stat-label">Target Revenue</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-number" id="pytActualRevenue">-</div>
+            <div class="stat-label">Actual Revenue</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-number" id="pytActualProfit">-</div>
+            <div class="stat-label">Actual Profit</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /adminTabInventory -->
+
+  <!-- Inventory Add/Edit Panel (slide from right) -->
+  <div class="admin-edit-overlay" id="invEditOverlay" onclick="closeInvEditPanel(event)">
+    <div class="admin-edit-panel" onclick="event.stopPropagation()">
+      <button class="admin-edit-close" onclick="closeInvEditPanel()">&times;</button>
+      <h2 id="invEditTitle">Add Item</h2>
+
+      <div class="inv-form-grid">
+        <div class="inv-form-field full">
+          <label>Name *</label>
+          <input type="text" id="invName" placeholder="Item name or description"/>
+        </div>
+        <div class="inv-form-field">
+          <label>Category</label>
+          <select id="invCategory" onchange="updateInvDetailFields()">
+            <option value="coins">Coins</option>
+            <option value="bullion">Bullion</option>
+            <option value="pokemon_cards">Pokemon Cards</option>
+            <option value="pokemon_sealed">Pokemon Sealed</option>
+            <option value="sports_cards">Sports Cards</option>
+          </select>
+        </div>
+        <div class="inv-form-field">
+          <label>Status</label>
+          <select id="invStatus">
+            <option value="in_stock">In Stock</option>
+            <option value="listed">Listed</option>
+            <option value="sold">Sold</option>
+            <option value="returned">Returned</option>
+            <option value="held">Held</option>
+          </select>
+        </div>
+        <div class="inv-form-field">
+          <label>Purchase Date</label>
+          <input type="date" id="invPurchaseDate"/>
+        </div>
+        <div class="inv-form-field">
+          <label>Purchase Price ($)</label>
+          <input type="number" id="invPurchasePrice" min="0" step="0.01"/>
+        </div>
+        <div class="inv-form-field">
+          <label>Buyer's Premium ($)</label>
+          <input type="number" id="invBuyersPremium" min="0" step="0.01" value="0"/>
+        </div>
+        <div class="inv-form-field">
+          <label>Source / Seller</label>
+          <input type="text" id="invSource" placeholder="Auction house, dealer, etc."/>
+        </div>
+        <div class="inv-form-field">
+          <label>Market Value ($)</label>
+          <input type="number" id="invMarketValue" min="0" step="0.01"/>
+        </div>
+        <div class="inv-form-field">
+          <label>Listed on Whatnot?</label>
+          <select id="invListedWhatnot">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
+        </div>
+        <div class="inv-form-field">
+          <label>Stream Date</label>
+          <input type="date" id="invStreamDate"/>
+        </div>
+        <div class="inv-form-field">
+          <label>Starting Bid ($)</label>
+          <input type="number" id="invStartingBid" min="0" step="0.01"/>
+        </div>
+        <div class="inv-form-field">
+          <label>Final Sale Price ($)</label>
+          <input type="number" id="invFinalSalePrice" min="0" step="0.01"/>
+        </div>
+        <div class="inv-form-field">
+          <label>Sale Fees ($)</label>
+          <input type="number" id="invSaleFees" min="0" step="0.01"/>
+        </div>
+        <div class="inv-form-field full">
+          <label>Notes</label>
+          <textarea id="invNotes" rows="3" placeholder="Additional notes..."></textarea>
+        </div>
+      </div>
+
+      <!-- Dynamic Category-Specific Fields -->
+      <div id="invDetailFields" style="margin-top:16px"></div>
+
+      <div style="display:flex;gap:12px;margin-top:24px">
+        <button class="btn-primary" style="flex:1;padding:14px" onclick="saveInventoryItem()">Save Item</button>
+        <button class="btn-primary" style="flex:1;padding:14px;background:rgba(192,200,216,.1);color:var(--silver)" onclick="closeInvEditPanel()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Price Lookup Panel (slide from right) -->
+<div class="admin-edit-overlay" id="priceLookupOverlay" onclick="closePriceLookup(event)">
+  <div class="admin-edit-panel" style="max-width:800px" onclick="event.stopPropagation()">
+    <button class="admin-edit-close" onclick="closePriceLookup()">&times;</button>
+    <h2 style="color:var(--gold2)">&#x1F50D; JustTCG Price Lookup</h2>
+    <div style="margin-bottom:12px">
+      <div class="admin-search">
+        <input type="text" id="priceLookupInput" placeholder="Search cards..." onkeydown="if(event.key==='Enter'){searchJustTCGFromPanel()}"/>
+        <button class="btn-primary" style="padding:10px 20px;font-size:13px;white-space:nowrap" onclick="searchJustTCGFromPanel()">Search</button>
+      </div>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Card Name</th>
+            <th>Set</th>
+            <th>#</th>
+            <th>Price</th>
+            <th>7d</th>
+            <th>30d</th>
+            <th>Variant</th>
+          </tr>
+        </thead>
+        <tbody id="priceLookupBody">
+          <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--silver)">Enter a card name above and hit Search.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="priceLookupMeta" style="color:var(--silver);font-size:11px;margin-top:8px;text-align:right"></div>
+  </div>
 </div>
 
 <!-- Edit User Panel (slide from right) -->
@@ -498,15 +920,28 @@
       }
     }
 
-    if(!profile || profile.role !== 'admin'){
+    if(!profile || (profile.role !== 'admin' && profile.role !== 'host')){
       showSection('adminDenied');
       return;
     }
 
-    // User is admin - show panel, load hosts list, and load users
+    // Show panel
     showSection('adminContent');
-    loadHostsList();
-    loadUsers();
+
+    if(profile.role === 'host'){
+      // Hosts only see the Inventory tab - hide all other tabs
+      document.getElementById('tabUsers').style.display = 'none';
+      document.getElementById('tabWishes').style.display = 'none';
+      document.getElementById('tabSchedule').style.display = 'none';
+      document.getElementById('tabCollections').style.display = 'none';
+      document.getElementById('tabFeed').style.display = 'none';
+      // Auto-switch to inventory
+      switchAdminTab('inventory');
+    } else {
+      // Admin - load everything
+      loadHostsList();
+      loadUsers();
+    }
   }
 
   function showSection(id){
@@ -695,15 +1130,18 @@
     document.getElementById('adminTabSchedule').style.display = tab === 'schedule' ? '' : 'none';
     document.getElementById('adminTabCollections').style.display = tab === 'collections' ? '' : 'none';
     document.getElementById('adminTabFeed').style.display = tab === 'feed' ? '' : 'none';
+    document.getElementById('adminTabInventory').style.display = tab === 'inventory' ? '' : 'none';
     document.getElementById('tabUsers').classList.toggle('active', tab === 'users');
     document.getElementById('tabWishes').classList.toggle('active', tab === 'wishes');
     document.getElementById('tabSchedule').classList.toggle('active', tab === 'schedule');
     document.getElementById('tabCollections').classList.toggle('active', tab === 'collections');
     document.getElementById('tabFeed').classList.toggle('active', tab === 'feed');
+    document.getElementById('tabInventory').classList.toggle('active', tab === 'inventory');
     if(tab === 'wishes' && !wishesLoaded) loadWishes();
     if(tab === 'schedule' && !scheduledShowsLoaded) loadScheduledShows();
     if(tab === 'collections' && !collectionsLoaded) loadAdminCollections();
     if(tab === 'feed' && !feedEventsLoaded) loadAdminFeed();
+    if(tab === 'inventory' && !inventoryLoaded) loadInventoryDashboard();
   };
 
   window.loadWishes = async function(){
@@ -1123,6 +1561,747 @@
     }
   };
 
+  /* ═══════════════════════════════════════════════════════
+     INVENTORY MANAGEMENT
+     ═══════════════════════════════════════════════════════ */
+
+  var inventoryLoaded = false;
+  var allInventory = [];
+  var currentInvTab = 'dashboard';
+  var editingInvItem = null; // null = adding, object = editing
+
+  var INV_CATEGORY_LABELS = {
+    coins: 'Coins', bullion: 'Bullion',
+    pokemon_cards: 'Pokemon Cards', pokemon_sealed: 'Pokemon Sealed',
+    sports_cards: 'Sports Cards'
+  };
+  var INV_STATUS_LABELS = {
+    in_stock: 'In Stock', listed: 'Listed', sold: 'Sold',
+    returned: 'Returned', held: 'Held'
+  };
+
+  // Category detail field definitions
+  var INV_DETAIL_FIELDS = {
+    coins: [
+      {key:'year',label:'Year',type:'text'},{key:'mint_mark',label:'Mint Mark',type:'text'},
+      {key:'country',label:'Country',type:'text'},{key:'metal_type',label:'Metal Type',type:'select',opts:['Gold','Silver','Platinum','Palladium','Copper','Other']},
+      {key:'denomination',label:'Denomination',type:'text'},{key:'series',label:'Series',type:'text'},
+      {key:'condition',label:'Condition',type:'text'},{key:'grade',label:'Grade',type:'text'},
+      {key:'grading_company',label:'Grading Company',type:'select',opts:['PCGS','NGC','ANACS','ICG','Raw']},
+      {key:'cert_number',label:'Cert Number',type:'text'},{key:'weight_oz',label:'Weight (oz)',type:'number'},
+      {key:'purity_pct',label:'Purity %',type:'number'}
+    ],
+    bullion: [
+      {key:'year',label:'Year',type:'text'},{key:'metal_type',label:'Metal Type',type:'select',opts:['Gold','Silver','Platinum','Palladium']},
+      {key:'form',label:'Form',type:'select',opts:['Bar','Round','Coin','Shot','Other']},
+      {key:'mint_manufacturer',label:'Mint / Manufacturer',type:'text'},{key:'face_value',label:'Face Value',type:'number'},
+      {key:'weight_oz_troy',label:'Weight (troy oz)',type:'number'},{key:'purity_pct',label:'Purity %',type:'number'}
+    ],
+    pokemon_cards: [
+      {key:'card_name',label:'Card Name',type:'text'},{key:'set',label:'Set',type:'text'},
+      {key:'card_number',label:'Card Number',type:'text'},{key:'rarity',label:'Rarity',type:'select',opts:['Common','Uncommon','Rare','Holo Rare','Ultra Rare','Secret Rare','Illustration Rare','Special Art Rare','Hyper Rare']},
+      {key:'condition',label:'Condition',type:'text'},{key:'grade',label:'Grade',type:'text'},
+      {key:'grading_company',label:'Grading Company',type:'select',opts:['PSA','BGS','CGC','Raw']},
+      {key:'cert_number',label:'Cert Number',type:'text'},
+      {key:'holo',label:'Holo?',type:'select',opts:['Yes','No']},
+      {key:'first_edition',label:'1st Edition?',type:'select',opts:['Yes','No']},
+      {key:'language',label:'Language',type:'select',opts:['English','Japanese','Korean','Chinese','Other']}
+    ],
+    pokemon_sealed: [
+      {key:'set',label:'Set',type:'text'},
+      {key:'product_type',label:'Product Type',type:'select',opts:['Booster Box','ETB','Booster Pack','Blister','Collection Box','Tin','Bundle','Other']},
+      {key:'language',label:'Language',type:'select',opts:['English','Japanese','Korean','Chinese','Other']},
+      {key:'quantity',label:'Quantity',type:'number'}
+    ],
+    sports_cards: [
+      {key:'player_name',label:'Player Name',type:'text'},{key:'team',label:'Team',type:'text'},
+      {key:'sport',label:'Sport',type:'select',opts:['Baseball','Basketball','Football','Hockey','Soccer','Other']},
+      {key:'card_name',label:'Card Name',type:'text'},{key:'set_year',label:'Set / Year',type:'text'},
+      {key:'card_number',label:'Card Number',type:'text'},{key:'parallel',label:'Parallel',type:'text'},
+      {key:'condition',label:'Condition',type:'text'},{key:'grade',label:'Grade',type:'text'},
+      {key:'grading_company',label:'Grading Company',type:'select',opts:['PSA','BGS','SGC','CGC','Raw']},
+      {key:'cert_number',label:'Cert Number',type:'text'},
+      {key:'autographed',label:'Autographed?',type:'select',opts:['Yes','No']},
+      {key:'numbered',label:'Numbered?',type:'text'},
+      {key:'rookie',label:'Rookie?',type:'select',opts:['Yes','No']}
+    ]
+  };
+
+  /* ── Sub-Tab Navigation ── */
+  window.switchInvTab = function(tab){
+    currentInvTab = tab;
+    var panels = ['Dashboard','Coins','Bullion','Pokemon','Sports','Wheel','Breaks'];
+    panels.forEach(function(p){ document.getElementById('inv'+p).style.display = 'none'; });
+    var map = {dashboard:'Dashboard',coins:'Coins',bullion:'Bullion',pokemon:'Pokemon',sports:'Sports',wheel:'Wheel',breaks:'Breaks'};
+    if(map[tab]) document.getElementById('inv'+map[tab]).style.display = '';
+    document.querySelectorAll('#adminTabInventory > .inv-subtabs .inv-subtab[data-inv-tab]').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-inv-tab') === tab);
+    });
+    // Load category data if needed
+    var catMap = {coins:'coins',bullion:'bullion',pokemon:'pokemon_cards',sports:'sports_cards'};
+    if(catMap[tab]) renderCategoryTab(catMap[tab], 'inv'+map[tab]);
+  };
+
+  /* ── Load Dashboard ── */
+  window.loadInventoryDashboard = async function(){
+    try {
+      var token = await snAuth.getAccessToken();
+      allInventory = await snProfile.adminInventoryList(token, '', '', '');
+      inventoryLoaded = true;
+      renderDashboard();
+      loadSpotPricesDisplay();
+    } catch(err){
+      console.warn('Inventory load error:', err);
+    }
+  };
+
+  function loadSpotPricesDisplay(){
+    (async function(){
+      try {
+        var token = await snAuth.getAccessToken();
+        var prices = await snProfile.adminRefreshSpotPrices(token);
+        if(prices && prices.length){
+          prices.forEach(function(sp){
+            var metal = sp.metal || sp.name || '';
+            var el = document.getElementById('spot' + metal.charAt(0).toUpperCase() + metal.slice(1).toLowerCase());
+            var price = parseFloat(sp.price_usd || sp.price_per_oz || 0);
+            if(el) el.textContent = price > 0 ? '$' + price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : 'N/A';
+          });
+          if(prices[0] && prices[0].updated_at){
+            document.getElementById('spotUpdatedAt').textContent = 'Last updated: ' + new Date(prices[0].updated_at).toLocaleString();
+          }
+        }
+      } catch(e){ console.warn('Spot prices display error:', e); }
+    })();
+  }
+
+  window.refreshSpotPrices = async function(){
+    try {
+      var token = await snAuth.getAccessToken();
+      var result = await snProfile.adminRefreshSpotPrices(token);
+      if(result && result.prices){
+        result.prices.forEach(function(sp){
+          var el = document.getElementById('spot' + sp.metal.charAt(0).toUpperCase() + sp.metal.slice(1));
+          if(el) el.textContent = '$' + Number(sp.price_usd).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+        });
+        document.getElementById('spotUpdatedAt').textContent = 'Updated: ' + new Date().toLocaleString();
+      }
+      alert('Spot prices refreshed successfully!');
+    } catch(err){
+      alert('Error refreshing spot prices: ' + (err.message || 'Try again'));
+    }
+  };
+
+  /* ── Dashboard Rendering ── */
+  function renderDashboard(){
+    var total = allInventory.length;
+    var inStock = 0, listed = 0, sold = 0;
+    var totalCost = 0, totalRevenue = 0, totalFees = 0;
+    var catData = {};
+
+    allInventory.forEach(function(item){
+      if(item.status === 'in_stock') inStock++;
+      else if(item.status === 'listed') listed++;
+      else if(item.status === 'sold') sold++;
+
+      var cost = (parseFloat(item.purchase_price) || 0) + (parseFloat(item.buyers_premium) || 0);
+      totalCost += cost;
+
+      if(item.status === 'sold'){
+        totalRevenue += parseFloat(item.final_sale_price) || 0;
+        totalFees += parseFloat(item.sale_fees) || 0;
+      }
+
+      var cat = item.category || 'other';
+      if(!catData[cat]) catData[cat] = {count:0, inStock:0, sold:0, cost:0, revenue:0, fees:0};
+      catData[cat].count++;
+      if(item.status === 'in_stock') catData[cat].inStock++;
+      if(item.status === 'sold'){
+        catData[cat].sold++;
+        catData[cat].revenue += parseFloat(item.final_sale_price) || 0;
+        catData[cat].fees += parseFloat(item.sale_fees) || 0;
+      }
+      catData[cat].cost += cost;
+    });
+
+    var netProfit = totalRevenue - totalFees - totalCost;
+    var margin = totalRevenue > 0 ? ((totalRevenue - totalFees - totalCost) / totalRevenue * 100) : 0;
+
+    document.getElementById('invStatTotal').textContent = total;
+    document.getElementById('invStatInStock').textContent = inStock;
+    document.getElementById('invStatListed').textContent = listed;
+    document.getElementById('invStatSold').textContent = sold;
+    document.getElementById('invStatTotalCost').textContent = '$' + totalCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('invStatTotalRevenue').textContent = '$' + totalRevenue.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('invStatNetProfit').textContent = (netProfit >= 0 ? '' : '-') + '$' + Math.abs(netProfit).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('invStatNetProfit').style.color = netProfit >= 0 ? '#4ade80' : '#ff6b6b';
+    document.getElementById('invStatMargin').textContent = margin.toFixed(1) + '%';
+    document.getElementById('invStatMargin').style.color = margin >= 0 ? 'var(--blue)' : '#ff6b6b';
+
+    // Category breakdown table
+    var tbody = document.getElementById('invBreakdownBody');
+    var cats = Object.keys(catData);
+    if(!cats.length){
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--silver)">No inventory items yet.</td></tr>';
+      return;
+    }
+    var html = '';
+    cats.forEach(function(cat){
+      var d = catData[cat];
+      var catProfit = d.revenue - d.fees - d.cost;
+      html += '<tr>' +
+        '<td><span class="profile-badge" style="font-size:10px;background:rgba(30,144,255,.12);color:var(--blue)">' + escapeHtml(INV_CATEGORY_LABELS[cat] || cat) + '</span></td>' +
+        '<td>' + d.count + '</td>' +
+        '<td>' + d.inStock + '</td>' +
+        '<td>' + d.sold + '</td>' +
+        '<td>$' + d.cost.toLocaleString('en-US',{minimumFractionDigits:2}) + '</td>' +
+        '<td>$' + d.revenue.toLocaleString('en-US',{minimumFractionDigits:2}) + '</td>' +
+        '<td style="color:' + (catProfit >= 0 ? '#4ade80' : '#ff6b6b') + '">' + (catProfit >= 0 ? '' : '-') + '$' + Math.abs(catProfit).toLocaleString('en-US',{minimumFractionDigits:2}) + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  /* ── Category Tab Rendering ── */
+  function renderCategoryTab(category, containerId){
+    var container = document.getElementById(containerId);
+    var catLabel = INV_CATEGORY_LABELS[category] || category;
+    // Map pokemon sub-types for filtering
+    var filterCats = category === 'pokemon_cards' ? ['pokemon_cards','pokemon_sealed'] : [category];
+    if(containerId === 'invPokemon') filterCats = ['pokemon_cards','pokemon_sealed'];
+    var items = allInventory.filter(function(i){ return filterCats.indexOf(i.category) !== -1; });
+
+    var isPriceableCard = (category === 'pokemon_cards' || containerId === 'invPokemon' || category === 'sports_cards');
+    var html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">' +
+      '<h3 style="color:var(--gold2);font-family:\'Bebas Neue\',sans-serif;font-size:22px;letter-spacing:1px;margin:0">' + escapeHtml(catLabel) + ' (' + items.length + ')</h3>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      (isPriceableCard ? '<button class="btn-primary" style="font-size:12px;padding:8px 16px;background:rgba(212,160,23,.15);color:var(--gold2)" onclick="openPriceLookup(\'' + escapeHtml(category) + '\')">&#x1F50D; Price Lookup</button>' : '') +
+      '<button class="btn-primary" style="font-size:12px;padding:8px 16px" onclick="openInvAddPanel(\'' + escapeHtml(category) + '\')">+ Add Item</button>' +
+      '</div></div>';
+
+    // Search/filter
+    html += '<div class="admin-search" style="margin-bottom:16px">' +
+      '<input type="text" id="invSearch_' + category + '" placeholder="Search ' + escapeHtml(catLabel.toLowerCase()) + '..." oninput="filterCategoryItems(\'' + category + '\',\'' + containerId + '\')"/>' +
+      '<select class="admin-filter" id="invStatusFilter_' + category + '" onchange="filterCategoryItems(\'' + category + '\',\'' + containerId + '\')">' +
+      '<option value="">All Status</option>' +
+      '<option value="in_stock">In Stock</option><option value="listed">Listed</option>' +
+      '<option value="sold">Sold</option><option value="returned">Returned</option><option value="held">Held</option>' +
+      '</select></div>';
+
+    // Table
+    html += '<div class="admin-table-wrap"><table class="admin-table"><thead><tr>' +
+      '<th>Name</th><th>Status</th><th>Purchase</th><th>Market Value</th><th>Sale Price</th><th>P&L</th><th>Actions</th>' +
+      '</tr></thead><tbody id="invCatBody_' + category + '">';
+
+    if(!items.length){
+      html += '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--silver)">No items yet. Click "+ Add Item" to get started.</td></tr>';
+    } else {
+      items.forEach(function(item){
+        html += buildInvRow(item);
+      });
+    }
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+
+    // Attach row event listeners
+    attachInvRowListeners(container);
+  }
+
+  function buildInvRow(item){
+    var cost = (parseFloat(item.purchase_price) || 0) + (parseFloat(item.buyers_premium) || 0);
+    var salePrice = parseFloat(item.final_sale_price) || 0;
+    var fees = parseFloat(item.sale_fees) || 0;
+    var pl = item.status === 'sold' ? (salePrice - fees - cost) : 0;
+    var statusClass = item.status === 'sold' ? 'color:#4ade80' : item.status === 'listed' ? 'color:var(--gold2)' : 'color:var(--blue)';
+
+    return '<tr class="user-row inv-item-row" data-inv-id="' + escapeHtml(item.id) + '">' +
+      '<td class="username-cell">' + escapeHtml(item.name) + '</td>' +
+      '<td><span style="font-size:11px;font-weight:600;' + statusClass + '">' + escapeHtml(INV_STATUS_LABELS[item.status] || item.status) + '</span></td>' +
+      '<td>$' + cost.toLocaleString('en-US',{minimumFractionDigits:2}) + '</td>' +
+      '<td>' + (item.market_value ? '$' + parseFloat(item.market_value).toLocaleString('en-US',{minimumFractionDigits:2}) : '-') + '</td>' +
+      '<td>' + (salePrice > 0 ? '$' + salePrice.toLocaleString('en-US',{minimumFractionDigits:2}) : '-') + '</td>' +
+      '<td style="color:' + (item.status === 'sold' ? (pl >= 0 ? '#4ade80' : '#ff6b6b') : 'var(--silver)') + '">' +
+        (item.status === 'sold' ? ((pl >= 0 ? '+' : '-') + '$' + Math.abs(pl).toLocaleString('en-US',{minimumFractionDigits:2})) : '-') + '</td>' +
+      '<td>' +
+        (item.status !== 'sold' ? '<button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(74,222,128,.15);color:#4ade80;margin-right:4px" onclick="event.stopPropagation();markSold(\'' + escapeHtml(item.id) + '\')">Mark Sold</button>' : '') +
+        '<button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(255,107,107,.15);color:#ff6b6b" onclick="event.stopPropagation();deleteInvItem(\'' + escapeHtml(item.id) + '\')">Delete</button>' +
+      '</td></tr>';
+  }
+
+  function attachInvRowListeners(container){
+    container.querySelectorAll('.inv-item-row').forEach(function(row){
+      row.addEventListener('click', function(){
+        var id = row.getAttribute('data-inv-id');
+        var item = allInventory.find(function(i){ return i.id === id; });
+        if(item) openInvEditPanel(item);
+      });
+    });
+  }
+
+  window.filterCategoryItems = function(category, containerId){
+    var searchEl = document.getElementById('invSearch_' + category);
+    var statusEl = document.getElementById('invStatusFilter_' + category);
+    var search = searchEl ? searchEl.value.trim().toLowerCase() : '';
+    var status = statusEl ? statusEl.value : '';
+    var filterCats = containerId === 'invPokemon' ? ['pokemon_cards','pokemon_sealed'] : [category];
+    var items = allInventory.filter(function(i){
+      if(filterCats.indexOf(i.category) === -1) return false;
+      if(status && i.status !== status) return false;
+      if(search && (i.name || '').toLowerCase().indexOf(search) === -1) return false;
+      return true;
+    });
+    var tbody = document.getElementById('invCatBody_' + category);
+    if(!tbody) return;
+    if(!items.length){
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--silver)">No matching items.</td></tr>';
+      return;
+    }
+    var html = '';
+    items.forEach(function(item){ html += buildInvRow(item); });
+    tbody.innerHTML = html;
+    attachInvRowListeners(tbody.closest('.inv-panel') || document.getElementById(containerId));
+  };
+
+  /* ── Add/Edit Panel ── */
+  window.openInvAddPanel = function(category){
+    editingInvItem = null;
+    document.getElementById('invEditTitle').textContent = 'Add Item';
+    document.getElementById('invCategory').value = category || 'coins';
+    document.getElementById('invStatus').value = 'in_stock';
+    document.getElementById('invName').value = '';
+    document.getElementById('invPurchaseDate').value = '';
+    document.getElementById('invPurchasePrice').value = '';
+    document.getElementById('invBuyersPremium').value = '0';
+    document.getElementById('invSource').value = '';
+    document.getElementById('invMarketValue').value = '';
+    document.getElementById('invListedWhatnot').value = 'false';
+    document.getElementById('invStreamDate').value = '';
+    document.getElementById('invStartingBid').value = '';
+    document.getElementById('invFinalSalePrice').value = '';
+    document.getElementById('invSaleFees').value = '';
+    document.getElementById('invNotes').value = '';
+    updateInvDetailFields();
+    document.getElementById('invEditOverlay').classList.add('open');
+  };
+
+  function openInvEditPanel(item){
+    editingInvItem = item;
+    document.getElementById('invEditTitle').textContent = 'Edit Item';
+    document.getElementById('invCategory').value = item.category || 'coins';
+    document.getElementById('invStatus').value = item.status || 'in_stock';
+    document.getElementById('invName').value = item.name || '';
+    document.getElementById('invPurchaseDate').value = item.purchase_date || '';
+    document.getElementById('invPurchasePrice').value = item.purchase_price || '';
+    document.getElementById('invBuyersPremium').value = item.buyers_premium || '0';
+    document.getElementById('invSource').value = item.source_seller || '';
+    document.getElementById('invMarketValue').value = item.market_value || '';
+    document.getElementById('invListedWhatnot').value = item.listed_on_whatnot ? 'true' : 'false';
+    document.getElementById('invStreamDate').value = item.stream_date || '';
+    document.getElementById('invStartingBid').value = item.starting_bid || '';
+    document.getElementById('invFinalSalePrice').value = item.final_sale_price || '';
+    document.getElementById('invSaleFees').value = item.sale_fees || '';
+    document.getElementById('invNotes').value = item.notes || '';
+    updateInvDetailFields(item.details || {});
+    document.getElementById('invEditOverlay').classList.add('open');
+  }
+
+  window.closeInvEditPanel = function(e){
+    if(e && e.target !== e.currentTarget) return;
+    document.getElementById('invEditOverlay').classList.remove('open');
+    editingInvItem = null;
+  };
+
+  /* ── Dynamic Detail Fields ── */
+  window.updateInvDetailFields = function(existingDetails){
+    var cat = document.getElementById('invCategory').value;
+    var fields = INV_DETAIL_FIELDS[cat] || [];
+    var container = document.getElementById('invDetailFields');
+    var details = existingDetails || {};
+
+    if(!fields.length){
+      container.innerHTML = '';
+      return;
+    }
+
+    var html = '<h4 style="color:var(--blue);font-size:14px;font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">' + escapeHtml(INV_CATEGORY_LABELS[cat] || cat) + ' Details</h4><div class="inv-form-grid">';
+    fields.forEach(function(f){
+      html += '<div class="inv-form-field"><label>' + escapeHtml(f.label) + '</label>';
+      var val = details[f.key] || '';
+      if(f.type === 'select'){
+        html += '<select id="invDetail_' + f.key + '">';
+        html += '<option value="">--</option>';
+        (f.opts || []).forEach(function(opt){
+          html += '<option value="' + escapeHtml(opt) + '"' + (val === opt ? ' selected' : '') + '>' + escapeHtml(opt) + '</option>';
+        });
+        html += '</select>';
+      } else if(f.type === 'number'){
+        html += '<input type="number" id="invDetail_' + f.key + '" step="any" value="' + escapeHtml(String(val)) + '"/>';
+      } else {
+        html += '<input type="text" id="invDetail_' + f.key + '" value="' + escapeHtml(String(val)) + '"/>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  };
+
+  /* ── Save / Update Item ── */
+  window.saveInventoryItem = async function(){
+    var name = document.getElementById('invName').value.trim();
+    if(!name){ alert('Item name is required.'); return; }
+    var cat = document.getElementById('invCategory').value;
+    var fields = INV_DETAIL_FIELDS[cat] || [];
+    var details = {};
+    fields.forEach(function(f){
+      var el = document.getElementById('invDetail_' + f.key);
+      if(el && el.value) details[f.key] = el.value;
+    });
+
+    var payload = {
+      name: name,
+      category: cat,
+      status: document.getElementById('invStatus').value,
+      purchase_date: document.getElementById('invPurchaseDate').value || null,
+      purchase_price: parseFloat(document.getElementById('invPurchasePrice').value) || null,
+      buyers_premium: parseFloat(document.getElementById('invBuyersPremium').value) || 0,
+      source_seller: document.getElementById('invSource').value.trim() || null,
+      market_value: parseFloat(document.getElementById('invMarketValue').value) || null,
+      listed_on_whatnot: document.getElementById('invListedWhatnot').value === 'true',
+      stream_date: document.getElementById('invStreamDate').value || null,
+      starting_bid: parseFloat(document.getElementById('invStartingBid').value) || null,
+      final_sale_price: parseFloat(document.getElementById('invFinalSalePrice').value) || null,
+      sale_fees: parseFloat(document.getElementById('invSaleFees').value) || null,
+      notes: document.getElementById('invNotes').value.trim() || null,
+      details: details
+    };
+
+    try {
+      var token = await snAuth.getAccessToken();
+      if(editingInvItem){
+        await snProfile.adminInventoryUpdate(editingInvItem.id, payload, token);
+      } else {
+        await snProfile.adminInventoryAdd(payload, token);
+      }
+      closeInvEditPanel();
+      // Reload
+      allInventory = await snProfile.adminInventoryList(token, '', '', '');
+      renderDashboard();
+      // Re-render current category tab if applicable
+      var catMap = {coins:'coins',bullion:'bullion',pokemon:'pokemon_cards',sports:'sports_cards'};
+      if(catMap[currentInvTab]) renderCategoryTab(catMap[currentInvTab], 'inv' + currentInvTab.charAt(0).toUpperCase() + currentInvTab.slice(1));
+    } catch(err){
+      alert('Error saving item: ' + (err.message || 'Try again'));
+    }
+  };
+
+  /* ── Mark Sold ── */
+  window.markSold = async function(itemId){
+    var price = prompt('Enter final sale price ($):');
+    if(price === null) return;
+    var fees = prompt('Enter sale fees ($):') || '0';
+    try {
+      var token = await snAuth.getAccessToken();
+      await snProfile.adminInventoryMarkSold(itemId, parseFloat(price), parseFloat(fees), token);
+      allInventory = await snProfile.adminInventoryList(token, '', '', '');
+      renderDashboard();
+      var catMap = {coins:'coins',bullion:'bullion',pokemon:'pokemon_cards',sports:'sports_cards'};
+      if(catMap[currentInvTab]) renderCategoryTab(catMap[currentInvTab], 'inv' + currentInvTab.charAt(0).toUpperCase() + currentInvTab.slice(1));
+    } catch(err){
+      alert('Error marking as sold: ' + (err.message || 'Try again'));
+    }
+  };
+
+  /* ── Delete Item ── */
+  window.deleteInvItem = async function(itemId){
+    if(!confirm('Delete this inventory item? This cannot be undone.')) return;
+    try {
+      var token = await snAuth.getAccessToken();
+      await snProfile.adminInventoryRemove(itemId, token);
+      allInventory = await snProfile.adminInventoryList(token, '', '', '');
+      renderDashboard();
+      var catMap = {coins:'coins',bullion:'bullion',pokemon:'pokemon_cards',sports:'sports_cards'};
+      if(catMap[currentInvTab]) renderCategoryTab(catMap[currentInvTab], 'inv' + currentInvTab.charAt(0).toUpperCase() + currentInvTab.slice(1));
+    } catch(err){
+      alert('Error deleting item: ' + (err.message || 'Try again'));
+    }
+  };
+
+  /* ── JustTCG Price Lookup ── */
+  window.openPriceLookup = function(category){
+    var game = (category === 'sports_cards') ? '' : 'pokemon';
+    var query = prompt('Search JustTCG for card prices:\n\nEnter card name (e.g. "Charizard ex"):');
+    if(!query) return;
+    searchJustTCG(query, game);
+  };
+
+  async function searchJustTCG(query, game){
+    try {
+      var token = await snAuth.getAccessToken();
+      var result = await snProfile.justtcgSearch(query, game, {include_price_history: true, priceHistoryDuration: '30d'}, token);
+      var cards = result.cards || [];
+      if(!cards.length){
+        alert('No results found for "' + query + '"');
+        return;
+      }
+      showPriceLookupResults(cards, result.meta);
+    } catch(err){
+      alert('Price lookup error: ' + (err.message || 'Try again'));
+    }
+  }
+
+  function showPriceLookupResults(cards, meta){
+    var overlay = document.getElementById('priceLookupOverlay');
+    var body = document.getElementById('priceLookupBody');
+    var html = '';
+    cards.forEach(function(card){
+      var variants = card.variants || [];
+      var mainVariant = variants[0] || {};
+      var price = mainVariant.price ? '$' + Number(mainVariant.price).toFixed(2) : 'N/A';
+      var change7d = mainVariant.priceChange7d ? (mainVariant.priceChange7d > 0 ? '+' : '') + Number(mainVariant.priceChange7d).toFixed(2) + '%' : '';
+      var change30d = mainVariant.priceChange30d ? (mainVariant.priceChange30d > 0 ? '+' : '') + Number(mainVariant.priceChange30d).toFixed(2) + '%' : '';
+      var color7d = mainVariant.priceChange7d > 0 ? '#4ade80' : mainVariant.priceChange7d < 0 ? '#ff6b6b' : 'var(--silver)';
+      var color30d = mainVariant.priceChange30d > 0 ? '#4ade80' : mainVariant.priceChange30d < 0 ? '#ff6b6b' : 'var(--silver)';
+
+      html += '<tr>' +
+        '<td class="username-cell">' + escapeHtml(card.name || '') + '</td>' +
+        '<td>' + escapeHtml(card.set_name || card.set || '') + '</td>' +
+        '<td>' + escapeHtml(card.number || '') + '</td>' +
+        '<td style="color:var(--gold2);font-weight:600">' + price + '</td>' +
+        '<td style="color:' + color7d + '">' + change7d + '</td>' +
+        '<td style="color:' + color30d + '">' + change30d + '</td>' +
+        '<td>' + escapeHtml(mainVariant.condition || '') + ' ' + escapeHtml(mainVariant.printing || '') + '</td>' +
+        '</tr>';
+      // Show additional variants
+      if(variants.length > 1){
+        variants.slice(1).forEach(function(v){
+          var vPrice = v.price ? '$' + Number(v.price).toFixed(2) : 'N/A';
+          html += '<tr style="opacity:.7">' +
+            '<td style="padding-left:32px;color:var(--silver);font-size:12px">&#x2514; ' + escapeHtml(card.name || '') + '</td>' +
+            '<td style="font-size:12px">' + escapeHtml(card.set_name || card.set || '') + '</td>' +
+            '<td style="font-size:12px">' + escapeHtml(card.number || '') + '</td>' +
+            '<td style="color:var(--gold2);font-size:12px">' + vPrice + '</td>' +
+            '<td></td><td></td>' +
+            '<td style="font-size:12px">' + escapeHtml(v.condition || '') + ' ' + escapeHtml(v.printing || '') + '</td>' +
+            '</tr>';
+        });
+      }
+    });
+    body.innerHTML = html;
+    if(meta && meta.requestsRemaining !== undefined){
+      document.getElementById('priceLookupMeta').textContent = 'API calls remaining today: ' + meta.requestsRemaining;
+    }
+    overlay.classList.add('open');
+  }
+
+  window.closePriceLookup = function(e){
+    if(e && e.target !== e.currentTarget) return;
+    document.getElementById('priceLookupOverlay').classList.remove('open');
+  };
+
+  window.searchJustTCGFromPanel = function(){
+    var input = document.getElementById('priceLookupInput');
+    var query = input ? input.value.trim() : '';
+    if(!query){ alert('Enter a card name to search.'); return; }
+    var game = (currentInvTab === 'sports') ? '' : 'pokemon';
+    document.getElementById('priceLookupBody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--silver)">Searching...</td></tr>';
+    searchJustTCG(query, game);
+  };
+
+  /* ═══════════════════════════════════════════════════════
+     WHEEL BUILDER CALCULATOR
+     ═══════════════════════════════════════════════════════ */
+
+  var wheelPrizes = []; // [{name, value, slots}]
+
+  window.wheelAddPrize = function(){
+    wheelPrizes.push({name:'Prize ' + (wheelPrizes.length + 1), value:0, slots:1});
+    wheelRender();
+    wheelRecalc();
+  };
+
+  window.wheelRemovePrize = function(idx){
+    wheelPrizes.splice(idx, 1);
+    wheelRender();
+    wheelRecalc();
+  };
+
+  function wheelRender(){
+    var tbody = document.getElementById('wheelPrizeBody');
+    if(!wheelPrizes.length){
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--silver)">No prizes added yet. Click "+ Add Prize" to begin.</td></tr>';
+      return;
+    }
+    var totalSlots = wheelPrizes.reduce(function(s,p){ return s + (parseInt(p.slots)||0); }, 0);
+    var html = '';
+    wheelPrizes.forEach(function(p, idx){
+      var prob = totalSlots > 0 ? ((parseInt(p.slots)||0) / totalSlots * 100) : 0;
+      var ev = totalSlots > 0 ? ((parseInt(p.slots)||0) / totalSlots * (parseFloat(p.value)||0)) : 0;
+      html += '<tr>' +
+        '<td><input type="text" value="' + escapeHtml(p.name) + '" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 10px;color:var(--white);font-size:13px;width:100%" onchange="wheelPrizes['+idx+'].name=this.value"/></td>' +
+        '<td><input type="number" value="' + (p.value||0) + '" min="0" step="0.01" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 10px;color:var(--white);font-size:13px;width:80px" onchange="wheelPrizes['+idx+'].value=parseFloat(this.value)||0;wheelRecalc()"/></td>' +
+        '<td><input type="number" value="' + (p.slots||1) + '" min="1" step="1" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 10px;color:var(--white);font-size:13px;width:60px" onchange="wheelPrizes['+idx+'].slots=parseInt(this.value)||1;wheelRecalc()"/></td>' +
+        '<td style="color:var(--blue)">' + prob.toFixed(1) + '%</td>' +
+        '<td style="color:var(--gold2)">$' + ev.toFixed(2) + '</td>' +
+        '<td><button class="btn-primary" style="font-size:10px;padding:4px 8px;background:rgba(255,107,107,.15);color:#ff6b6b" onclick="wheelRemovePrize('+idx+')">X</button></td></tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  window.wheelRecalc = function(){
+    var spinPrice = parseFloat(document.getElementById('wheelSpinPrice').value) || 0;
+    var totalSlots = wheelPrizes.reduce(function(s,p){ return s + (parseInt(p.slots)||0); }, 0);
+    var totalCost = wheelPrizes.reduce(function(s,p){ return s + ((parseInt(p.slots)||0) * (parseFloat(p.value)||0)); }, 0);
+    var ev = totalSlots > 0 ? wheelPrizes.reduce(function(s,p){ return s + ((parseInt(p.slots)||0) / totalSlots * (parseFloat(p.value)||0)); }, 0) : 0;
+
+    document.getElementById('wheelTotalSlots').textContent = totalSlots;
+    document.getElementById('wheelTotalCost').textContent = '$' + totalCost.toFixed(2);
+
+    var revPerCycle = spinPrice * totalSlots;
+    var profitPerCycle = revPerCycle - totalCost;
+    var margin = revPerCycle > 0 ? (profitPerCycle / revPerCycle * 100) : 0;
+    var houseEdge = spinPrice > 0 ? ((spinPrice - ev) / spinPrice * 100) : 0;
+    var breakEven = totalSlots > 0 ? (totalCost / totalSlots) : 0;
+
+    document.getElementById('wheelRevPerCycle').textContent = '$' + revPerCycle.toFixed(2);
+    document.getElementById('wheelCostPerCycle').textContent = '$' + totalCost.toFixed(2);
+    document.getElementById('wheelProfitPerCycle').textContent = (profitPerCycle >= 0 ? '' : '-') + '$' + Math.abs(profitPerCycle).toFixed(2);
+    document.getElementById('wheelProfitPerCycle').style.color = profitPerCycle >= 0 ? '#4ade80' : '#ff6b6b';
+    document.getElementById('wheelMargin').textContent = margin.toFixed(1) + '%';
+    document.getElementById('wheelMargin').style.color = margin >= 0 ? '#c084fc' : '#ff6b6b';
+    document.getElementById('wheelEV').textContent = '$' + ev.toFixed(2);
+    document.getElementById('wheelHouseEdge').textContent = houseEdge.toFixed(1) + '%';
+    document.getElementById('wheelBreakEven').textContent = '$' + breakEven.toFixed(2);
+
+    // Re-render probability table
+    wheelRender();
+  };
+
+  window.wheelSaveConfig = function(){
+    var name = prompt('Config name:');
+    if(!name) return;
+    var configs = JSON.parse(localStorage.getItem('sn_wheel_configs') || '{}');
+    configs[name] = {
+      spinPrice: parseFloat(document.getElementById('wheelSpinPrice').value) || 0,
+      prizes: JSON.parse(JSON.stringify(wheelPrizes))
+    };
+    localStorage.setItem('sn_wheel_configs', JSON.stringify(configs));
+    alert('Config "' + name + '" saved!');
+  };
+
+  window.wheelLoadConfig = function(){
+    var configs = JSON.parse(localStorage.getItem('sn_wheel_configs') || '{}');
+    var names = Object.keys(configs);
+    if(!names.length){ alert('No saved configs.'); return; }
+    var name = prompt('Available configs:\\n' + names.join('\\n') + '\\n\\nEnter name to load:');
+    if(!name || !configs[name]) return;
+    wheelPrizes = configs[name].prizes || [];
+    document.getElementById('wheelSpinPrice').value = configs[name].spinPrice || 10;
+    wheelRender();
+    wheelRecalc();
+  };
+
+  /* ═══════════════════════════════════════════════════════
+     BREAK CALCULATORS
+     ═══════════════════════════════════════════════════════ */
+
+  /* ── Break Sub-Tab Nav ── */
+  window.switchBreakTab = function(tab){
+    document.getElementById('breakRandom').style.display = tab === 'random' ? '' : 'none';
+    document.getElementById('breakPickTeam').style.display = tab === 'pickteam' ? '' : 'none';
+    document.querySelectorAll('#invBreaks .inv-subtab').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-break-tab') === tab);
+    });
+  };
+
+  /* ── Random Pack Break ── */
+  window.calcRandomBreak = function(){
+    var boxCost = parseFloat(document.getElementById('breakBoxCost').value) || 0;
+    var slots = parseInt(document.getElementById('breakSlots').value) || 1;
+    var preset = document.getElementById('breakMarginPreset').value;
+
+    document.getElementById('breakCustomMarginWrap').style.display = preset === 'custom' ? '' : 'none';
+    var marginPct = preset === 'custom' ? (parseFloat(document.getElementById('breakCustomMargin').value) || 0) : parseFloat(preset);
+
+    var costPerSlot = boxCost / slots;
+    var pricePerSlot = costPerSlot * (1 + marginPct / 100);
+    var totalRevenue = pricePerSlot * slots;
+    var totalProfit = totalRevenue - boxCost;
+
+    document.getElementById('breakCostPerSlot').textContent = '$' + costPerSlot.toFixed(2);
+    document.getElementById('breakPricePerSlot').textContent = '$' + pricePerSlot.toFixed(2);
+    document.getElementById('breakTotalRevenue').textContent = '$' + totalRevenue.toFixed(2);
+    document.getElementById('breakTotalProfit').textContent = (totalProfit >= 0 ? '' : '-') + '$' + Math.abs(totalProfit).toFixed(2);
+    document.getElementById('breakTotalProfit').style.color = totalProfit >= 0 ? '#c084fc' : '#ff6b6b';
+  };
+
+  /* ── Pick Your Team Break ── */
+  var pytTeams = []; // [{name, weight, override}]
+
+  window.pytAddTeam = function(){
+    pytTeams.push({name:'Team ' + (pytTeams.length + 1), weight:1, override:''});
+    pytRender();
+    calcPYTBreak();
+  };
+
+  window.pytRemoveTeam = function(idx){
+    pytTeams.splice(idx, 1);
+    pytRender();
+    calcPYTBreak();
+  };
+
+  function pytRender(){
+    var tbody = document.getElementById('pytTeamBody');
+    if(!pytTeams.length){
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--silver)">No teams added yet. Click "+ Add Team" to begin.</td></tr>';
+      return;
+    }
+    var boxCost = parseFloat(document.getElementById('pytBoxCost').value) || 0;
+    var marginPct = parseFloat(document.getElementById('pytMargin').value) || 0;
+    var totalWeight = pytTeams.reduce(function(s,t){ return s + (parseFloat(t.weight)||0); }, 0);
+    var targetRevenue = boxCost * (1 + marginPct / 100);
+
+    var html = '';
+    pytTeams.forEach(function(t, idx){
+      var autoPrice = totalWeight > 0 ? ((parseFloat(t.weight)||0) / totalWeight * targetRevenue) : 0;
+      html += '<tr>' +
+        '<td><input type="text" value="' + escapeHtml(t.name) + '" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 10px;color:var(--white);font-size:13px;width:100%" onchange="pytTeams['+idx+'].name=this.value"/></td>' +
+        '<td><input type="number" value="' + (t.weight||1) + '" min="0.1" step="0.1" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 10px;color:var(--white);font-size:13px;width:60px" onchange="pytTeams['+idx+'].weight=parseFloat(this.value)||1;calcPYTBreak()"/></td>' +
+        '<td style="color:var(--blue)">$' + autoPrice.toFixed(2) + '</td>' +
+        '<td><input type="number" value="' + (t.override||'') + '" min="0" step="0.01" placeholder="Auto" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 10px;color:var(--white);font-size:13px;width:80px" onchange="pytTeams['+idx+'].override=this.value;calcPYTBreak()"/></td>' +
+        '<td><button class="btn-primary" style="font-size:10px;padding:4px 8px;background:rgba(255,107,107,.15);color:#ff6b6b" onclick="pytRemoveTeam('+idx+')">X</button></td></tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  window.calcPYTBreak = function(){
+    var boxCost = parseFloat(document.getElementById('pytBoxCost').value) || 0;
+    var marginPct = parseFloat(document.getElementById('pytMargin').value) || 0;
+    var totalWeight = pytTeams.reduce(function(s,t){ return s + (parseFloat(t.weight)||0); }, 0);
+    var targetRevenue = boxCost * (1 + marginPct / 100);
+
+    var actualRevenue = 0;
+    pytTeams.forEach(function(t){
+      if(t.override && parseFloat(t.override) > 0){
+        actualRevenue += parseFloat(t.override);
+      } else {
+        var autoPrice = totalWeight > 0 ? ((parseFloat(t.weight)||0) / totalWeight * targetRevenue) : 0;
+        actualRevenue += autoPrice;
+      }
+    });
+    var actualProfit = actualRevenue - boxCost;
+
+    document.getElementById('pytTotalWeight').textContent = totalWeight.toFixed(1);
+    document.getElementById('pytTargetRevenue').textContent = '$' + targetRevenue.toFixed(2);
+    document.getElementById('pytActualRevenue').textContent = '$' + actualRevenue.toFixed(2);
+    document.getElementById('pytActualProfit').textContent = (actualProfit >= 0 ? '' : '-') + '$' + Math.abs(actualProfit).toFixed(2);
+    document.getElementById('pytActualProfit').style.color = actualProfit >= 0 ? '#c084fc' : '#ff6b6b';
+
+    pytRender();
+  };
+
+  // Initialize break calculator on load
+  calcRandomBreak();
+
   /* ── Helpers ── */
   function escapeHtml(str){
     return snSanitize.html(str);
@@ -1130,10 +2309,19 @@
 
   /* ── Listen for auth ready event ── */
   window.addEventListener('snauth:ready', function(e){
-    if(e.detail && e.detail.profile && e.detail.profile.role === 'admin'){
+    if(e.detail && e.detail.profile && (e.detail.profile.role === 'admin' || e.detail.profile.role === 'host')){
       showSection('adminContent');
-      loadHostsList();
-      loadUsers();
+      if(e.detail.profile.role === 'host'){
+        document.getElementById('tabUsers').style.display = 'none';
+        document.getElementById('tabWishes').style.display = 'none';
+        document.getElementById('tabSchedule').style.display = 'none';
+        document.getElementById('tabCollections').style.display = 'none';
+        document.getElementById('tabFeed').style.display = 'none';
+        switchAdminTab('inventory');
+      } else {
+        loadHostsList();
+        loadUsers();
+      }
     }
   });
 

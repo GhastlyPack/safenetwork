@@ -28,10 +28,6 @@
   window.declineCookies = function(){
     localStorage.setItem(CONSENT_KEY, 'essential');
     closeBanner();
-    // Disable CIO tracking for this visitor
-    if(window.cioanalytics && window.cioanalytics.reset){
-      try { cioanalytics.reset(); } catch(e){}
-    }
   };
 
   function closeBanner(){

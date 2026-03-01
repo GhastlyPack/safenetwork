@@ -3,19 +3,11 @@
   var COOKIE_NAME = 'sn_signup_shown';
   var COOKIE_DAYS = 365; // don't auto-popup again for 1 year
 
-  /* ── Signup Funnel Tracking ── */
+  /* ── Signup Funnel Tracking (server-side via Edge Function) ── */
   function trackSignupEvent(eventName, extra){
-    if(!window.cioanalytics) return;
-    try {
-      var params = new URLSearchParams(window.location.search);
-      cioanalytics.track(eventName, Object.assign({
-        page: window.location.pathname,
-        referrer: document.referrer || 'direct',
-        utm_source: params.get('utm_source') || '',
-        utm_medium: params.get('utm_medium') || '',
-        utm_campaign: params.get('utm_campaign') || ''
-      }, extra || {}));
-    } catch(e){}
+    // Anonymous funnel events (no email) are tracked only after form submission
+    // via cioTrackAnon which requires an email. Pre-submission funnel events
+    // (modal_shown, modal_closed) are no longer tracked client-side.
   }
 
   function getCookie(name){
@@ -180,24 +172,19 @@
     btn.disabled = true;
     btn.textContent = 'Submitting...';
 
-    // Identify user in Customer.io
+    // Identify + track in Customer.io via server-side Edge Function
     try {
-      if(window.cioanalytics){
-        // Identify creates/updates the person in Customer.io
-        cioanalytics.identify(email, {
-          email: email,
+      if(window.snProfile){
+        snProfile.cioTrackAnon(email, 'email_list_signup', {
           first_name: firstName,
-          interests: interests,
+          interests: interests.join(', '),
           source: 'website_signup',
           signup_page: window.location.pathname,
           coupon_eligible: true,
           signed_up_at: new Date().toISOString()
-        });
-
-        // Track the signup event
-        cioanalytics.track('email_list_signup', {
+        }, {
           first_name: firstName,
-          interests: interests,
+          interests: interests.join(', '),
           source: 'website_signup',
           signup_page: window.location.pathname
         });
@@ -206,13 +193,7 @@
       console.warn('Customer.io tracking error:', err);
     }
 
-    // Track completed signup
-    trackSignupEvent('signup_completed', {
-      has_interests: interests.length > 0,
-      interest_count: interests.length
-    });
-
-    // Show success (CIO calls are fire-and-forget, no need to wait)
+    // Show success
     showSuccess(form, successEl);
   };
 

@@ -135,12 +135,32 @@
 .admin-tab:hover{background:rgba(30,144,255,.05);color:var(--blue)}
 .admin-tab.active{background:rgba(30,144,255,.12);color:var(--blue)}
 
+/* ── Inventory Sub-Tabs ── */
+.inv-subtabs{display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:3px;flex-wrap:wrap}
+.inv-subtab{background:none;border:none;color:var(--silver);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:8px 14px;border-radius:7px;cursor:pointer;transition:background .2s,color .2s;white-space:nowrap}
+.inv-subtab:hover{background:rgba(212,160,23,.05);color:var(--gold2)}
+.inv-subtab.active{background:rgba(212,160,23,.12);color:var(--gold2)}
+
+/* ── Inventory Form Grid ── */
+.inv-form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.inv-form-field{display:flex;flex-direction:column;gap:4px}
+.inv-form-field.full{grid-column:1/-1}
+.inv-form-field label{font-size:11px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:.5px}
+.inv-form-field input,.inv-form-field select,.inv-form-field textarea{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 12px;color:var(--white);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.inv-form-field input:focus,.inv-form-field select:focus,.inv-form-field textarea:focus{border-color:var(--blue)}
+.inv-form-field textarea{resize:vertical;min-height:60px}
+
 @media(max-width:768px){
   .profile-header{flex-direction:column;text-align:center}
   .profile-badges{justify-content:center}
   #profileForm .interest-grid{grid-template-columns:1fr}
   .admin-stats{grid-template-columns:1fr 1fr}
   .admin-edit-panel{width:100%;max-width:none}
+  .inv-subtabs{gap:2px;padding:2px}
+  .inv-subtab{font-size:11px;padding:6px 10px}
+  .inv-form-grid{grid-template-columns:1fr}
+  .admin-tabs{flex-wrap:wrap}
+  .admin-tab{font-size:12px;padding:8px 12px}
 }
 @media(max-width:480px){
   .admin-stats{grid-template-columns:1fr}

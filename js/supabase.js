@@ -550,6 +550,147 @@
     }
   }
 
+  /* ── Admin Inventory: List ── */
+  async function adminInventoryList(accessToken, category, status, search){
+    try {
+      var result = await callEdge('admin-inventory-list', {
+        category: category || '',
+        status: status || '',
+        search: search || ''
+      }, accessToken);
+      return result.items || [];
+    } catch(err){
+      console.warn('Admin inventory list error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Admin Inventory: Add ── */
+  async function adminInventoryAdd(data, accessToken){
+    try {
+      var result = await callEdge('admin-inventory-add', data, accessToken);
+      return result.item;
+    } catch(err){
+      console.warn('Admin inventory add error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Admin Inventory: Update ── */
+  async function adminInventoryUpdate(data, accessToken){
+    try {
+      var result = await callEdge('admin-inventory-update', data, accessToken);
+      return result.item;
+    } catch(err){
+      console.warn('Admin inventory update error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Admin Inventory: Remove ── */
+  async function adminInventoryRemove(id, accessToken){
+    try {
+      var result = await callEdge('admin-inventory-remove', { id: id }, accessToken);
+      return result.success;
+    } catch(err){
+      console.warn('Admin inventory remove error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Admin Inventory: Mark Sold ── */
+  async function adminInventoryMarkSold(data, accessToken){
+    try {
+      var result = await callEdge('admin-inventory-mark-sold', data, accessToken);
+      return result.item;
+    } catch(err){
+      console.warn('Admin inventory mark sold error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Admin: Refresh Spot Prices ── */
+  async function adminRefreshSpotPrices(accessToken){
+    try {
+      var result = await callEdge('admin-refresh-spot-prices', {}, accessToken);
+      return result.prices || [];
+    } catch(err){
+      console.warn('Admin refresh spot prices error:', err);
+      throw err;
+    }
+  }
+
+  /* ── JustTCG: Search Cards ── */
+  async function justtcgSearch(query, game, opts, accessToken){
+    try {
+      var payload = { query: query, game: game || 'pokemon' };
+      if(opts && opts.set) payload.set = opts.set;
+      if(opts && opts.include_price_history) payload.include_price_history = true;
+      if(opts && opts.priceHistoryDuration) payload.priceHistoryDuration = opts.priceHistoryDuration;
+      var result = await callEdge('justtcg-search', payload, accessToken);
+      return { cards: result.cards || [], meta: result.meta || {} };
+    } catch(err){
+      console.warn('JustTCG search error:', err);
+      throw err;
+    }
+  }
+
+  /* ── JustTCG: Batch Lookup ── */
+  async function justtcgBatch(cards, accessToken){
+    try {
+      var result = await callEdge('justtcg-batch', { cards: cards }, accessToken);
+      return { cards: result.cards || [], meta: result.meta || {} };
+    } catch(err){
+      console.warn('JustTCG batch error:', err);
+      throw err;
+    }
+  }
+
+  /* ── JustTCG: Get Sets ── */
+  async function justtcgSets(game, searchQuery, accessToken){
+    try {
+      var payload = { game: game || 'pokemon' };
+      if(searchQuery) payload.q = searchQuery;
+      var result = await callEdge('justtcg-sets', payload, accessToken);
+      return { sets: result.sets || [], meta: result.meta || {} };
+    } catch(err){
+      console.warn('JustTCG sets error:', err);
+      throw err;
+    }
+  }
+
+  /* ── Customer.io: Server-Side Tracking ── */
+  async function cioIdentify(email, attributes, accessToken){
+    try {
+      var payload = Object.assign({email: email}, attributes || {});
+      await callEdge('cio-identify', payload, accessToken);
+    } catch(err){
+      console.warn('CIO identify error:', err);
+    }
+  }
+
+  async function cioTrack(email, eventName, eventData, accessToken){
+    try {
+      await callEdge('cio-track', {email: email, event: eventName, data: eventData || {}}, accessToken);
+    } catch(err){
+      console.warn('CIO track error:', err);
+    }
+  }
+
+  // Anonymous tracking (no auth required - for signup forms)
+  async function cioTrackAnon(email, eventName, identifyAttrs, eventData){
+    try {
+      var payload = {email: email, event: eventName, data: eventData || {}};
+      // Merge identify attributes at top level
+      if(identifyAttrs){
+        Object.keys(identifyAttrs).forEach(function(k){ payload[k] = identifyAttrs[k]; });
+      }
+      await callEdge('cio-track-anon', payload);
+    } catch(err){
+      console.warn('CIO anon track error:', err);
+    }
+  }
+
   /* ── Follow: Follow a User ── */
   async function follow(targetAuth0Id, accessToken){
     try {
@@ -704,13 +845,25 @@
     uploadInventoryPhoto: uploadInventoryPhoto,
     deleteInventoryPhoto: deleteInventoryPhoto,
     adminDeleteFeedEvent: adminDeleteFeedEvent,
+    adminInventoryList: adminInventoryList,
+    adminInventoryAdd: adminInventoryAdd,
+    adminInventoryUpdate: adminInventoryUpdate,
+    adminInventoryRemove: adminInventoryRemove,
+    adminInventoryMarkSold: adminInventoryMarkSold,
+    adminRefreshSpotPrices: adminRefreshSpotPrices,
+    justtcgSearch: justtcgSearch,
+    justtcgBatch: justtcgBatch,
+    justtcgSets: justtcgSets,
     follow: follow,
     unfollow: unfollow,
     isFollowing: isFollowing,
     getFollowers: getFollowers,
     getFollowing: getFollowing,
     toggleReaction: toggleReaction,
-    getItemReactions: getItemReactions
+    getItemReactions: getItemReactions,
+    cioIdentify: cioIdentify,
+    cioTrack: cioTrack,
+    cioTrackAnon: cioTrackAnon
   };
 
   init();

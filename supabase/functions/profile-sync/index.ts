@@ -2324,14 +2324,14 @@ async function handleAdminRefreshSpotPrices(auth0User: { sub: string; email: str
 
       const { error: upsertErr } = await supabase
         .from('spot_prices')
-        .upsert({
-          symbol: metal.symbol,
-          metal: metal.name.toLowerCase(),
+        .update({
           price_usd: pricePerOz,
           updated_at: new Date().toISOString(),
-        }, { onConflict: 'symbol' })
+        })
+        .eq('metal', metal.name.toLowerCase())
 
-      if (upsertErr) console.log(`Upsert error for ${metal.symbol}:`, upsertErr)
+      if (upsertErr) console.log(`Update error for ${metal.symbol}:`, upsertErr)
+      else console.log(`Updated ${metal.name.toLowerCase()}: $${pricePerOz.toFixed(2)}`)
     }
   }
 

@@ -140,6 +140,8 @@
 }
 .schedule-cta h3{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:10px}
 .schedule-cta p{color:var(--silver);font-size:14px;margin-bottom:20px}
+.schedule-cta .btn-primary{display:inline-block;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 0 16px rgba(30,144,255,.4);transition:transform .2s,box-shadow .2s}
+.schedule-cta .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(30,144,255,.6)}
 
 /* Responsive */
 @media(max-width:640px){

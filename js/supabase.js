@@ -79,6 +79,22 @@
     }
   }
 
+  /* ── Upload Avatar ── */
+  async function uploadAvatar(base64, contentType, accessToken){
+    try {
+      var result = await callEdge('upload-avatar', {
+        base64: base64,
+        content_type: contentType
+      }, accessToken);
+      currentProfile = result.profile;
+      cacheProfile();
+      return result;
+    } catch(err){
+      console.warn('Avatar upload error:', err);
+      throw err;
+    }
+  }
+
   /* ── Admin: List Users ── */
   async function adminListUsers(accessToken, search, roleFilter){
     try {
@@ -875,6 +891,7 @@
   window.snProfile = {
     initProfile: initProfile,
     updateProfile: updateProfile,
+    uploadAvatar: uploadAvatar,
     adminListUsers: adminListUsers,
     adminUpdateUser: adminUpdateUser,
     checkUsernameAvailable: checkUsernameAvailable,

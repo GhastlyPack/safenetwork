@@ -172,6 +172,51 @@ async function handleUpdate(auth0User: { sub: string; email: string; email_verif
   return { profile }
 }
 
+/* ── Action: Upload Avatar ── */
+async function handleUploadAvatar(auth0User: { sub: string; email: string }, data: any) {
+  if (!data.base64) throw new Error('base64 image data is required')
+  if (!data.content_type) throw new Error('content_type is required')
+
+  // Decode base64
+  const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0))
+
+  // Validate size (2MB max for avatars)
+  if (bytes.length > 2 * 1024 * 1024) {
+    throw new Error('Avatar exceeds 2MB limit')
+  }
+
+  // Upload to Storage (upsert to overwrite old avatar)
+  const ext = data.content_type === 'image/png' ? 'png' : 'jpg'
+  const storagePath = `${auth0User.sub}/avatar.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('profile-avatars')
+    .upload(storagePath, bytes, {
+      contentType: data.content_type,
+      upsert: true,
+    })
+
+  if (uploadError) throw new Error('Upload failed: ' + uploadError.message)
+
+  // Get public URL with cache-busting param
+  const { data: urlData } = supabase.storage
+    .from('profile-avatars')
+    .getPublicUrl(storagePath)
+
+  const publicUrl = urlData.publicUrl + '?t=' + Date.now()
+
+  // Update profile with new avatar URL
+  const { data: profile, error: updateError } = await supabase
+    .from('profiles')
+    .update({ avatar_url: publicUrl })
+    .eq('auth0_id', auth0User.sub)
+    .select()
+    .single()
+
+  if (updateError) throw updateError
+  return { url: publicUrl, profile }
+}
+
 /* ── Action: Admin List Users ── */
 async function handleAdminList(auth0User: { sub: string; email: string }, data: any) {
   // Verify caller is admin
@@ -2797,6 +2842,9 @@ serve(async (req: Request) => {
         break
       case 'update':
         result = await handleUpdate(auth0User, data || {})
+        break
+      case 'upload-avatar':
+        result = await handleUploadAvatar(auth0User, data || {})
         break
       case 'admin-list':
         result = await handleAdminList(auth0User, data || {})

@@ -84,10 +84,12 @@
 
   <!-- Profile Header -->
   <div class="profile-header">
-    <div class="profile-avatar" id="profileAvatar">
+    <div class="profile-avatar" id="profileAvatar" onclick="document.getElementById('avatarFileInput').click()" title="Change profile picture">
       <img id="profileAvatarImg" alt="Avatar"/>
       <span class="profile-avatar-initials" id="profileAvatarInitials"></span>
+      <span class="profile-avatar-overlay">Edit</span>
     </div>
+    <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" style="display:none"/>
     <div class="profile-header-info">
       <h2 id="profileDisplayName">Loading...</h2>
       <div class="profile-username" id="profileUsernameDisplay">@...</div>
@@ -419,6 +421,73 @@
     var el = document.getElementById('bioCharCount');
     var bio = document.getElementById('profileBio');
     if(el && bio) el.textContent = bio.value.length;
+  }
+
+  /* ── Avatar Upload ── */
+  document.getElementById('avatarFileInput').addEventListener('change', function(e){
+    var file = e.target.files && e.target.files[0];
+    if(!file) return;
+    // Reset input so the same file can be re-selected
+    e.target.value = '';
+
+    // Validate type
+    if(!file.type.match(/^image\/(jpeg|png|webp)$/)){
+      alert('Please select a JPEG, PNG, or WebP image.');
+      return;
+    }
+
+    // Resize + upload
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      var img = new Image();
+      img.onload = function(){
+        // Resize to max 400px
+        var maxDim = 400;
+        var w = img.width, h = img.height;
+        if(w > maxDim || h > maxDim){
+          if(w > h){ h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        var base64 = dataUrl.split(',')[1];
+        doAvatarUpload(base64);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  async function doAvatarUpload(base64){
+    var overlay = document.querySelector('.profile-avatar-overlay');
+    overlay.textContent = '...';
+    overlay.style.opacity = '1';
+    try {
+      var token = await snAuth.getAccessToken();
+      if(!token) throw new Error('Not authenticated');
+      var result = await snProfile.uploadAvatar(base64, 'image/jpeg', token);
+      // Update profile avatar
+      currentProfile = result.profile;
+      renderProfile();
+      // Update navbar avatar
+      var navImg = document.querySelector('.auth-avatar img');
+      var navInitials = document.querySelector('.auth-avatar-initials');
+      if(navImg && result.url){
+        navImg.src = result.url;
+        navImg.style.display = 'block';
+        if(navInitials) navInitials.style.display = 'none';
+      }
+      overlay.textContent = 'Edit';
+      overlay.style.opacity = '';
+    } catch(err){
+      console.warn('Avatar upload error:', err);
+      alert('Failed to upload avatar: ' + (err.message || 'Please try again.'));
+      overlay.textContent = 'Edit';
+      overlay.style.opacity = '';
+    }
   }
 
   /* ── Save Profile ── */

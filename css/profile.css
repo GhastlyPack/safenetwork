@@ -10,9 +10,11 @@
 
 /* Profile Header */
 .profile-header{display:flex;align-items:center;gap:24px;margin-bottom:36px;padding:28px;background:rgba(255,255,255,.03);border:1px solid rgba(30,144,255,.15);border-radius:20px}
-.profile-avatar{width:80px;height:80px;border-radius:50%;overflow:hidden;border:3px solid rgba(30,144,255,.3);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--blue),var(--blue2))}
+.profile-avatar{width:80px;height:80px;border-radius:50%;overflow:hidden;border:3px solid rgba(30,144,255,.3);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--blue),var(--blue2));position:relative;cursor:pointer}
 .profile-avatar img{width:100%;height:100%;object-fit:cover;display:none}
 .profile-avatar-initials{color:#fff;font-weight:700;font-size:28px;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center}
+.profile-avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;color:#fff;font-size:11px;font-weight:600;letter-spacing:.5px;pointer-events:none}
+.profile-avatar:hover .profile-avatar-overlay{opacity:1}
 .profile-header-info{flex:1}
 .profile-header-info h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;margin-bottom:4px}
 .profile-username{color:var(--blue);font-size:14px;font-weight:600;margin-bottom:8px}

@@ -962,6 +962,55 @@
   var searchTimer = null;
   var hostsList = [];
 
+  /* ── Host Panel: Category Mapping ── */
+  var HOST_TAB_MAP = {
+    djsmoltz: {tabs: ['coins','bullion'], cats: ['coins','bullion']},
+    honeybunbean: {tabs: ['pokemon'], cats: ['pokemon_cards','pokemon_sealed']},
+    maxocollects: {tabs: ['sports'], cats: ['sports_cards']}
+  };
+
+  function setupHostPanel(profile){
+    // Rebrand
+    document.title = 'Host Panel | Safe Network';
+    var h1 = document.querySelector('.admin-wrap h1');
+    if(h1) h1.textContent = 'Host Panel';
+    var sub = document.querySelector('.admin-wrap > p');
+    if(sub) sub.textContent = 'Manage your inventory, wheel builds, and break pricing.';
+
+    // Hide non-inventory admin tabs
+    ['tabUsers','tabWishes','tabSchedule','tabCollections','tabFeed'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.style.display = 'none';
+    });
+
+    // Filter inventory sub-tabs by host's categories
+    var mapping = HOST_TAB_MAP[profile.host_slug];
+    if(mapping){
+      var allowedTabs = mapping.tabs;
+      var allowedCats = mapping.cats;
+      var alwaysVisible = ['dashboard','wheel','breaks'];
+      document.querySelectorAll('#adminTabInventory > .inv-subtabs .inv-subtab[data-inv-tab]').forEach(function(btn){
+        var tab = btn.getAttribute('data-inv-tab');
+        if(alwaysVisible.indexOf(tab) === -1 && allowedTabs.indexOf(tab) === -1){
+          btn.style.display = 'none';
+        }
+      });
+
+      // Filter category dropdown in add/edit form
+      var catSelect = document.getElementById('invCategory');
+      if(catSelect){
+        Array.from(catSelect.options).forEach(function(opt){
+          if(allowedCats.indexOf(opt.value) === -1) opt.style.display = 'none';
+          else opt.style.display = '';
+        });
+        // Default to first allowed
+        if(allowedCats.length) catSelect.value = allowedCats[0];
+      }
+    }
+
+    switchAdminTab('inventory');
+  }
+
   /* ── Initialize Admin Page ── */
   async function initAdminPage(){
     var maxWait = 50;
@@ -1004,14 +1053,7 @@
     showSection('adminContent');
 
     if(profile.role === 'host'){
-      // Hosts only see the Inventory tab - hide all other tabs
-      document.getElementById('tabUsers').style.display = 'none';
-      document.getElementById('tabWishes').style.display = 'none';
-      document.getElementById('tabSchedule').style.display = 'none';
-      document.getElementById('tabCollections').style.display = 'none';
-      document.getElementById('tabFeed').style.display = 'none';
-      // Auto-switch to inventory
-      switchAdminTab('inventory');
+      setupHostPanel(profile);
     } else {
       // Admin - load everything
       loadHostsList();
@@ -2228,7 +2270,7 @@
 
   /* ── Bulk Add Panel ── */
   var bulkAddCategory = 'coins';
-  var bulkRows = [];
+  window.bulkRows = [];
 
   window.openBulkAddPanel = function(category){
     bulkAddCategory = category || 'coins';
@@ -2271,11 +2313,11 @@
     var html = '';
     bulkRows.forEach(function(row, idx){
       html += '<tr>' +
-        '<td><input type="text" value="' + escapeHtml(row.name) + '" style="' + inputStyle + '" onchange="bulkRows['+idx+'].name=this.value" placeholder="Item name"/></td>' +
-        '<td><input type="number" value="' + (row.quantity || 1) + '" min="1" step="1" style="' + inputStyle + ';width:60px" onchange="bulkRows['+idx+'].quantity=parseInt(this.value)||1"/></td>' +
-        '<td><input type="number" value="' + (row.purchase_price || '') + '" min="0" step="0.01" style="' + inputStyle + ';width:90px" onchange="bulkRows['+idx+'].purchase_price=this.value" placeholder="0.00"/></td>' +
-        '<td><input type="text" value="' + escapeHtml(row.source_seller || '') + '" style="' + inputStyle + '" onchange="bulkRows['+idx+'].source_seller=this.value" placeholder="Source"/></td>' +
-        '<td><input type="text" value="' + escapeHtml(row.notes || '') + '" style="' + inputStyle + '" onchange="bulkRows['+idx+'].notes=this.value" placeholder="Notes"/></td>' +
+        '<td><input type="text" value="' + escapeHtml(row.name) + '" style="' + inputStyle + '" oninput="bulkRows['+idx+'].name=this.value" placeholder="Item name"/></td>' +
+        '<td><input type="number" value="' + (row.quantity || 1) + '" min="1" step="1" style="' + inputStyle + ';width:60px" oninput="bulkRows['+idx+'].quantity=parseInt(this.value)||1"/></td>' +
+        '<td><input type="number" value="' + (row.purchase_price || '') + '" min="0" step="0.01" style="' + inputStyle + ';width:90px" oninput="bulkRows['+idx+'].purchase_price=this.value" placeholder="0.00"/></td>' +
+        '<td><input type="text" value="' + escapeHtml(row.source_seller || '') + '" style="' + inputStyle + '" oninput="bulkRows['+idx+'].source_seller=this.value" placeholder="Source"/></td>' +
+        '<td><input type="text" value="' + escapeHtml(row.notes || '') + '" style="' + inputStyle + '" oninput="bulkRows['+idx+'].notes=this.value" placeholder="Notes"/></td>' +
         '<td><button class="btn-primary" style="font-size:10px;padding:4px 8px;background:rgba(255,107,107,.15);color:#ff6b6b" onclick="bulkRemoveRow('+idx+')">X</button></td></tr>';
     });
     tbody.innerHTML = html;
@@ -2826,12 +2868,7 @@
     if(e.detail && e.detail.profile && (e.detail.profile.role === 'admin' || e.detail.profile.role === 'host')){
       showSection('adminContent');
       if(e.detail.profile.role === 'host'){
-        document.getElementById('tabUsers').style.display = 'none';
-        document.getElementById('tabWishes').style.display = 'none';
-        document.getElementById('tabSchedule').style.display = 'none';
-        document.getElementById('tabCollections').style.display = 'none';
-        document.getElementById('tabFeed').style.display = 'none';
-        switchAdminTab('inventory');
+        setupHostPanel(e.detail.profile);
       } else {
         loadHostsList();
         loadUsers();

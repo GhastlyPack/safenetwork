@@ -128,7 +128,7 @@
           collectionLink.textContent = 'My Collection';
           logoutBtn.before(collectionLink);
 
-          // Add admin link if admin
+          // Add admin/host panel link
           if(profile.role === 'admin'){
             var adminLink = document.createElement('a');
             adminLink.href = '/admin.html';
@@ -136,6 +136,13 @@
             adminLink.textContent = 'Admin Panel';
             adminLink.style.color = '#c084fc';
             logoutBtn.before(adminLink);
+          } else if(profile.role === 'host'){
+            var hostLink = document.createElement('a');
+            hostLink.href = '/admin.html';
+            hostLink.className = 'auth-dropdown-link';
+            hostLink.textContent = 'Host Panel';
+            hostLink.style.color = '#f0c040';
+            logoutBtn.before(hostLink);
           }
 
           var divider2 = document.createElement('div');
@@ -177,7 +184,7 @@
         mobileCollLink.textContent = 'My Collection';
         mobileWishLink.after(mobileCollLink);
 
-        // Add admin link if admin
+        // Add admin/host panel link
         if(profile.role === 'admin'){
           var mobileAdminLink = document.createElement('a');
           mobileAdminLink.href = '/admin.html';
@@ -187,6 +194,15 @@
           mobileAdminLink.style.marginBottom = '8px';
           mobileAdminLink.textContent = 'Admin Panel';
           mobileCollLink.after(mobileAdminLink);
+        } else if(profile.role === 'host'){
+          var mobileHostLink = document.createElement('a');
+          mobileHostLink.href = '/admin.html';
+          mobileHostLink.className = 'auth-mobile-profile-link';
+          mobileHostLink.style.color = '#f0c040';
+          mobileHostLink.style.display = 'block';
+          mobileHostLink.style.marginBottom = '8px';
+          mobileHostLink.textContent = 'Host Panel';
+          mobileCollLink.after(mobileHostLink);
         }
       }
     }

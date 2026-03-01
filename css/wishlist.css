@@ -75,7 +75,7 @@
 .badge-cat-coins{background:rgba(212,160,23,.12);color:var(--gold2);border:1px solid rgba(212,160,23,.25)}
 .badge-cat-pokemon{background:rgba(255,107,107,.12);color:#ff6b6b;border:1px solid rgba(255,107,107,.25)}
 .badge-cat-sports_cards{background:rgba(30,144,255,.12);color:var(--blue);border:1px solid rgba(30,144,255,.25)}
-.badge-cat-shoes{background:rgba(160,120,255,.12);color:#c084fc;border:1px solid rgba(160,120,255,.25)}
+.badge-cat-jewelry{background:rgba(160,120,255,.12);color:#c084fc;border:1px solid rgba(160,120,255,.25)}
 
 /* Sub-detail tags */
 .wishlist-detail-tag{display:inline-block;padding:3px 10px;border-radius:999px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--silver);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}

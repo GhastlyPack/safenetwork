@@ -325,7 +325,7 @@ async function handleWishlistAdd(auth0User: { sub: string; email: string }, data
     throw new Error('Description is required')
   }
 
-  const validCategories = ['coins', 'pokemon', 'sports_cards', 'shoes']
+  const validCategories = ['coins', 'pokemon', 'sports_cards', 'jewelry']
   if (!data.category || !validCategories.includes(data.category)) {
     throw new Error('Invalid category')
   }
@@ -394,7 +394,7 @@ async function handleWishlistUpdate(auth0User: { sub: string; email: string }, d
 
   // Validate
   if (updates.category) {
-    const valid = ['coins', 'pokemon', 'sports_cards', 'shoes']
+    const valid = ['coins', 'pokemon', 'sports_cards', 'jewelry']
     if (!valid.includes(updates.category)) throw new Error('Invalid category')
   }
   if (updates.description !== undefined) {
@@ -528,7 +528,7 @@ async function handleCreateScheduledShow(auth0User: { sub: string; email: string
     throw new Error('show_type, title, and scheduled_at are required')
   }
 
-  const validTypes = ['coins', 'pokemon', 'sports', 'shoes']
+  const validTypes = ['coins', 'pokemon', 'sports', 'jewelry']
   if (!validTypes.includes(data.show_type)) {
     throw new Error('Invalid show_type')
   }
@@ -701,7 +701,7 @@ async function handleCollectionGet(auth0User: { sub: string; email: string }) {
 
 /* ── Action: Add Collection Item ── */
 async function handleCollectionAdd(auth0User: { sub: string; email: string }, data: any) {
-  const validCategories = ['coins', 'pokemon', 'sports_cards', 'shoes']
+  const validCategories = ['coins', 'pokemon', 'sports_cards', 'jewelry']
   if (!data.category || !validCategories.includes(data.category)) {
     throw new Error('Invalid category')
   }
@@ -771,7 +771,7 @@ async function handleCollectionUpdate(auth0User: { sub: string; email: string },
 
   // Validate
   if (updates.category) {
-    const valid = ['coins', 'pokemon', 'sports_cards', 'shoes']
+    const valid = ['coins', 'pokemon', 'sports_cards', 'jewelry']
     if (!valid.includes(updates.category)) throw new Error('Invalid category')
   }
   if (updates.description !== undefined) {
@@ -1090,7 +1090,7 @@ async function handleInventoryAdd(auth0User: { sub: string; email: string }, dat
     throw new Error('Title is required')
   }
 
-  const validCategories = ['coins', 'pokemon', 'sports_cards', 'shoes']
+  const validCategories = ['coins', 'pokemon', 'sports_cards', 'jewelry']
   if (!data.category || !validCategories.includes(data.category)) {
     throw new Error('Invalid category')
   }
@@ -1182,7 +1182,7 @@ async function handleInventoryUpdate(auth0User: { sub: string; email: string }, 
 
   // Validate
   if (updates.category) {
-    const valid = ['coins', 'pokemon', 'sports_cards', 'shoes']
+    const valid = ['coins', 'pokemon', 'sports_cards', 'jewelry']
     if (!valid.includes(updates.category)) throw new Error('Invalid category')
   }
   if (updates.status) {

@@ -10,7 +10,7 @@
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://safenetwork.shop"/>
 <meta property="og:title" content="The Safe Network | Your Premier Live Shopping Experience"/>
-<meta property="og:description" content="The premier live shopping network for collectors. Coins, Pokemon, Sports Cards and Shoes. Giveaways, auctions, and fun games streamed live on Whatnot."/>
+<meta property="og:description" content="The premier live shopping network for collectors. Coins, Pokemon, Sports Cards and Jewelry. Giveaways, auctions, and fun games streamed live on Whatnot."/>
 <meta property="og:image" content="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979965/ChatGPT_Image_Feb_24_2026_04_39_12_PM_bvf4rt.png"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
@@ -18,7 +18,7 @@
 <!-- Twitter/X Card -->
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="Safe Network – Live on Whatnot"/>
-<meta name="twitter:description" content="The premier live shopping network for collectors. Coins, Pokemon, Sports Cards and Shoes. Giveaways, auctions, and fun games streamed live on Whatnot."/>
+<meta name="twitter:description" content="The premier live shopping network for collectors. Coins, Pokemon, Sports Cards and Jewelry. Giveaways, auctions, and fun games streamed live on Whatnot."/>
 <meta name="twitter:image" content="https://res.cloudinary.com/dqn1tnmhl/image/upload/v1771979965/ChatGPT_Image_Feb_24_2026_04_39_12_PM_bvf4rt.png"/>
 <link rel="stylesheet" href="/css/global.css">
 <link rel="stylesheet" href="/css/signup.css">
@@ -684,10 +684,10 @@
       <p>Rookie cards, autographs, graded slabs and mystery boxes across football, basketball, baseball and more.</p>
       <a href="https://www.whatnot.com/user/maxocollects" target="_blank" onclick="event.stopPropagation()" class="show-badge badge-live">VISIT WHATNOT</a>
     </div>
-    <div class="show-card coming-soon" onclick="openShowModal('shoes')">
-      <span class="show-emoji">👟</span>
-      <h3>Shoes</h3>
-      <p>Authenticated sneakers, heat releases, and grail pickups. Live shopping built for the sneakerhead community.</p>
+    <div class="show-card coming-soon" onclick="openShowModal('jewelry')">
+      <span class="show-emoji">💎</span>
+      <h3>Jewelry</h3>
+      <p>Gold, silver, gemstones, and custom pieces. Live auctions and deals for jewelry collectors and enthusiasts.</p>
       <div class="show-badge badge-soon">COMING SOON</div>
     </div>
   </div>
@@ -786,7 +786,7 @@
     <div class="trust-item">
       <span class="trust-icon">✅</span>
       <h3>Authenticated Items</h3>
-      <p>Graded cards, certified coins, and verified sneakers. We stand behind every item we sell.</p>
+      <p>Graded cards, certified coins, and verified jewelry. We stand behind every item we sell.</p>
     </div>
     <div class="trust-item">
       <span class="trust-icon">🔴</span>
@@ -903,7 +903,7 @@
         <label><input type="checkbox" name="interests" value="coins"/> Coins</label>
         <label><input type="checkbox" name="interests" value="sports_cards"/> Sports Cards</label>
         <label><input type="checkbox" name="interests" value="pokemon"/> Pokémon</label>
-        <label><input type="checkbox" name="interests" value="shoes"/> Shoes</label>
+        <label><input type="checkbox" name="interests" value="jewelry"/> Jewelry</label>
       </fieldset>
       <div class="signup-error" id="signupError"></div>
       <button type="submit">Sign Up Now</button>
@@ -1087,16 +1087,16 @@
       slug: 'sports',
       whatnot: 'https://www.whatnot.com/user/maxocollects'
     },
-    shoes: {
-      name: 'Shoes',
-      emoji: '\u{1F45F}',
+    jewelry: {
+      name: 'Jewelry',
+      emoji: '\u{1F48E}',
       status: 'coming_soon',
       host: 'TBA',
       hostHandle: null,
       hostWhatnot: null,
-      desc: 'Authenticated sneakers, heat releases, and grail pickups. Live shopping built for the sneakerhead community. Stay tuned for host announcements and launch dates.',
+      desc: 'Gold, silver, gemstones, and custom pieces. Live auctions and deals for jewelry collectors and enthusiasts. Stay tuned for host announcements and launch dates.',
       schedule: 'Coming soon \u2014 Sign up for launch alerts',
-      slug: 'shoes',
+      slug: 'jewelry',
       whatnot: null
     }
   };
@@ -1163,11 +1163,11 @@
 <script>
 (function(){
   var TYPE_EMOJI = {
-    coins:'\u{1FA99}', pokemon:'\u26A1', sports:'\u{1F3C0}', shoes:'\u{1F45F}',
+    coins:'\u{1FA99}', pokemon:'\u26A1', sports:'\u{1F3C0}', jewelry:'\u{1F48E}',
     breaks:'\u{1F4A5}', general:'\u{1F4E6}'
   };
   var TYPE_LABELS = {
-    coins:'Coins', pokemon:'Pokemon', sports:'Sports', shoes:'Shoes',
+    coins:'Coins', pokemon:'Pokemon', sports:'Sports', jewelry:'Jewelry',
     breaks:'Breaks', general:'General'
   };
 

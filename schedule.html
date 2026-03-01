@@ -321,8 +321,17 @@
     countdownInterval = setInterval(update, 1000);
   }
 
-  // Initialize
-  loadSchedule();
+  // Initialize: wait for supabase.js to load, then fetch shows
+  function tryLoadSchedule(attempts) {
+    if (window.snProfile && typeof snProfile.listScheduledShows === 'function') {
+      loadSchedule();
+    } else if (attempts < 20) {
+      setTimeout(function(){ tryLoadSchedule(attempts + 1); }, 150);
+    } else {
+      renderSchedule(); // fallback: show empty state
+    }
+  }
+  tryLoadSchedule(0);
 </script>
 <script src="/js/supabase.js"></script>
 <script src="/js/cookies.js"></script>

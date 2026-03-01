@@ -1064,12 +1064,12 @@
     pokemon: {
       name: 'Pokemon',
       emoji: '\u26A1',
-      status: 'coming_soon',
+      status: 'scheduled',
       host: 'HoneyBunBean',
       hostHandle: 'honeybunbean',
       hostWhatnot: 'https://www.whatnot.com/user/honeybunbean',
-      desc: 'Pack openings, graded card auctions, and Pokemon lots for collectors of all levels. From vintage Base Set to the latest modern hits. Coming soon to the Safe Network lineup with mystery lots, giveaways, and live breaks.',
-      schedule: 'Coming soon \u2014 Sign up for launch alerts',
+      desc: 'Pack openings, graded card auctions, and Pokemon lots for collectors of all levels. From vintage Base Set to the latest modern hits. $1 start auctions, live breaks, mystery lots, giveaways, and more.',
+      schedule: 'Sun\u2013Tue on Whatnot \u2014 See full schedule',
       slug: 'pokemon',
       whatnot: 'https://www.whatnot.com/user/honeybunbean'
     },
@@ -1109,6 +1109,8 @@
     // Status badge
     if (s.status === 'live') {
       document.getElementById('showModalStatus').innerHTML = '<div class="show-badge badge-live">\u{1F7E2} LIVE NOW</div>';
+    } else if (s.status === 'scheduled') {
+      document.getElementById('showModalStatus').innerHTML = '<div class="show-badge badge-soon" style="border-color:var(--blue);color:var(--blue)">SCHEDULED</div>';
     } else {
       document.getElementById('showModalStatus').innerHTML = '<div class="show-badge badge-soon">COMING SOON</div>';
     }
@@ -1129,6 +1131,8 @@
     actionsHTML += '<a href="/shows/' + s.slug + '.html" class="show-modal-page-btn">Explore ' + s.name + ' \u2192</a>';
     if (s.status === 'live' && s.whatnot) {
       actionsHTML += '<a href="' + s.whatnot + '" target="_blank" class="show-modal-live-btn">\u{1F534} Watch Live on Whatnot</a>';
+    } else if (s.status === 'scheduled') {
+      actionsHTML += '<a href="/schedule.html" class="show-modal-notify-btn" style="border-color:var(--blue);color:var(--blue)">View Schedule \u2192</a>';
     } else {
       actionsHTML += '<button class="show-modal-notify-btn" onclick="event.stopPropagation();window.snAuth && snAuth.login()">\u{1F514} Get Notified at Launch</button>';
     }

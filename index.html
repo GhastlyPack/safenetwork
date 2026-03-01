@@ -1069,7 +1069,7 @@
       hostHandle: 'honeybunbean',
       hostWhatnot: 'https://www.whatnot.com/user/honeybunbean',
       desc: 'Pack openings, graded card auctions, and Pokemon lots for collectors of all levels. From vintage Base Set to the latest modern hits. $1 start auctions, live breaks, mystery lots, giveaways, and more.',
-      schedule: 'Sun\u2013Tue on Whatnot \u2014 See full schedule',
+      schedule: 'Sun\u2013Tue on Whatnot \u2014 <a href="/schedule.html" onclick="event.stopPropagation()" style="color:var(--blue);text-decoration:underline">See full schedule</a>',
       slug: 'pokemon',
       whatnot: 'https://www.whatnot.com/user/honeybunbean'
     },
@@ -1132,7 +1132,7 @@
     if (s.status === 'live' && s.whatnot) {
       actionsHTML += '<a href="' + s.whatnot + '" target="_blank" class="show-modal-live-btn">\u{1F534} Watch Live on Whatnot</a>';
     } else if (s.status === 'scheduled') {
-      actionsHTML += '<a href="/schedule.html" class="show-modal-notify-btn" style="border-color:var(--blue);color:var(--blue)">View Schedule \u2192</a>';
+      actionsHTML += '<a href="/schedule.html" onclick="event.stopPropagation()" class="show-modal-notify-btn" style="border-color:var(--blue);color:var(--blue)">View Schedule \u2192</a>';
     } else {
       actionsHTML += '<button class="show-modal-notify-btn" onclick="event.stopPropagation();window.snAuth && snAuth.login()">\u{1F514} Get Notified at Launch</button>';
     }

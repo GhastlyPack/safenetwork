@@ -49,6 +49,8 @@
 }
 .countdown-label{font-size:10px;color:var(--silver);letter-spacing:1px;text-transform:uppercase;font-weight:600}
 .next-show-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.next-show-actions .btn-gold{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a0e1a;padding:10px 24px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 0 12px rgba(212,160,23,.3)}
+.next-show-actions .btn-gold:hover{transform:translateY(-2px);box-shadow:0 0 24px rgba(212,160,23,.5)}
 
 /* Show List */
 .schedule-list{display:flex;flex-direction:column;gap:16px;margin-bottom:48px}

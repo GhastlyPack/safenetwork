@@ -421,7 +421,7 @@ async function handleListHosts() {
 async function handleListScheduledShows(data: any) {
   let query = supabase
     .from('scheduled_shows')
-    .select('*, hosts!inner(name, slug, whatnot_handle, avatar_url)')
+    .select('*, hosts(*)')
     .order('scheduled_at', { ascending: true })
 
   // Optional filter by show_type
@@ -448,7 +448,7 @@ async function handleListScheduledShows(data: any) {
     id: s.id,
     host_slug: s.host_slug,
     host_name: s.hosts?.name || '',
-    host_handle: s.hosts?.whatnot_handle || s.host_slug,
+    host_handle: s.hosts?.whatnot_username || s.host_slug,
     host_avatar: s.hosts?.avatar_url || '',
     show_type: s.show_type,
     title: s.title,

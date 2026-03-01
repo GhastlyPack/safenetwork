@@ -92,7 +92,7 @@
       <div class="countdown-unit"><div class="countdown-num" id="cdSecs">00</div><div class="countdown-label">Secs</div></div>
     </div>
     <div class="next-show-actions">
-      <a href="#" id="nextShowWatchBtn" target="_blank" class="btn-gold" style="padding:10px 24px;font-size:13px;display:inline-block">Watch on Whatnot</a>
+      <a href="#" id="nextShowWatchBtn" target="_blank" class="btn-gold" style="padding:10px 24px;font-size:13px;display:inline-block">Bookmark on Whatnot</a>
     </div>
   </div>
 
@@ -242,7 +242,7 @@
     if (show.status === 'live' && show.whatnot_url) {
       actionBtn = '<a href="' + safeUrl(show.whatnot_url) + '" target="_blank" class="schedule-card-btn live-btn">🔴 Watch</a>';
     } else if (!isPast && show.whatnot_url) {
-      actionBtn = '<a href="' + safeUrl(show.whatnot_url) + '" target="_blank" class="schedule-card-btn">Watch</a>';
+      actionBtn = '<a href="' + safeUrl(show.whatnot_url) + '" target="_blank" class="schedule-card-btn">Bookmark</a>';
     } else if (!isPast) {
       actionBtn = '<a href="' + handleUrl + '" target="_blank" class="schedule-card-btn">Follow</a>';
     }

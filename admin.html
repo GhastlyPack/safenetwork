@@ -1827,14 +1827,11 @@
 
   function applySpotPrices(prices){
     if(!prices || !prices.length) return;
-    console.log('SPOT RAW:', JSON.stringify(prices));
     prices.forEach(function(sp){
-      console.log('SPOT ITEM:', JSON.stringify(sp));
       var metal = sp.metal || sp.name || '';
       var id = 'spot' + metal.charAt(0).toUpperCase() + metal.slice(1).toLowerCase();
       var el = document.getElementById(id);
       var price = parseFloat(sp.price_usd || sp.price_per_oz || 0);
-      console.log('SPOT PARSE:', metal, id, '| price_usd:', sp.price_usd, '| type:', typeof sp.price_usd, '| parsed:', price);
       if(el) el.textContent = price > 0 ? '$' + price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : 'N/A';
     });
   }
@@ -1879,7 +1876,8 @@
       if(item.status === 'listed') listed++;
       if(item.status === 'sold') sold++;
 
-      var cost = (parseFloat(item.purchase_price) || 0) + (parseFloat(item.buyers_premium) || 0);
+      var unitCost = (parseFloat(item.purchase_price) || 0) + (parseFloat(item.buyers_premium) || 0);
+      var cost = unitCost * qty;
       totalCost += cost;
 
       if(item.status === 'sold'){

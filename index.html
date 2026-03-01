@@ -676,7 +676,7 @@
       <span class="show-emoji">⚡</span>
       <h3>Pokemon</h3>
       <p>Pack openings, graded card auctions, and Pokemon lots for collectors of all levels. From vintage Base Set to modern hits.</p>
-      <a href="https://www.whatnot.com/user/honeybunbean" target="_blank" onclick="event.stopPropagation()" class="show-badge badge-live">VISIT WHATNOT</a>
+      <a href="https://www.whatnot.com/user/safenetwork_pokemon" target="_blank" onclick="event.stopPropagation()" class="show-badge badge-live">VISIT WHATNOT</a>
     </div>
     <div class="show-card" onclick="openShowModal('sports')">
       <span class="show-emoji">🏀</span>
@@ -735,9 +735,9 @@
       <div class="host-avatar"><img src="https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg" alt="HoneyBunBean"/></div>
       <h3>HoneyBunBean</h3>
       <div class="host-handle">
-        <span>@honeybunbean</span>
+        <span>@SafeNetwork_Pokemon</span>
         <div class="host-socials">
-          <a href="https://www.whatnot.com/user/honeybunbean" target="_blank" title="Whatnot"><img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/whatnot.png" alt="Whatnot"/></a>
+          <a href="https://www.whatnot.com/user/safenetwork_pokemon" target="_blank" title="Whatnot"><img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/whatnot.png" alt="Whatnot"/></a>
           <a href="https://www.instagram.com/honeybunbean/" target="_blank" title="Instagram"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram"/></a>
         </div>
       </div>
@@ -973,10 +973,11 @@
     honeybunbean: {
       name: 'HoneyBunBean',
       handle: 'honeybunbean',
+      whatnot: 'safenetwork_pokemon',
       avatar: 'https://images.whatnot.com/fit-in/3840x0/filters:format(webp)/users%2F9711385%2F396ad68f-8f97-45f0-80df-fc100277d1ab.jpeg',
       bio: 'Safe Network\'s Pokemon host. Live pack openings, graded card auctions, and Pokemon giveaways. From vintage Base Set to the latest modern hits.',
       socials: [
-        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/honeybunbean', icon: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/whatnot.png' },
+        { platform: 'Whatnot', url: 'https://www.whatnot.com/user/safenetwork_pokemon', icon: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/whatnot.png' },
         { platform: 'Instagram', url: 'https://www.instagram.com/honeybunbean/', icon: 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png' }
       ],
       tags: ['\u26A1 Pokemon', '\u{1F381} Giveaways', '\u{1F528} Auctions']
@@ -1001,9 +1002,10 @@
     document.getElementById('hostModalAvatar').innerHTML = '<img src="' + h.avatar + '" alt="' + h.name + '"/>';
     // Name
     document.getElementById('hostModalName').textContent = h.name;
-    // Handle (linked to Whatnot)
+    // Handle (linked to Whatnot — use whatnot username if different from handle)
+    var wn = h.whatnot || h.handle;
     document.getElementById('hostModalHandle').innerHTML =
-      '<a href="https://www.whatnot.com/user/' + h.handle + '" target="_blank" onclick="event.stopPropagation()">@' + h.handle + '</a>';
+      '<a href="https://www.whatnot.com/user/' + wn + '" target="_blank" onclick="event.stopPropagation()">@' + wn + '</a>';
     // Social links
     var socialsHTML = '';
     h.socials.forEach(function(s) {
@@ -1021,8 +1023,8 @@
     document.getElementById('hostModalTags').innerHTML = tagsHTML;
     // Follow on Whatnot button
     var followBtn = document.getElementById('hostModalFollowBtn');
-    followBtn.href = 'https://www.whatnot.com/user/' + h.handle;
-    followBtn.textContent = 'Follow @' + h.handle + ' on Whatnot';
+    followBtn.href = 'https://www.whatnot.com/user/' + wn;
+    followBtn.textContent = 'Follow @' + wn + ' on Whatnot';
     // Profile button (hidden for now, pre-wired for future use)
     var profileBtn = document.getElementById('hostModalProfileBtn');
     profileBtn.onclick = function() { window.location.href = '/collector.html?u=' + h.handle; };
@@ -1066,12 +1068,12 @@
       emoji: '\u26A1',
       status: 'scheduled',
       host: 'HoneyBunBean',
-      hostHandle: 'honeybunbean',
-      hostWhatnot: 'https://www.whatnot.com/user/honeybunbean',
+      hostHandle: 'SafeNetwork_Pokemon',
+      hostWhatnot: 'https://www.whatnot.com/user/safenetwork_pokemon',
       desc: 'Pack openings, graded card auctions, and Pokemon lots for collectors of all levels. From vintage Base Set to the latest modern hits. $1 start auctions, live breaks, mystery lots, giveaways, and more.',
       schedule: 'Sun\u2013Tue on Whatnot \u2014 <a href="/schedule.html" onclick="event.stopPropagation()" style="color:var(--blue);text-decoration:underline">See full schedule</a>',
       slug: 'pokemon',
-      whatnot: 'https://www.whatnot.com/user/honeybunbean'
+      whatnot: 'https://www.whatnot.com/user/safenetwork_pokemon'
     },
     sports: {
       name: 'Sports Cards',

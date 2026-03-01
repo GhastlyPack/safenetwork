@@ -565,8 +565,8 @@
       currentProfile = result.profile;
       renderProfile();
       // Update navbar avatar
-      var navImg = document.querySelector('.auth-avatar img');
-      var navInitials = document.querySelector('.auth-avatar-initials');
+      var navImg = document.getElementById('authAvatarImg');
+      var navInitials = document.getElementById('authAvatarInitials');
       if(navImg && result.url){
         navImg.src = result.url;
         navImg.style.display = 'block';

@@ -263,13 +263,20 @@
         navProfileBtn.style.display = 'inline-block';
       }
       profileWrap.style.display = 'flex';
-      // Avatar: picture or initials fallback
+      // Avatar: prefer profile avatar_url, fall back to Auth0 picture, then initials
       var avatarImg = document.getElementById('authAvatarImg');
       var avatarInitials = document.getElementById('authAvatarInitials');
-      if(user.picture){
-        avatarImg.src = user.picture;
+      var cachedProfile = window.snProfile ? snProfile.getCachedProfile() : null;
+      var avatarSrc = (cachedProfile && cachedProfile.avatar_url) || user.picture || '';
+      if(avatarSrc){
+        avatarImg.src = avatarSrc;
         avatarImg.style.display = 'block';
         avatarInitials.style.display = 'none';
+        avatarImg.onerror = function(){
+          avatarImg.style.display = 'none';
+          avatarInitials.style.display = 'flex';
+          avatarInitials.textContent = getInitials(user);
+        };
       } else {
         avatarImg.style.display = 'none';
         avatarInitials.style.display = 'flex';

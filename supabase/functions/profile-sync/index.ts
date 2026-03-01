@@ -2337,6 +2337,15 @@ async function handleAdminRefreshSpotPrices(auth0User: { sub: string; email: str
   return { prices: prices || [] }
 }
 
+/* ── Action: Get Spot Prices (read-only, no auth required) ── */
+async function handleGetSpotPrices() {
+  const { data: prices, error } = await supabase
+    .from('spot_prices')
+    .select('*')
+  if (error) throw error
+  return { prices: prices || [] }
+}
+
 /* ── Action: Admin Inventory Bulk Price Update ── */
 async function handleAdminInventoryBulkPriceUpdate(auth0User: { sub: string; email: string }, data: any) {
   const callerProfile = await getProfileByAuth0Id(auth0User.sub)
@@ -2821,6 +2830,14 @@ serve(async (req: Request) => {
     // ── Customer.io anonymous tracking (no auth - for signup forms) ──
     if (action === 'cio-track-anon') {
       result = await handleCioTrackAnon(data || {})
+      return new Response(
+        JSON.stringify(result),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (action === 'get-spot-prices') {
+      result = await handleGetSpotPrices()
       return new Response(
         JSON.stringify(result),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

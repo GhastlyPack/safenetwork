@@ -692,6 +692,17 @@
     }
   }
 
+  /* ── Get Spot Prices (read-only, no auth) ── */
+  async function getSpotPrices(){
+    try {
+      var result = await callEdge('get-spot-prices', {}, '');
+      return result.prices || [];
+    } catch(err){
+      console.warn('Get spot prices error:', err);
+      return [];
+    }
+  }
+
   /* ── Admin: Refresh Spot Prices ── */
   async function adminRefreshSpotPrices(accessToken){
     try {
@@ -940,6 +951,7 @@
     wheelConfigSave: wheelConfigSave,
     wheelConfigUpdate: wheelConfigUpdate,
     wheelConfigDelete: wheelConfigDelete,
+    getSpotPrices: getSpotPrices,
     adminRefreshSpotPrices: adminRefreshSpotPrices,
     justtcgSearch: justtcgSearch,
     justtcgBatch: justtcgBatch,

@@ -1839,8 +1839,7 @@
   function loadSpotPricesDisplay(){
     (async function(){
       try {
-        var token = await snAuth.getAccessToken();
-        var prices = await snProfile.adminRefreshSpotPrices(token);
+        var prices = await snProfile.getSpotPrices();
         applySpotPrices(prices);
         if(prices && prices[0] && prices[0].updated_at){
           document.getElementById('spotUpdatedAt').textContent = 'Last updated: ' + new Date(prices[0].updated_at).toLocaleString();

@@ -447,12 +447,12 @@
       <h3 style="color:var(--blue);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:16px">Inventory Overview</h3>
       <div class="admin-stats" id="invOverviewStats">
         <div class="stat-card blue">
-          <div class="stat-number" id="invStatTotal">-</div>
-          <div class="stat-label">Total Items</div>
+          <div class="stat-number" id="invStatSKUs">-</div>
+          <div class="stat-label">Total SKUs</div>
         </div>
         <div class="stat-card green">
-          <div class="stat-number" id="invStatInStock">-</div>
-          <div class="stat-label">In Stock</div>
+          <div class="stat-number" id="invStatUnits">-</div>
+          <div class="stat-label">Total Units</div>
         </div>
         <div class="stat-card gold">
           <div class="stat-number" id="invStatListed">-</div>
@@ -475,6 +475,10 @@
         <div class="stat-card" style="background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.15)">
           <div class="stat-number" id="invStatNetProfit" style="color:#4ade80">-</div>
           <div class="stat-label">Net Profit</div>
+        </div>
+        <div class="stat-card" style="background:rgba(30,144,255,.06);border-color:rgba(30,144,255,.15)">
+          <div class="stat-number" id="invStatUnrealized" style="color:var(--blue)">-</div>
+          <div class="stat-label">Unrealized Profit</div>
         </div>
         <div class="stat-card blue">
           <div class="stat-number" id="invStatMargin">-</div>
@@ -1844,11 +1848,13 @@
   window.refreshSpotPrices = async function(){
     try {
       var token = await snAuth.getAccessToken();
-      var result = await snProfile.adminRefreshSpotPrices(token);
-      if(result && result.prices){
-        result.prices.forEach(function(sp){
-          var el = document.getElementById('spot' + sp.metal.charAt(0).toUpperCase() + sp.metal.slice(1));
-          if(el) el.textContent = '$' + Number(sp.price_usd).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      var prices = await snProfile.adminRefreshSpotPrices(token);
+      if(prices && prices.length){
+        prices.forEach(function(sp){
+          var metal = sp.metal || sp.name || '';
+          var el = document.getElementById('spot' + metal.charAt(0).toUpperCase() + metal.slice(1).toLowerCase());
+          var price = parseFloat(sp.price_usd || sp.price_per_oz || 0);
+          if(el) el.textContent = price > 0 ? '$' + price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : 'N/A';
         });
         document.getElementById('spotUpdatedAt').textContent = 'Updated: ' + new Date().toLocaleString();
       }
@@ -1860,49 +1866,82 @@
 
   /* ── Dashboard Rendering ── */
   function renderDashboard(){
-    var total = allInventory.length;
-    var inStock = 0, listed = 0, sold = 0;
-    var totalCost = 0, totalRevenue = 0, totalFees = 0;
+    var totalSKUs = allInventory.length;
+    var totalUnits = 0, listed = 0, sold = 0;
+    var totalCost = 0, soldCost = 0, totalRevenue = 0, totalFees = 0;
+    var totalMarketValue = 0, unsoldCost = 0;
     var catData = {};
 
     allInventory.forEach(function(item){
-      if(item.status === 'in_stock') inStock++;
-      else if(item.status === 'listed') listed++;
-      else if(item.status === 'sold') sold++;
+      var qty = parseInt(item.quantity) || 1;
+      var qtySold = parseInt(item.quantity_sold) || 0;
+      var unsold = qty - qtySold;
+      totalUnits += qty;
+      if(item.status === 'listed') listed++;
+      if(item.status === 'sold') sold++;
 
       var cost = (parseFloat(item.purchase_price) || 0) + (parseFloat(item.buyers_premium) || 0);
       totalCost += cost;
 
       if(item.status === 'sold'){
+        soldCost += cost;
         totalRevenue += parseFloat(item.final_sale_price) || 0;
         totalFees += parseFloat(item.sale_fees) || 0;
       }
 
+      // Unrealized profit: market value minus purchase cost for unsold units
+      var mv = parseFloat(item.market_value) || 0;
+      if(mv > 0 && unsold > 0){
+        var unitCost = qty > 0 ? cost / qty : cost;
+        totalMarketValue += mv * unsold;
+        unsoldCost += unitCost * unsold;
+      }
+
       var cat = item.category || 'other';
-      if(!catData[cat]) catData[cat] = {count:0, inStock:0, sold:0, cost:0, revenue:0, fees:0};
+      if(!catData[cat]) catData[cat] = {count:0, inStock:0, sold:0, cost:0, soldCost:0, revenue:0, fees:0};
       catData[cat].count++;
       if(item.status === 'in_stock') catData[cat].inStock++;
       if(item.status === 'sold'){
         catData[cat].sold++;
+        catData[cat].soldCost += cost;
         catData[cat].revenue += parseFloat(item.final_sale_price) || 0;
         catData[cat].fees += parseFloat(item.sale_fees) || 0;
       }
       catData[cat].cost += cost;
     });
 
-    var netProfit = totalRevenue - totalFees - totalCost;
-    var margin = totalRevenue > 0 ? ((totalRevenue - totalFees - totalCost) / totalRevenue * 100) : 0;
+    var unrealizedProfit = totalMarketValue - unsoldCost;
 
-    document.getElementById('invStatTotal').textContent = total;
-    document.getElementById('invStatInStock').textContent = inStock;
+    document.getElementById('invStatSKUs').textContent = totalSKUs;
+    document.getElementById('invStatUnits').textContent = totalUnits.toLocaleString();
     document.getElementById('invStatListed').textContent = listed;
     document.getElementById('invStatSold').textContent = sold;
     document.getElementById('invStatTotalCost').textContent = '$' + totalCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     document.getElementById('invStatTotalRevenue').textContent = '$' + totalRevenue.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-    document.getElementById('invStatNetProfit').textContent = (netProfit >= 0 ? '' : '-') + '$' + Math.abs(netProfit).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-    document.getElementById('invStatNetProfit').style.color = netProfit >= 0 ? '#4ade80' : '#ff6b6b';
-    document.getElementById('invStatMargin').textContent = margin.toFixed(1) + '%';
-    document.getElementById('invStatMargin').style.color = margin >= 0 ? 'var(--blue)' : '#ff6b6b';
+
+    // Net profit only meaningful when items have been sold
+    if(sold > 0){
+      var netProfit = totalRevenue - totalFees - soldCost;
+      var margin = totalRevenue > 0 ? ((totalRevenue - totalFees - soldCost) / totalRevenue * 100) : 0;
+      document.getElementById('invStatNetProfit').textContent = (netProfit >= 0 ? '' : '-') + '$' + Math.abs(netProfit).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      document.getElementById('invStatNetProfit').style.color = netProfit >= 0 ? '#4ade80' : '#ff6b6b';
+      document.getElementById('invStatMargin').textContent = margin.toFixed(1) + '%';
+      document.getElementById('invStatMargin').style.color = margin >= 0 ? 'var(--blue)' : '#ff6b6b';
+    } else {
+      document.getElementById('invStatNetProfit').textContent = '-';
+      document.getElementById('invStatNetProfit').style.color = 'var(--silver)';
+      document.getElementById('invStatMargin').textContent = '-';
+      document.getElementById('invStatMargin').style.color = 'var(--silver)';
+    }
+
+    // Unrealized profit: market value minus purchase cost for unsold items
+    if(totalMarketValue > 0){
+      document.getElementById('invStatUnrealized').textContent = (unrealizedProfit >= 0 ? '' : '-') + '$' + Math.abs(unrealizedProfit).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      document.getElementById('invStatUnrealized').style.color = unrealizedProfit >= 0 ? '#4ade80' : '#ff6b6b';
+    } else {
+      document.getElementById('invStatUnrealized').textContent = '-';
+      document.getElementById('invStatUnrealized').style.color = 'var(--silver)';
+    }
 
     // Category breakdown table
     var tbody = document.getElementById('invBreakdownBody');
@@ -1914,7 +1953,7 @@
     var html = '';
     cats.forEach(function(cat){
       var d = catData[cat];
-      var catProfit = d.revenue - d.fees - d.cost;
+      var catProfit = d.revenue - d.fees - d.soldCost;
       html += '<tr>' +
         '<td><span class="profile-badge" style="font-size:10px;background:rgba(30,144,255,.12);color:var(--blue)">' + escapeHtml(INV_CATEGORY_LABELS[cat] || cat) + '</span></td>' +
         '<td>' + d.count + '</td>' +

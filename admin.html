@@ -1869,7 +1869,7 @@
     var totalSKUs = allInventory.length;
     var totalUnits = 0, listed = 0, sold = 0;
     var totalCost = 0, soldCost = 0, totalRevenue = 0, totalFees = 0;
-    var totalMarketValue = 0, unsoldCost = 0;
+    var unrealizedProfit = 0, hasMarketValues = false;
     var catData = {};
 
     allInventory.forEach(function(item){
@@ -1889,12 +1889,12 @@
         totalFees += parseFloat(item.sale_fees) || 0;
       }
 
-      // Unrealized profit: market value minus purchase cost for unsold units
+      // Unrealized profit: (market price - purchase price) * quantity for unsold units
       var mv = parseFloat(item.market_value) || 0;
+      var pp = parseFloat(item.purchase_price) || 0;
       if(mv > 0 && unsold > 0){
-        var unitCost = qty > 0 ? cost / qty : cost;
-        totalMarketValue += mv * unsold;
-        unsoldCost += unitCost * unsold;
+        hasMarketValues = true;
+        unrealizedProfit += (mv - pp) * unsold;
       }
 
       var cat = item.category || 'other';
@@ -1909,8 +1909,6 @@
       }
       catData[cat].cost += cost;
     });
-
-    var unrealizedProfit = totalMarketValue - unsoldCost;
 
     document.getElementById('invStatSKUs').textContent = totalSKUs;
     document.getElementById('invStatUnits').textContent = totalUnits.toLocaleString();
@@ -1935,7 +1933,7 @@
     }
 
     // Unrealized profit: market value minus purchase cost for unsold items
-    if(totalMarketValue > 0){
+    if(hasMarketValues){
       document.getElementById('invStatUnrealized').textContent = (unrealizedProfit >= 0 ? '' : '-') + '$' + Math.abs(unrealizedProfit).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
       document.getElementById('invStatUnrealized').style.color = unrealizedProfit >= 0 ? '#4ade80' : '#ff6b6b';
     } else {

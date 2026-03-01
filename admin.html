@@ -824,7 +824,7 @@
       <!-- Dynamic Category-Specific Fields -->
       <div id="invDetailFields" style="margin-top:16px"></div>
 
-      <div style="display:flex;gap:12px;margin-top:24px">
+      <div class="admin-panel-actions" style="display:flex;gap:12px">
         <button class="btn-primary" style="flex:1;padding:14px" onclick="saveInventoryItem()">Save Item</button>
         <button class="btn-primary" style="flex:1;padding:14px;background:rgba(192,200,216,.1);color:var(--silver)" onclick="closeInvEditPanel()">Cancel</button>
       </div>
@@ -1958,11 +1958,11 @@
 
     // Table
     html += '<div class="admin-table-wrap"><table class="admin-table"><thead><tr>' +
-      '<th>Name</th><th>Status</th><th>Purchase</th><th>Market Value</th><th>Sale Price</th><th>P&L</th><th>Actions</th>' +
+      '<th>Name</th><th>Status</th><th>Cost</th><th>Market Value</th><th>Unrealized</th><th>Sale Price</th><th>P&L</th><th>Actions</th>' +
       '</tr></thead><tbody id="invCatBody_' + category + '">';
 
     if(!items.length){
-      html += '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--silver)">No items yet. Click "+ Add Item" to get started.</td></tr>';
+      html += '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--silver)">No items yet. Click "+ Add Item" to get started.</td></tr>';
     } else {
       items.forEach(function(item){
         html += buildInvRow(item);
@@ -2041,17 +2041,42 @@
     var addToGameBtn = showAddToGame ?
       '<button class="btn-primary" style="font-size:10px;padding:4px 10px;background:rgba(138,43,226,.15);color:#c084fc;margin-right:4px" onclick="event.stopPropagation();openAddToGame(\'' + escapeHtml(item.id) + '\')">+ Game</button>' : '';
 
-    // Purchase price: show per-unit, hover for total
+    // Purchase: show total blended cost, hover for avg per unit
+    var totalFmt = '$' + totalCost.toLocaleString('en-US',{minimumFractionDigits:2});
     var unitFmt = '$' + unitCost.toLocaleString('en-US',{minimumFractionDigits:2});
     var purchaseTd = (qty > 1) ?
-      '<td title="Total: $' + totalCost.toLocaleString('en-US',{minimumFractionDigits:2}) + ' (' + qty + ' &times; ' + unitFmt + ')" style="cursor:help">' + unitFmt + '</td>' :
-      '<td>' + unitFmt + '</td>';
+      '<td title="Avg per unit: ' + unitFmt + '" style="cursor:help">' + totalFmt + '</td>' :
+      '<td>' + totalFmt + '</td>';
+
+    // Market value: show total, hover for per-unit
+    var mvUnit = parseFloat(item.market_value) || 0;
+    var mvTotal = mvUnit * qty;
+    var mvTotalFmt = '$' + mvTotal.toLocaleString('en-US',{minimumFractionDigits:2});
+    var mvUnitFmt = '$' + mvUnit.toLocaleString('en-US',{minimumFractionDigits:2});
+    var marketTd = mvUnit > 0 ?
+      ((qty > 1) ?
+        '<td title="Per unit: ' + mvUnitFmt + '" style="cursor:help">' + mvTotalFmt + '</td>' :
+        '<td>' + mvTotalFmt + '</td>') :
+      '<td style="color:var(--silver)">-</td>';
+
+    // Unrealized profit: (market value - cost) for remaining unsold units
+    var unsoldCost = unitCost * inStock;
+    var unsoldMarket = mvUnit * inStock;
+    var unrealized = (mvUnit > 0 && inStock > 0) ? (unsoldMarket - unsoldCost) : 0;
+    var hasUnrealized = mvUnit > 0 && inStock > 0;
+    var uColor = unrealized >= 0 ? '#4ade80' : '#ff6b6b';
+    var unrealizedTd = hasUnrealized ?
+      '<td style="color:' + uColor + (qty > 1 ? ';cursor:help' : '') + '"' +
+        (qty > 1 ? ' title="' + inStock + ' unsold × ' + mvUnitFmt + ' market - ' + unitFmt + ' cost each"' : '') +
+        '>' + (unrealized >= 0 ? '+' : '-') + '$' + Math.abs(unrealized).toLocaleString('en-US',{minimumFractionDigits:2}) + '</td>' :
+      '<td style="color:var(--silver)">-</td>';
 
     return '<tr class="user-row inv-item-row" data-inv-id="' + escapeHtml(item.id) + '">' +
       '<td class="username-cell">' + nameHtml + '</td>' +
       '<td><span style="font-size:11px;font-weight:600;' + statusClass + '">' + statusText + '</span></td>' +
       purchaseTd +
-      '<td>' + (item.market_value ? '$' + parseFloat(item.market_value).toLocaleString('en-US',{minimumFractionDigits:2}) : '-') + '</td>' +
+      marketTd +
+      unrealizedTd +
       '<td>' + (totalSaleRevenue > 0 ? '$' + totalSaleRevenue.toLocaleString('en-US',{minimumFractionDigits:2}) : '-') + '</td>' +
       '<td style="color:' + (hasSales ? (pl >= 0 ? '#4ade80' : '#ff6b6b') : 'var(--silver)') + '">' +
         (hasSales ? ((pl >= 0 ? '+' : '-') + '$' + Math.abs(pl).toLocaleString('en-US',{minimumFractionDigits:2})) : '-') + '</td>' +
@@ -2088,7 +2113,7 @@
     var tbody = document.getElementById('invCatBody_' + category);
     if(!tbody) return;
     if(!items.length){
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--silver)">No matching items.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--silver)">No matching items.</td></tr>';
       return;
     }
     var html = '';

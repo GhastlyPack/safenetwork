@@ -195,6 +195,25 @@
   </div>
 </div>
 
+<!-- Avatar Crop Modal -->
+<div id="avatarCropModal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center">
+  <div style="background:linear-gradient(135deg,#0f1628,#0a0e1a);border:1px solid rgba(30,144,255,.2);border-radius:16px;padding:28px;max-width:360px;width:90%;text-align:center">
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:16px">Crop Profile Picture</h3>
+    <div id="cropArea" style="position:relative;width:240px;height:240px;margin:0 auto 16px;border-radius:50%;overflow:hidden;border:3px solid rgba(30,144,255,.3);background:#111;cursor:grab;touch-action:none">
+      <img id="cropImg" style="position:absolute;max-width:none;pointer-events:none;user-select:none" draggable="false"/>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:0 12px">
+      <span style="color:var(--silver);font-size:12px">-</span>
+      <input type="range" id="cropZoom" min="100" max="300" value="100" style="flex:1;accent-color:var(--blue)"/>
+      <span style="color:var(--silver);font-size:12px">+</span>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="cancelCrop()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--silver);padding:10px 24px;border-radius:8px;font-weight:600;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer">Cancel</button>
+      <button onclick="confirmCrop()" style="background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border:none;padding:10px 24px;border-radius:8px;font-weight:700;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;box-shadow:0 0 12px rgba(30,144,255,.3)">Save</button>
+    </div>
+  </div>
+</div>
+
 <footer>
   <div class="footer-logo">SAFE NETWORK</div>
   <div><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a></div>
@@ -284,14 +303,20 @@
     // Header
     var avatarImg = document.getElementById('profileAvatarImg');
     var avatarInitials = document.getElementById('profileAvatarInitials');
+    var initial = (p.display_name || p.email || '?').charAt(0).toUpperCase();
     if(p.avatar_url){
       avatarImg.src = p.avatar_url;
       avatarImg.style.display = 'block';
       avatarInitials.style.display = 'none';
+      avatarImg.onerror = function(){
+        avatarImg.style.display = 'none';
+        avatarInitials.style.display = 'flex';
+        avatarInitials.textContent = initial;
+      };
     } else {
       avatarImg.style.display = 'none';
       avatarInitials.style.display = 'flex';
-      avatarInitials.textContent = (p.display_name || p.email || '?').charAt(0).toUpperCase();
+      avatarInitials.textContent = initial;
     }
 
     document.getElementById('profileDisplayName').textContent = p.display_name || p.username || 'Collector';
@@ -423,43 +448,111 @@
     if(el && bio) el.textContent = bio.value.length;
   }
 
-  /* ── Avatar Upload ── */
+  /* ── Avatar Upload with Crop ── */
+  var cropState = { imgEl: null, naturalW: 0, naturalH: 0, scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0 };
+
   document.getElementById('avatarFileInput').addEventListener('change', function(e){
     var file = e.target.files && e.target.files[0];
     if(!file) return;
-    // Reset input so the same file can be re-selected
     e.target.value = '';
 
-    // Validate type
     if(!file.type.match(/^image\/(jpeg|png|webp)$/)){
       alert('Please select a JPEG, PNG, or WebP image.');
       return;
     }
 
-    // Resize + upload
     var reader = new FileReader();
-    reader.onload = function(ev){
-      var img = new Image();
-      img.onload = function(){
-        // Resize to max 400px
-        var maxDim = 400;
-        var w = img.width, h = img.height;
-        if(w > maxDim || h > maxDim){
-          if(w > h){ h = Math.round(h * maxDim / w); w = maxDim; }
-          else { w = Math.round(w * maxDim / h); h = maxDim; }
-        }
-        var canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        var base64 = dataUrl.split(',')[1];
-        doAvatarUpload(base64);
-      };
-      img.src = ev.target.result;
-    };
+    reader.onload = function(ev){ openCropModal(ev.target.result); };
     reader.readAsDataURL(file);
   });
+
+  function openCropModal(dataUrl){
+    var modal = document.getElementById('avatarCropModal');
+    var cropImg = document.getElementById('cropImg');
+    var zoomSlider = document.getElementById('cropZoom');
+
+    cropImg.onload = function(){
+      cropState.naturalW = cropImg.naturalWidth;
+      cropState.naturalH = cropImg.naturalHeight;
+      cropState.scale = 1;
+      cropState.x = 0;
+      cropState.y = 0;
+      zoomSlider.value = 100;
+      fitImageToCrop();
+    };
+    cropImg.src = dataUrl;
+    modal.style.display = 'flex';
+  }
+
+  function fitImageToCrop(){
+    var img = document.getElementById('cropImg');
+    var areaSize = 240;
+    // Scale so shorter side fills the circle
+    var baseScale = Math.max(areaSize / cropState.naturalW, areaSize / cropState.naturalH);
+    var zoom = parseInt(document.getElementById('cropZoom').value) / 100;
+    var finalScale = baseScale * zoom;
+    var w = cropState.naturalW * finalScale;
+    var h = cropState.naturalH * finalScale;
+    // Clamp position so image covers the circle
+    var maxX = 0, minX = areaSize - w;
+    var maxY = 0, minY = areaSize - h;
+    cropState.x = Math.max(minX, Math.min(maxX, cropState.x));
+    cropState.y = Math.max(minY, Math.min(maxY, cropState.y));
+    img.style.width = w + 'px';
+    img.style.height = h + 'px';
+    img.style.left = cropState.x + 'px';
+    img.style.top = cropState.y + 'px';
+    cropState.scale = finalScale;
+  }
+
+  document.getElementById('cropZoom').addEventListener('input', function(){
+    fitImageToCrop();
+  });
+
+  // Drag to reposition
+  var cropArea = document.getElementById('cropArea');
+  cropArea.addEventListener('pointerdown', function(e){
+    cropState.dragging = true;
+    cropState.startX = e.clientX - cropState.x;
+    cropState.startY = e.clientY - cropState.y;
+    cropArea.style.cursor = 'grabbing';
+    cropArea.setPointerCapture(e.pointerId);
+  });
+  cropArea.addEventListener('pointermove', function(e){
+    if(!cropState.dragging) return;
+    cropState.x = e.clientX - cropState.startX;
+    cropState.y = e.clientY - cropState.startY;
+    fitImageToCrop();
+  });
+  cropArea.addEventListener('pointerup', function(){
+    cropState.dragging = false;
+    cropArea.style.cursor = 'grab';
+  });
+
+  window.cancelCrop = function(){
+    document.getElementById('avatarCropModal').style.display = 'none';
+  };
+
+  window.confirmCrop = function(){
+    var cropImg = document.getElementById('cropImg');
+    var areaSize = 240;
+    var outputSize = 400;
+    var canvas = document.createElement('canvas');
+    canvas.width = outputSize;
+    canvas.height = outputSize;
+    var ctx = canvas.getContext('2d');
+    // Calculate source rect from crop position
+    var ratio = outputSize / areaSize;
+    var sx = -cropState.x / cropState.scale;
+    var sy = -cropState.y / cropState.scale;
+    var sw = areaSize / cropState.scale;
+    var sh = areaSize / cropState.scale;
+    ctx.drawImage(cropImg, sx, sy, sw, sh, 0, 0, outputSize, outputSize);
+    var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    var base64 = dataUrl.split(',')[1];
+    document.getElementById('avatarCropModal').style.display = 'none';
+    doAvatarUpload(base64);
+  };
 
   async function doAvatarUpload(base64){
     var overlay = document.querySelector('.profile-avatar-overlay');
@@ -469,7 +562,6 @@
       var token = await snAuth.getAccessToken();
       if(!token) throw new Error('Not authenticated');
       var result = await snProfile.uploadAvatar(base64, 'image/jpeg', token);
-      // Update profile avatar
       currentProfile = result.profile;
       renderProfile();
       // Update navbar avatar

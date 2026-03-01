@@ -187,7 +187,8 @@ async function handleUploadAvatar(auth0User: { sub: string; email: string }, dat
 
   // Upload to Storage (upsert to overwrite old avatar)
   const ext = data.content_type === 'image/png' ? 'png' : 'jpg'
-  const storagePath = `${auth0User.sub}/avatar.${ext}`
+  const safeSub = auth0User.sub.replace(/[^a-zA-Z0-9_-]/g, '_')
+  const storagePath = `${safeSub}/avatar.${ext}`
 
   const { error: uploadError } = await supabase.storage
     .from('profile-avatars')
